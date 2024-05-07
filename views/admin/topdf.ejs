@@ -1,0 +1,55 @@
+<div class="card-body">
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                  
+                    
+                    <th scope="col">User Name</th>
+                    <th scope="col">Product Name</th>
+                    <th scope="col">Order Date</th>
+                    <th scope="col">Product Status</th>
+                    <th scope="col">Actual price</th>
+                    <th scope="col">Product price</th>
+                    <th scope="col">Product Quandity</th>
+                    <th scope="col">Offer price</th>
+                    <th scope="col">Total price</th>
+                   
+                </tr>
+            </thead>
+            <tbody>
+                <%
+                if(orderData?.length>0){
+                for(let i=0;i<orderData.length;i++){
+                    for(let j=0;j<orderData[i].products.length;j++){
+                        if(orderData[i].products[j].orderDate >=start && orderData[i].products[j].orderDate<=end){
+                        %>
+                    <tr>                              
+                        <td><%=orderData[i].userId.name%></td>
+                        <td><%=orderData[i].products[j].productId.name%></td>
+                        <td><%=orderData[i].products[j].orderDate%></td>
+                        <td><span class="badge rounded-pill alert-warning"><%=orderData[i].products[j].productStatus%></span></td>
+                        <td><%=orderData[i].products[j].productId.Price%></td>
+                        <td><%=orderData[i].products[j].productTotal/orderData[i].products[j].quandity%></td>
+                        <td><%=orderData[i].products[j].quandity%></td>
+                        <td><%=orderData[i].products[j].productId.Price-orderData[i].products[j].productTotal/orderData[i].products[j].quandity%></td>
+                        <td><%=orderData[i].products[j].productTotal%></td> 
+                    </tr>
+                        <%
+                    }
+                    
+                }
+            }
+            }else{
+%>
+<tr>
+<td colspan="3">No Orders Found</td>
+</tr>
+<%
+}
+%>
+            </tbody>
+        </table>
+    </div>
+    <!-- table-responsive //end -->
+</div>

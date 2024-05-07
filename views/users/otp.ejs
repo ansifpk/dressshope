@@ -1,0 +1,91 @@
+
+<!DOCTYPE html>
+<!-- Coding By CodingNepal - codingnepalweb.com -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <title>OTP Verification Form</title>
+    <link rel="stylesheet" href="assets/css/otp.css">
+    <!-- Boxicons CSS -->
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/images/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/icons/favicon-16x16.png">
+    <link rel="manifest" href="assets/images/icons/site.html">
+    <link rel="mask-icon" href="assets/images/icons/safari-pinned-tab.svg" color="#666666">
+    <link rel="shortcut icon" href="assets/images/icons/favicon.ico">
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <i class="bx bxs-check-shield"></i>
+      </header>
+      <h4>Enter OTP Code</h4>
+      <form action="" method="post">
+        <% 
+
+        if(typeof message!== "undefined"){
+           %>
+           <p style="color:white; background-color:red; text-align: center;"><%= message %> </p>
+           <%
+        }
+        
+        %>
+        <div class="input-field">
+          <input type="number" name="num1" />
+          <input type="number" name="num2"  disabled />
+          <input type="number"  name="num3" disabled />
+          <input type="number" name="num4"  disabled />
+          <%if(userData){%><input type="hidden" name="<%=userData%>" value="<%= userData %>" disabled><%}%>
+          
+        </div>
+       
+        <button type="submit" class="btn btn-outline-primary">
+          <span>SIGN UP</span>
+         
+        <i class="icon-long-arrow-right"></i>
+        </button>
+       
+        
+
+        
+      </form>
+         <p>The OTP exipre in <span id="expire">60</span>s</p>
+         <%if(userData){%> <button id="disable" onclick="resend('<%=userData.email%>')" class="btn btn-danger"><%}%>
+       
+        <span>resend</span>
+        <i class="icon-long-arrow-right"></i>
+      </button>
+     
+     
+    </div>
+  
+    <script>
+      const disable = document.getElementById("disable");
+      disable.disabled=true;
+      const expire = document.getElementById('expire');
+      console.log(expire)
+      expire.innerText=60;
+      const expireInterval = setInterval(function(){
+        expire.innerText--;
+        if(expire.innerText==0){
+          clearInterval(expireInterval);
+          disable.disabled=false
+        }
+      },1000)
+    </script>
+    <script>
+      
+     function resend(email){
+      console.log("email")
+      console.log(email);
+      fetch(`/resend?email=${email}`);
+
+      //for rend 2 send 
+     }
+    </script>
+    <script src="assets/js/otp.js" defer></script>
+  </body>
+</html>

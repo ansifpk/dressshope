@@ -1,0 +1,455 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Nest Dashboard</title>
+        <meta http-equiv="x-ua-compatible" content="ie=edge" />
+        <meta name="description" content="" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta property="og:title" content="" />
+        <meta property="og:type" content="" />
+        <meta property="og:url" content="" />
+        <meta property="og:image" content="" />
+        <!-- Favicon -->
+        <link rel="shortcut icon" type="image/x-icon" href="assets/imgs/theme/favicon.svg" />
+        <!-- Template CSS -->
+        <link href="assets/css/main.css?v=1.1" rel="stylesheet" type="text/css" />
+    </head>
+
+    <body>
+        <div class="screen-overlay"></div>
+        <aside class="navbar-aside" id="offcanvas_aside">
+            <div class="aside-top">
+                <a href="index.html" class="brand-wrap">
+                    <img src="assets/imgs/theme/logo.svg" class="logo" alt="Nest Dashboard" />
+                </a>
+                <div>
+                    <button class="btn btn-icon btn-aside-minimize"><i class="text-muted material-icons md-menu_open"></i></button>
+                </div>
+            </div>
+            <nav>
+                <ul class="menu-aside">
+                    <li   class="menu-item active"   >
+                        <a class="menu-link" href="/admin/dashboard">
+                            <i class="icon material-icons md-home"></i>
+                            <span class="text">Dashboard</span>
+                        </a>
+                        <div class="submenu">
+                            <a href="/admin/dashboard">View Dashboard</a>
+                           
+                        </div>
+                    </li>
+                    <li class="menu-item has-submenu">
+                        <a class="menu-link" href="/admin/products">
+                            <i class="icon material-icons md-shopping_bag"></i>
+                            <span class="text">Products</span>
+                        </a>
+                        <div class="submenu">
+                            <a href="/admin/viewProducts">Product List</a>
+                           
+                        </div>
+                    </li>
+                    <li class="menu-item has-submenu">
+                        <a class="menu-link" href="/admin/viewUser">
+                            <i class="icon material-icons md-person"></i>
+                            <span class="text">Users</span>
+                        </a>
+                        <div class="submenu">
+                            <a href="/admin/viewUser">Users list </a>
+                           
+                        </div>
+                    </li>
+                  
+                  
+                    <li class="menu-item has-submenu">
+                        <a class="menu-link" href="/admin/viewOrders">
+                            <i class="icon material-icons md-monetization_on"></i>
+                            <span class="text">View Orders</span>
+                        </a>
+                        <div class="submenu">
+                            <a href="/admin/ordersList">Orders</a>
+                            
+                        </div>
+                    </li>
+                    <li class="menu-item has-submenu">
+                        <a class="menu-link" href="#">
+                            <i class="icon material-icons md-person"></i>
+                            <span class="text">Category</span>
+                        </a>
+                        <div class="submenu">
+                            <a href="/admin/category">Category</a>
+                           
+                        </div>
+                    </li>
+                    <li class="menu-item has-submenu">
+                        <a class="menu-link" href="/admin/coupens">
+                            <i class="icon material-icons md-shopping_bag"></i>
+                            <span class="text">Coupens</span>
+                        </a>
+                        <div class="submenu">
+                            <a href="/admin/coupens">Coupens List</a>
+                           
+                        </div>
+                    </li>
+                    <li class="menu-item has-submenu">
+                        <a class="menu-link" href="/admin/coupens">
+                            <i class="icon material-icons md-shopping_bag"></i>
+                            <span class="text">Offers</span>
+                        </a>
+                        <div class="submenu">
+                            <a href="/admin/offer">Offers List</a>
+                           
+                        </div>
+                    </li>
+                    <li class="menu-item has-submenu">
+                        <a class="menu-link" href="/admin/weaklyReport">
+                            <i class="icon material-icons md-shopping_bag"></i>
+                            <span class="text">Report</span>
+                        </a>
+                        <div class="submenu">
+                            <a href="/admin/weaklyReport">weakly Report</a>
+                            <a href="/admin/monthlyReport">Monthly Report</a>
+                            <a href="/admin/yearlyReport">Yearly Report</a>
+                        </div>
+                    </li>
+                    <li class="menu-item">
+                        <a class="menu-link" href="/admin/logout">
+                            <i class="icon material-icons md-comment"></i>
+                            <span class="text">Logout</span>
+                        </a>
+                    </li>
+                   
+                </ul>
+                <br />
+                <br />
+            </nav>
+        </aside>
+        <main class="main-wrap">
+            <header class="main-header navbar">
+                <div class="col-search">
+                    <form class="searchform">
+                        <div class="input-group">
+                            <input list="search_terms" type="text" class="form-control" placeholder="Search term" />
+                            <button class="btn btn-light bg" type="button"><i class="material-icons md-search"></i></button>
+                        </div>
+                        <datalist id="search_terms">
+                            <option value="Products"></option>
+                            <option value="New orders"></option>
+                            <option value="Apple iphone"></option>
+                            <option value="Ahmed Hassan"></option>
+                        </datalist>
+                    </form>
+                </div>
+                <div class="col-nav">
+                    <button class="btn btn-icon btn-mobile me-auto" data-trigger="#offcanvas_aside"><i class="material-icons md-apps"></i></button>
+                    <ul class="nav">
+                        <li class="nav-item">
+                            <a class="nav-link btn-icon" href="#">
+                                <i class="material-icons md-notifications animation-shake"></i>
+                                <span class="badge rounded-pill">3</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link btn-icon darkmode" href="#"> <i class="material-icons md-nights_stay"></i> </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="requestfullscreen nav-link btn-icon"><i class="material-icons md-cast"></i></a>
+                        </li>
+                        <li class="dropdown nav-item">
+                            <a class="dropdown-toggle" data-bs-toggle="dropdown" href="#" id="dropdownLanguage" aria-expanded="false"><i class="material-icons md-public"></i></a>
+                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownLanguage">
+                                <a class="dropdown-item text-brand" href="#"><img src="assets/imgs/theme/flag-us.png" alt="English" />English</a>
+                                <a class="dropdown-item" href="#"><img src="assets/imgs/theme/flag-fr.png" alt="Français" />Français</a>
+                                <a class="dropdown-item" href="#"><img src="assets/imgs/theme/flag-jp.png" alt="Français" />日本語</a>
+                                <a class="dropdown-item" href="#"><img src="assets/imgs/theme/flag-cn.png" alt="Français" />中国人</a>
+                            </div>
+                        </li>
+                        <li class="dropdown nav-item">
+                            <a class="dropdown-toggle" data-bs-toggle="dropdown" href="#" id="dropdownAccount" aria-expanded="false"> <img class="img-xs rounded-circle" src="assets/imgs/people/avatar-2.png" alt="User" /></a>
+                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownAccount">
+                                <a class="dropdown-item" href="#"><i class="material-icons md-perm_identity"></i>Edit Profile</a>
+                                <a class="dropdown-item" href="#"><i class="material-icons md-settings"></i>Account Settings</a>
+                                <a class="dropdown-item" href="#"><i class="material-icons md-account_balance_wallet"></i>Wallet</a>
+                                <a class="dropdown-item" href="#"><i class="material-icons md-receipt"></i>Billing</a>
+                                <a class="dropdown-item" href="#"><i class="material-icons md-help_outline"></i>Help center</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item text-danger" href="#"><i class="material-icons md-exit_to_app"></i>Logout</a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </header>
+            <section class="content-main">
+                <div class="content-header">
+                    <div>
+                        <h2 class="content-title card-title">Dashboard</h2>
+                        <p>Whole data about your business here</p>
+                    </div>
+                    <div>
+                        <a href="/admin/createReport" class="btn btn-primary"><i class="text-muted material-icons md-post_add"></i>Create report</a>
+                        <a href="/admin/createReportPdf" class="btn btn-primary"><i class="text-muted material-icons md-post_add"></i>Create report in pdf</a>
+                    </div>
+                </div>
+               
+                <div class="row">
+                    <div class="col-xl-12 col-lg-12">
+                        <div class="card mb-4">
+                            <article class="card-body">
+                                <h5 class="card-title">Sale statistics</h5>
+                                <div class="col-lg-6 col-md-6 ms-auto text-md-end">
+                                    <input id="date" type="hidden" value="<%=date%>">
+                                    <input id="data" type="hidden" value="<%=data%>">
+                                    <select   id="select" class="form-select d-inline-block mb-lg-0 mr-5 mw-200">
+                                      
+                                        <option >Yearly</option>
+                                        <option >Monthly</option>
+   
+                                    </select>
+                                    <a class="btn btn-primary" onclick="change()"  >Save</a>
+                                   
+                                </div>
+                                <div class="col-md-2 col-6 mt-2">
+                                   
+
+                                </div>
+                                <canvas id="myChart" height="120px" data-db-data="<%= JSON.stringify(dbData) %>" ></canvas>
+                             
+                            </article>
+                        </div>
+                      
+                    </div>
+                   
+                    <div class="row">
+                        <div class="col-xl-12 col-lg-12">
+                            <div class="row">
+                                <div class="col-lg-4">
+                                    <div class="card mb-4">
+                                        <article class="card-body">
+                                            <h5 class="card-title">TOP 10 SELLING PRODUCTS</h5>
+                                            <div class="new-member-list">
+                                                <%
+                                                if(arrayCount.length>0){
+                                                     for(let i=0;i<arrayCount.length;i++){
+                                                        %>
+                                                        <div class="d-flex align-items-center justify-content-between mb-4">
+                                                    <div class="d-flex align-items-center">
+                                                        <img src="/admin/assets/productimages/<%=arrayCount[i].image%>" alt="" class="avatar" />
+                                                        <div>
+                                                            <h6><%=arrayCount[i].name%></h6>
+                                                          
+                                                        </div>
+                                                    </div>
+                                            </div>
+                                                        <%
+                                                     }
+                                                }else{
+                                                   %>
+                                                <div class="d-flex align-items-center justify-content-between mb-4">
+                                                    <div class="d-flex align-items-center">
+                                                        <div>
+                                                            <h6>no  iteam</h6>
+                                                           
+                                                        </div>
+                                                    </div>
+                                                 </div>
+                                                   <% 
+                                                }
+                                                %>
+                                        </article>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <div class="card mb-4">
+                                        <article class="card-body">
+                                            <h5 class="card-title">TOP 10 SELLING CATEGORY</h5>
+                                            <div class="new-member-list">
+                                                <%
+                                                if(top10Category.length>0){
+                                                    for(let i=0;i<top10Category.length;i++){
+                                                        %>
+                                                      <div class="d-flex align-items-center justify-content-between mb-4">
+                                                    <div class="d-flex align-items-center">
+                                                        <div>
+                                                            <h6><%=top10Category[i].name%></h6>
+                                                        </div>
+                                                    </div>
+                                               </div>
+                                                      <%
+                                                    } 
+                                                }else{
+                                                    %>
+                                                    <div class="d-flex align-items-center justify-content-between mb-4">
+                                                    <div class="d-flex align-items-center">
+                                                        <div>
+                                                            <h6>No Iteam</h6>
+                                                        </div>
+                                                    </div>
+                                               </div>
+                                                    <%
+                                                }
+                                                %>
+                                        </article>
+                                    </div>
+                                </div>
+                              
+                            </div>
+                        </div>
+                    </div>
+                </div>
+              
+             
+            </section>
+            <!-- content-main end// -->
+            <footer class="main-footer font-xs">
+                <div class="row pb-30 pt-15">
+                    <div class="col-sm-6">
+                        <script>
+                            document.write(new Date().getFullYear());
+                            
+                        </script>
+                        
+                        &copy; Nest - HTML Ecommerce Template .
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="text-sm-end">All rights reserved</div>
+                    </div>
+                </div>
+            </footer>
+        </main>
+       <script>
+   
+    function change(){
+        const status = document.getElementById("select").value;
+        window.location.href=`/admin/dashboard?filter=${status}`
+    }
+   
+    
+    addEventListener("DOMContentLoaded",function(){
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var canvas = document.getElementById('myChart');
+        var select = document.getElementById('select').value;
+        // Retrieving the data attribute
+        var dbDataString = canvas.getAttribute('data-db-data');
+        var dbData = JSON.parse(dbDataString);
+        const today =new Date();
+        var monthData = document.getElementById('date').value;
+        var dataData = document.getElementById('data').value;
+        const  months =  ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        let labels = [];
+
+        if(!monthData||dataData=="Yearly"){
+           labels = months;
+        }else{
+            labels = months.slice(0,monthData)
+        }
+        
+        let date=0;
+        let month = 0;
+        
+        let slicedMonths =0;
+        let coundDelivered =0;
+        let coundReturn = 0;
+        let coundCanceled = 0;
+        let coundPending = 0;
+        const arrayDelivered = Array(12).fill(0);
+        const arrayreturn = Array(12).fill(0);
+        const arraycanceled = Array(12).fill(0);
+        const arraypending = Array(12).fill(0);
+        for (let i = 0; i < dbData.length; i++) {
+            for (let j = 0; j < dbData[i].products.length; j++) {
+                const product = dbData[i].products[j];
+                const orderMonth = new Date(product.orderDate).getMonth(); // Get the month index (zero-based)
+                const status = product.productStatus; 
+
+                // Update the count for the corresponding month and status
+                switch (status) {
+                    case "Delivered":
+                        arrayDelivered[orderMonth]++;
+                        break;
+                    case "return":
+                        arrayreturn[orderMonth]++;
+                        break;
+                    case "canceled":
+                        arraycanceled[orderMonth]++;
+                        break;
+                    case "pending":
+                        arraypending[orderMonth]++;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+       
+
+        var chart = new Chart(ctx, {
+            // The type of chart we want to create
+            type: 'line',
+           
+            // The data for our dataset
+            data: {
+              
+                labels: labels,
+                datasets: [{
+                        label: 'Delivered',
+                        tension: 0.3,
+                        fill: true,
+                        backgroundColor: 'rgba(44, 120, 220, 0.2)',
+                        borderColor: 'rgba(44, 120, 220)',
+                        data: arrayDelivered
+                    },
+                    {
+                        label: 'return',
+                        tension: 0.3,
+                        fill: true,
+                        backgroundColor: 'rgba(255, 0, 0, 0.2)',
+                        borderColor: 'rgb(255, 0, 0)',
+                        data: arrayreturn
+                    },
+                    {
+                        label: 'canceled',
+                        tension: 0.3,
+                        fill: true,
+                        backgroundColor: 'rgba(380, 200, 230, 0.2)',
+                        borderColor: 'rgb(380, 200, 230)',
+                        data:arraycanceled
+                    },
+                    {
+                        label: 'pending',
+                        tension: 0.3,
+                        fill: true,
+                        backgroundColor: 'rgba(4, 209, 130, 0.2)',
+                        borderColor: 'rgb(4, 209, 130)',
+                        data: arraypending
+                    }
+
+                ]
+            },
+            options: {
+                plugins: {
+                legend: {
+                    labels: {
+                    usePointStyle: true,
+                    },
+                 }
+              }
+            }
+        });
+    })
+   
+  
+       </script>
+        <script src="assets/js/vendors/jquery-3.6.0.min.js"></script>
+        <script src="assets/js/vendors/bootstrap.bundle.min.js"></script>
+        <script src="assets/js/vendors/select2.min.js"></script>
+        <script src="assets/js/vendors/perfect-scrollbar.js"></script>
+        <script src="assets/js/vendors/jquery.fullscreen.min.js"></script>
+        <script src="assets/js/vendors/chart.js"></script>
+        <!-- Main Script -->
+        <script src="assets/js/main.js?v=1.1" type="text/javascript"></script>
+        <script src="assets/js/custom-chart.js" type="text/javascript"></script>
+       
+       
+    </body>
+</html>
