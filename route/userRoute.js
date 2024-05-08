@@ -17,7 +17,11 @@ user_route.use(bodyParser.json())
 user_route.use(bodyParser.urlencoded({extended:true}));
 
 
-const userControll = require("../controller/userController")
+const userControll = require("../controller/userController");
+const productController = require("../controller/productController");
+
+
+
 
 // ########################google##############################
 
@@ -51,8 +55,7 @@ user_route.get("/home",auth.loginUser,authBlock.blockUser,userControll.loadHome)
 
 user_route.get("/wcollection",auth.loginUser,authBlock.blockUser,userControll.wcollection);
 user_route.get("/mcollection",auth.loginUser,authBlock.blockUser,userControll.mcollection);
-user_route.get("/products",auth.loginUser,authBlock.blockUser,userControll.loadProducts);
-user_route.get("/sort/:id",auth.loginUser,userControll.sort);
+user_route.get("/products",auth.loginUser,authBlock.blockUser,productController.loadProducts);
 user_route.get("/detailes",auth.loginUser,authBlock.blockUser,userControll.productsDetailes);
 
 // ########################password##############################
@@ -97,7 +100,6 @@ user_route.get('/orderDetailes',auth.loginUser,authBlock.blockUser,userControll.
 user_route.get('/cancelOrder',auth.loginUser,authBlock.blockUser,userControll.cancelOrder);
 user_route.get('/returnOrder',auth.loginUser,authBlock.blockUser,userControll.returnOrder);
 user_route.get('/payAgain',auth.loginUser,authBlock.blockUser,userControll.payAgain);
-user_route.get('/repay',auth.loginUser,authBlock.blockUser,userControll.repay);
 user_route.get('/wallet',auth.loginUser,authBlock.blockUser,userControll.wallet);
 
 // ########################order##############################

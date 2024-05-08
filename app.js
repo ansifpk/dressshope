@@ -19,7 +19,7 @@ app.use(nocahe())
 app.use(express.static(path.join(__dirname,"public")));
 app.use(express.static(path.join(__dirname,"public/assets")));
 // for user route 
-const userRoute = require('./route/uderRoute')
+const userRoute = require('./route/userRoute')
 app.use('/',userRoute)
 const adminRouter = require('./route/adminRouter')
 app.use('/admin',adminRouter)

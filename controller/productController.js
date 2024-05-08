@@ -1,9 +1,9 @@
 const mongoose = require('mongoose')
 const ProductDb = require("../model/productModel");
 const CategoryDb = require("../model/categoryModel");
-
-
-
+const CartDB = require("../model/cartModel");
+const WishlistDB = require("../model/wishlist");
+const OfferDB = require("../model/offerModel");
 
 const viewProducts = async (req, res) => {
     try {
@@ -210,6 +210,84 @@ const listProduct = async (req, res) => {
     }
 }
 
+//############################################################################################
+//#########################    user side            ##########################################
+//############################################################################################
+
+
+
+const loadProducts = async(req,res)=>{
+    try {
+        const id = req.query.sort
+        const cartData = await CartDB.findOne({userId:req.session.user_id}).populate({
+            path: 'products.productId',
+            populate: { path: 'categoryID' }})
+        const wishlistData = await WishlistDB.findOne({userId:req.session.user_id}).populate('products.productId')
+        const offerData = await OfferDB.find({});
+        const productData = await ProductDb.find({is_listed:true}).populate('categoryID');
+        const  rate = offerData.offerRate/100;
+         let cartTotal=0;
+         if(cartData){
+         cartTotal = cartData.products.reduce((acc,value)=>{value
+           const offer =  offerData.find( iteam => iteam.iteam === value.productId.name || iteam.iteam === value.productId.categoryID.name)
+           if(offer){
+             return acc+ value.productId.Price*value.quandity - Math.round(value.productId.Price*value.quandity * offer.offerRate/100)
+           }else{
+          
+             return acc+value.productId.Price*value.quandity
+           }
+        },0)
+    }
+       
+
+        var search='';
+        if(req.query.search){
+            search=req.query.search
+        }
+        let sort;
+        if (id === "Defult Sort") {
+            console.log('1')
+            const productData = await ProductDb.find({is_listed:true}).populate('categoryID')
+            res.render('products',{productData,wishlistData,offerData,rate,cartData,cartTotal});
+        } else if (id === "Sort by Price: low to high") {
+            console.log('2')
+            sort = { Price: 1 };
+            const productData = await ProductDb.find({is_listed:true}).populate('categoryID').lean().sort(sort).exec()
+            productData.sort((a,b)=>a.Price-b.Price)
+            res.render('products',{productData:productData,wishlistData,offerData,rate,cartData,cartTotal});
+        } else if (id === "Sort by Price: high to low") {
+            console.log('3')
+            sort = { Price: -1 };
+            const productData = await ProductDb.find({is_listed:true}).populate('categoryID').lean().sort(sort).exec()
+            productData.sort((a,b)=>b.Price-a.Price)
+            res.render('products',{productData:productData,wishlistData,offerData,rate,cartData,cartTotal});
+       } else if (id === "Sort by Name : A-Z") {
+        console.log('4')
+           sort = { name: 1 };
+           const productData = await ProductDb.find({is_listed:true}).populate('categoryID').lean().sort(sort)
+           res.render('products',{productData,wishlistData,offerData,rate,cartData,cartTotal});
+       } else if (id === "Sort by Name : Z-A") {
+        console.log('5')
+           sort = { name: -1 };
+           const productData = await ProductDb.find({is_listed:true}).populate('categoryID').lean().sort(sort)
+           res.render('products',{productData,wishlistData,offerData,rate,cartData,cartTotal});
+       } else {
+        console.log('6')
+        const productData = await ProductDb.find({is_listed:true}).populate('categoryID')
+        res.render('products',{productData,wishlistData,offerData,rate,cartData,cartTotal});
+        }
+         
+         
+      
+         
+       
+    } catch (error) {
+        console.log(error.message);
+    }
+};
+
+
+
 module.exports = {
     viewProducts,
     loadaddProducts,
@@ -217,4 +295,8 @@ module.exports = {
     editProducts,
     UpdateProducts,
     listProduct,
+
+    //user side 
+
+    loadProducts,
 }

@@ -250,9 +250,19 @@
                                                                                 <a href='/orderDetailes?id=<%=orderData.products[i]._id%>'>
                                                                                     <img src="/admin/assets/productimages/<%=orderData.products[i].productId.image[0]%>" width="40" height="40" class="img-xs" alt="Item" />
                                                                                 </a>
-                                                                            </td>                                 
-                                                                 <td><%=orderData.products[i].productId.name%></td>                                   
-                                                                 <td><span id="status" class="badge rounded-pill alert-warning"><%=orderData.products[i].paymentStatus%></span></td>
+                                                                            </td>   
+                                                                                             
+                                                                 <td><%=orderData.products[i].productId.name%></td>   
+                                                                 <%
+                                                                if(orderData.products[i].paymentStatus == "Paid"){%>
+                                                                    <td><span id="status" class="badge rounded-pill alert-success"><%=orderData.products[i].paymentStatus%></span></td>
+                                                               <%}else if(orderData.products[i].paymentStatus == "Failed"){%>
+                                                                    <td><span id="status" class="badge rounded-pill alert-danger"><%=orderData.products[i].paymentStatus%></span></td>
+                                                                <%}else{%>
+                                                                    <td><span id="status" class="badge rounded-pill alert-warning"><%=orderData.products[i].paymentStatus%></span></td>
+                                                                <%}
+                                                                %>                                 
+                                                                 
                                                                  <%
                                                                  if(orderData.products[i].productStatus=="canceled"){
                                                                     %>

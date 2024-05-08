@@ -441,85 +441,8 @@ const loadHome = async(req,res)=>{
     }
 }
 
-const sort = async(req,res)=>{
-    try {
-        console.log(req.params.id);
-        console.log("sort");
-    } catch (error) {
-        console.log(error.message);
-    }
-}
 
 
-const loadProducts = async(req,res)=>{
-    try {
-        const id = req.query.sort
-        const cartData = await CartDB.findOne({userId:req.session.user_id}).populate({
-            path: 'products.productId',
-            populate: { path: 'categoryID' }})
-        const wishlistData = await WishlistDB.findOne({userId:req.session.user_id}).populate('products.productId')
-        const offerData = await OfferDB.find({});
-        const productData = await ProductDB.find({is_listed:true}).populate('categoryID');
-        const  rate = offerData.offerRate/100;
-         let cartTotal=0;
-         if(cartData){
-         cartTotal = cartData.products.reduce((acc,value)=>{value
-           const offer =  offerData.find( iteam => iteam.iteam === value.productId.name || iteam.iteam === value.productId.categoryID.name)
-           if(offer){
-             return acc+ value.productId.Price*value.quandity - Math.round(value.productId.Price*value.quandity * offer.offerRate/100)
-           }else{
-          
-             return acc+value.productId.Price*value.quandity
-           }
-        },0)
-    }
-       
-
-        var search='';
-        if(req.query.search){
-            search=req.query.search
-        }
-        let sort;
-        if (id === "Defult Sort") {
-            console.log('1')
-            const productData = await ProductDB.find({is_listed:true}).populate('categoryID')
-            res.render('products',{productData,wishlistData,offerData,rate,cartData,cartTotal});
-        } else if (id === "Sort by Price: low to high") {
-            console.log('2')
-            sort = { Price: 1 };
-            const productData = await ProductDB.find({is_listed:true}).populate('categoryID').lean().sort(sort).exec()
-            productData.sort((a,b)=>a.Price-b.Price)
-            res.render('products',{productData:productData,wishlistData,offerData,rate,cartData,cartTotal});
-        } else if (id === "Sort by Price: high to low") {
-            console.log('3')
-            sort = { Price: -1 };
-            const productData = await ProductDB.find({is_listed:true}).populate('categoryID').lean().sort(sort).exec()
-            productData.sort((a,b)=>b.Price-a.Price)
-            res.render('products',{productData:productData,wishlistData,offerData,rate,cartData,cartTotal});
-       } else if (id === "Sort by Name : A-Z") {
-        console.log('4')
-           sort = { name: 1 };
-           const productData = await ProductDB.find({is_listed:true}).populate('categoryID').lean().sort(sort)
-           res.render('products',{productData,wishlistData,offerData,rate,cartData,cartTotal});
-       } else if (id === "Sort by Name : Z-A") {
-        console.log('5')
-           sort = { name: -1 };
-           const productData = await ProductDB.find({is_listed:true}).populate('categoryID').lean().sort(sort)
-           res.render('products',{productData,wishlistData,offerData,rate,cartData,cartTotal});
-       } else {
-        console.log('6')
-        const productData = await ProductDB.find({is_listed:true}).populate('categoryID')
-        res.render('products',{productData,wishlistData,offerData,rate,cartData,cartTotal});
-        }
-         
-         
-      
-         
-       
-    } catch (error) {
-        console.log(error.message);
-    }
-};
 
 
 const wcollection = async(req,res)=>{
@@ -2442,12 +2365,10 @@ const successPage = async(req,res)=>{
 const payAgain = async(req,res)=>{
     try {
         const {productId,productTotal,quandity,addressId} = req.query
-        console.log(req.query);
         const cartData = await CartDB.findOne({userId:req.session.user_id}).populate('products.productId');
                     const userData = await User.findOne({userId: req.session.user_Id});
         
                     const amount =productTotal*100;
-                    // console.log(amount)
                     const options = {
                         amount: amount,
                         currency: 'INR',
@@ -2463,9 +2384,6 @@ const payAgain = async(req,res)=>{
                                     order_id:order.id,
                                     amount:amount,
                                     key_id:process.env.RAZOR_ID,
-                                    // product_name:req.body.name,
-                                    // description:req.body.description,
-                                    // contact:"8567345632",
                                     productId:productId,
                                     quandity:quandity,
                                     addressId:addressId,
@@ -2486,22 +2404,7 @@ const payAgain = async(req,res)=>{
     }
 }
 
-const repay = async(req,res)=>{
-    try {
-        const { addressId,amount,quandity,productId} = req.query;
-        const orderData =  await OrderDB.findOne({userId:req.session.user_id}).populate('products.productId');
-        console.log(req.query)
-        const product = orderData.products.find((pro)=>{
-            return pro._id.equals(productId)
-        });
-        
-       product.paymentStatus="Paid"
-       await orderData.save();
-       res.render('success');
-    } catch (error) {
-        console.log(error.message);
-    }
-}
+
 
 module.exports={
 //#### login&register######
@@ -2518,11 +2421,11 @@ module.exports={
     veryfyLogin,
 
 //#### products ######
-sort,
+
     loadHome,
     wcollection,
     mcollection,
-    loadProducts,
+    
     productsDetailes,
     userLogout,
 
@@ -2554,7 +2457,6 @@ sort,
      returnOrder,
 
      payAgain,
-     repay,
 
     checkOut,  
     test,
