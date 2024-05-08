@@ -23,9 +23,9 @@ const passport = require('passport');
 require('dotenv').config();
 const GoogleStrategy = require('passport-google-oauth2').Strategy;
 
-if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET) {
-    throw new Error('Google OAuth2 client ID and client secret are required.');
-}
+// if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET) {
+//     throw new Error('Google OAuth2 client ID and client secret are required.');
+// }
 
 passport.serializeUser((user, done) => {
     done(null, user);
