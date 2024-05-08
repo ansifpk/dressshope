@@ -2,7 +2,7 @@ const express = require ("express")
 const user_route = express();
 
 const passport = require('passport');
-require('../passport');
+const ff=require('../passport');
 user_route.use(passport.initialize())
 user_route.use(passport.session())
 

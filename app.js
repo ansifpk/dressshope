@@ -7,7 +7,8 @@ const path = require("path");
 const app = express();
 
 const session = require('express-session');
-
+// console.log('client id',process.env.CLIENT_ID);
+// console.log('secret',process.env.CLIENT_SECRET);
 app.use(session({secret:process.env.SESSION_SECRET,resave:false,saveUninitialized:true}))
 
 app.set("view engine","ejs");
