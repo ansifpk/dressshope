@@ -24,34 +24,6 @@ app.use('/',userRoute)
 const adminRouter = require('./route/adminRouter')
 app.use('/admin',adminRouter)
 
-
-
-
- 
- 
- 
-// app.get('/detailes',(req,res)=>{
-//     res.render("detailes")
-//  })
-
- 
-// app.get('/about',(req,res)=>{
-//     res.render("about")
-//  })
-
- 
-// app.get('/contact',(req,res)=>{
-//     res.render("contact")
-//  })
- 
-// app.get('/wcollection',(req,res)=>{
-//     res.render("wcollection")
-//  })
-
-// app.get('/mcollection',(req,res)=>{
-//     res.render("mcollection")
-//  })
- 
 app.listen(3000,()=>{
     console.log("starrt")
 })

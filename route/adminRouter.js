@@ -2,6 +2,12 @@ const express = require('express');
 const adminRouter = express();
 const bodyParser = require('body-parser')
 const adminController = require('../controller/adminController');
+const productController = require('../controller/productController');
+const categoryController = require('../controller/categoryController');
+const orderController = require('../controller/orderController');
+const offerController = require('../controller/offerController');
+const reportController = require('../controller/reportController');
+const couponController = require('../controller/couponController');
 const authadmin = require('../middleware/adminauth');
 const session = require('express-session');
 const config = require('../config/config')
@@ -28,7 +34,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({storage:storage});
 
-// const productController = require('../controller/productController')
+
 adminRouter.set('views','./views/admin')
 
 //################### admin ##########################
@@ -49,48 +55,52 @@ adminRouter.post('/addUser',adminController.addUser);
 
 //################### products ##########################
 
-adminRouter.get('/viewProducts',authadmin.loginAdmin,adminController.viewProducts)
-adminRouter.get('/addProducts',authadmin.loginAdmin,adminController.loadaddProducts)
-adminRouter.post('/addProducts',upload.array('file'),adminController.addProducts)
-adminRouter.get('/editProducts',authadmin.loginAdmin,adminController.editProducts)
-adminRouter.post('/editProducts',upload.array('file'),adminController.UpdateProducts)
-adminRouter.get('/listProducts',authadmin.loginAdmin,adminController.listProduct);
+adminRouter.get('/viewProducts',authadmin.loginAdmin,productController.viewProducts)
+adminRouter.get('/addProducts',authadmin.loginAdmin,productController.loadaddProducts)
+adminRouter.post('/addProducts',upload.array('file'),productController.addProducts)
+adminRouter.get('/editProducts',authadmin.loginAdmin,productController.editProducts)
+adminRouter.post('/editProducts',upload.array('file'),productController.UpdateProducts)
+adminRouter.get('/listProducts',authadmin.loginAdmin,productController.listProduct);
 
 //################### category ##########################
 
-adminRouter.get('/category',authadmin.loginAdmin,adminController.category)
-adminRouter.get('/addcategory',authadmin.loginAdmin,adminController.loadaddcategory) 
-adminRouter.post('/addcategory',adminController.addcategory) 
-adminRouter.get('/editCategory',authadmin.loginAdmin,adminController.loadeditcategory)
-adminRouter.post('/editCategory',adminController.editcategory);
-adminRouter.get('/listCategory',authadmin.loginAdmin,adminController.listcategory)
+adminRouter.get('/category',authadmin.loginAdmin,categoryController.category)
+adminRouter.get('/addcategory',authadmin.loginAdmin,categoryController.loadaddcategory) 
+adminRouter.post('/addcategory',categoryController.addcategory) 
+adminRouter.get('/editCategory',authadmin.loginAdmin,categoryController.loadeditcategory)
+adminRouter.post('/editCategory',categoryController.editcategory);
+adminRouter.get('/listCategory',authadmin.loginAdmin,categoryController.listcategory)
 
-//################### category ##########################
+//################### order ##########################
 
-adminRouter.get('/ordersList',authadmin.loginAdmin,adminController.ordersList)
-adminRouter.get('/viewOrder',authadmin.loginAdmin,adminController.viewOrders)
-adminRouter.get('/orderDetailes',authadmin.loginAdmin,adminController.orderDetailes)
-adminRouter.get('/editOrders',authadmin.loginAdmin,adminController.editOrders)
-adminRouter.get('/cancelOrder',authadmin.loginAdmin,adminController.cancelOrder)
-adminRouter.get('/orderStatus',authadmin.loginAdmin,adminController.orderStatus)
-adminRouter.get('/createReport',adminController.createReport)
-adminRouter.get('/createReportPdf',adminController.createReportPdf)
+adminRouter.get('/ordersList',authadmin.loginAdmin,orderController.ordersList)
+adminRouter.get('/viewOrder',authadmin.loginAdmin,orderController.viewOrders)
+adminRouter.get('/orderDetailes',authadmin.loginAdmin,orderController.orderDetailes)
+adminRouter.get('/editOrders',authadmin.loginAdmin,orderController.editOrders)
+adminRouter.get('/cancelOrder',authadmin.loginAdmin,orderController.cancelOrder)
+adminRouter.get('/orderStatus',authadmin.loginAdmin,orderController.orderStatus)
+
 //############### cuppen #######################################
 
-adminRouter.get('/coupens',authadmin.loginAdmin,adminController.coupens)
-adminRouter.get('/addCuppen',authadmin.loginAdmin,adminController.loadaddCuppen)
-adminRouter.post('/addCuppen',upload.single('file'),authadmin.loginAdmin,adminController.addCuppen)
-adminRouter.get('/editCoupen',authadmin.loginAdmin,adminController.loadeditCuppen)
-adminRouter.post('/editCoupen',upload.single('file'),authadmin.loginAdmin,adminController.editCuppen)
-adminRouter.get('/deleteCoupen',authadmin.loginAdmin,adminController.deleteCoupen)
+adminRouter.get('/coupens',authadmin.loginAdmin,couponController.coupens)
+adminRouter.get('/addCuppen',authadmin.loginAdmin,couponController.loadaddCuppen)
+adminRouter.post('/addCuppen',upload.single('file'),authadmin.loginAdmin,couponController.addCuppen)
+adminRouter.get('/editCoupen',authadmin.loginAdmin,couponController.loadeditCuppen)
+adminRouter.post('/editCoupen',upload.single('file'),authadmin.loginAdmin,couponController.editCuppen)
+adminRouter.get('/deleteCoupen',authadmin.loginAdmin,couponController.deleteCoupen)
 
 //############# addOffer #################################
 
-adminRouter.get('/offer',authadmin.loginAdmin,adminController.offer)
-adminRouter.get('/addOffer',authadmin.loginAdmin,adminController.loadaddOffer)
-adminRouter.post('/addOffer',adminController.verifyOffer)
-adminRouter.get('/deleteOffer',authadmin.loginAdmin,adminController.deleteOffer)
-adminRouter.get('/weaklyReport',authadmin.loginAdmin,adminController.weaklyReport)
-adminRouter.get('/monthlyReport',authadmin.loginAdmin,adminController.monthlyReport)
-adminRouter.get('/yearlyReport',authadmin.loginAdmin,adminController.yearlyReport)
+adminRouter.get('/offer',authadmin.loginAdmin,offerController.offer)
+adminRouter.get('/addOffer',authadmin.loginAdmin,offerController.loadaddOffer)
+adminRouter.post('/addOffer',offerController.verifyOffer)
+adminRouter.get('/deleteOffer',authadmin.loginAdmin,offerController.deleteOffer)
+
+// ###########  Report #################################
+
+adminRouter.get('/createReport',reportController.createReport)
+adminRouter.get('/createReportPdf',reportController.createReportPdf)
+adminRouter.get('/weaklyReport',authadmin.loginAdmin,reportController.weaklyReport)
+adminRouter.get('/monthlyReport',authadmin.loginAdmin,reportController.monthlyReport)
+adminRouter.get('/yearlyReport',authadmin.loginAdmin,reportController.yearlyReport)
 module.exports=adminRouter;
