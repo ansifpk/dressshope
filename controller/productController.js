@@ -274,6 +274,7 @@ const loadProducts = async(req,res)=>{
        } else {
         console.log('6')
         const productData = await ProductDb.find({is_listed:true}).populate('categoryID')
+        console.log(productData)
         res.render('products',{productData,wishlistData,offerData,rate,cartData,cartTotal});
         }
          
