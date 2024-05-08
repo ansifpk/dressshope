@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-mongoose.connect('mongodb://127.0.0.1:27017/user_system');
+mongoose.connect('mongodb+srv://pkansif39:ansifpk2002@cluster0.15wpcl9.mongodb.net/');
 require('dotenv').config();
 const nocahe = require('nocache')
 const express = require("express");
