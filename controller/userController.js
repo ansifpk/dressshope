@@ -1185,7 +1185,11 @@ const checkOut = async (req,res)=>{
        const offerData = await OfferDB.find({});
        if(coupen){
         var a;
-        
+        const cartData = await CartDB.findOne({userId:req.session.user_id}).populate({
+            path: 'products.productId',
+            populate: { path: 'categoryID' }})
+        const wishlistData = await WishlistDB.findOne({userId:req.session.user_id}).populate('products.productId')
+      
           const coupenData = await CoupenDB.findOne({coupenId:coupen});
           if(coupenData){
             const address = await AddressDB.findOne({userID:req.session.user_id}).populate('userID')     
@@ -1205,7 +1209,7 @@ const checkOut = async (req,res)=>{
                
              const offer  =  Math.round(subTotal*coupenData.offer/100); 
             
-              res.render('checkout',{ productData:data , addressData:address , offer:offer , coupen:coupen , offerData:offerData , subTotal:subTotal});
+              res.render('checkout',{ productData:data , addressData:address , offer:offer , coupen:coupen , offerData:offerData , subTotal:subTotal ,cartData,wishlistData});
               
               }else{
                     res.redirect('/products')
