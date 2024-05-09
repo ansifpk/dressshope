@@ -215,9 +215,9 @@
                                     <div class="text">
                                         <h6 class="mb-1">Customer</h6>
                                         <p class="mb-1">
-                                            <%=orderData.userId.name%> <br />
-                                            <%=orderData.userId.email%> <br />
-                                            <%=orderData.userId.mobile%>
+                                            <%=userData.name%> <br />
+                                            <%=userData.email%> <br />
+                                            <%=userData.mobile%>
                                         </p>
                                        
                                     </div>
@@ -291,7 +291,7 @@
                                                 <td>
                                                     <a class="itemside" href="#">
                                                         <div class="left">
-                                                            <img src="/admin/assets/productimages/<%=productData.productId.image[0]%>" width="40" height="40" class="img-xs" alt="Item" />
+                                                            <img src="/admin/assets/productImages/<%=productData.productId.image[0]%>" width="40" height="40" class="img-xs" alt="Item" />
                                                         </div>
                                                         
                                                     </a>
@@ -357,13 +357,13 @@
 <script>
 
     const date = document.getElementById("date")
-console.log(date)
+
 
 
 function orderStatus(productId){
     const  changeStatus = document.getElementById("changeStatus");
     const status =  document.getElementById("badge");
-   
+   console.log(productId)
     fetch(`/admin/orderStatus?changeStatus=${changeStatus.value}&productId=${productId}`);
     
     status.innerText=changeStatus.value;

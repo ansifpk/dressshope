@@ -76,7 +76,6 @@ adminRouter.get('/listCategory',authadmin.loginAdmin,categoryController.listcate
 adminRouter.get('/ordersList',authadmin.loginAdmin,orderController.ordersList)
 adminRouter.get('/viewOrder',authadmin.loginAdmin,orderController.viewOrders)
 adminRouter.get('/orderDetailes',authadmin.loginAdmin,orderController.orderDetailes)
-adminRouter.get('/editOrders',authadmin.loginAdmin,orderController.editOrders)
 adminRouter.get('/cancelOrder',authadmin.loginAdmin,orderController.cancelOrder)
 adminRouter.get('/orderStatus',authadmin.loginAdmin,orderController.orderStatus)
 

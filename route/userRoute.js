@@ -19,8 +19,8 @@ user_route.use(bodyParser.urlencoded({extended:true}));
 
 const userControll = require("../controller/userController");
 const productController = require("../controller/productController");
-
-
+const orderController = require('../controller/orderController');
+const wishlistController = require('../controller/wishlistController');
 
 
 // ########################google##############################
@@ -78,6 +78,7 @@ user_route.get('/deleteCart',auth.loginUser,authBlock.blockUser,userControll.del
 
 user_route.get('/checkout',authBlock.blockUser,auth.loginUser,userControll.checkOut);
 user_route.post('/checkout',userControll.changeAddress);
+
 // ########################address##############################
 
 user_route.get('/addAddress',authBlock.blockUser,auth.loginUser,userControll.addAddress);
@@ -94,22 +95,24 @@ user_route.post('/edit',userControll.updateProfile);
 
 // ########################order##############################
 
-user_route.get('/orders',auth.loginUser,authBlock.blockUser,userControll.order);
-user_route.get('/placeOrder',auth.loginUser,authBlock.blockUser,userControll.placeOrder);
-user_route.get('/orderDetailes',auth.loginUser,authBlock.blockUser,userControll.orderDetailes);
-user_route.get('/cancelOrder',auth.loginUser,authBlock.blockUser,userControll.cancelOrder);
-user_route.get('/returnOrder',auth.loginUser,authBlock.blockUser,userControll.returnOrder);
-user_route.get('/payAgain',auth.loginUser,authBlock.blockUser,userControll.payAgain);
-user_route.get('/wallet',auth.loginUser,authBlock.blockUser,userControll.wallet);
+user_route.get('/orders',auth.loginUser,authBlock.blockUser,orderController.order);
+user_route.get('/placeOrder',auth.loginUser,authBlock.blockUser,orderController.placeOrder);
+user_route.get('/orderDetailes',auth.loginUser,authBlock.blockUser,orderController.orderUserDetailes);
+user_route.get('/cancelOrder',auth.loginUser,authBlock.blockUser,orderController.cancelUserOrder);
+user_route.get('/returnOrder',auth.loginUser,authBlock.blockUser,orderController.returnOrder);
+user_route.get('/payAgain',auth.loginUser,authBlock.blockUser,orderController.payAgain);
+user_route.get('/repay',auth.loginUser,authBlock.blockUser,orderController.repay);
+user_route.get('/wallet',auth.loginUser,authBlock.blockUser,orderController.wallet);
+user_route.get('/successPage',auth.loginUser,authBlock.blockUser,orderController.successPage);
+user_route.get('/failedPage',auth.loginUser,authBlock.blockUser,orderController.failePage);
 
-// ########################order##############################
+// ######################## wishlist ##############################
 
-user_route.get('/wishlist',auth.loginUser,authBlock.blockUser,userControll.wishlist);
-user_route.get('/addwishlist',auth.loginUser,authBlock.blockUser,userControll.addwishlist);
-user_route.get('/deletewishlist',auth.loginUser,authBlock.blockUser,userControll.deletewishlist);
+user_route.get('/wishlist',auth.loginUser,authBlock.blockUser,wishlistController.wishlist);
+user_route.get('/addwishlist',auth.loginUser,authBlock.blockUser,wishlistController.addwishlist);
+user_route.get('/deletewishlist',auth.loginUser,authBlock.blockUser,wishlistController.deletewishlist);
+
 user_route.get('/coupens',auth.loginUser,authBlock.blockUser,userControll.coupens);
-user_route.get('/successPage',userControll.successPage);
-user_route.get('/failedPage',userControll.failePage);
-
 user_route.get('/test',auth.loginUser,authBlock.blockUser,userControll.test);
+
 module.exports=user_route;

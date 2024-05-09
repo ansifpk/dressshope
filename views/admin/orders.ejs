@@ -180,11 +180,11 @@
                 <div class="card mb-4">
                     <header class="card-header">
                         <div class="row gx-3">
-                            <form action=""class="col-lg-4 col-md-6 me-auto" >
+                            <!-- <form action="" method="" class="col-lg-4 col-md-6 me-auto" >
                                 <div >
                                     <input type="text" name="search" placeholder="Search..." class="form-control" />
                                 </div>
-                            </form>
+                            </form> -->
                             
                             <!-- <div class="col-lg-2 col-6 col-md-3">
                                 <select class="form-select">
@@ -209,43 +209,57 @@
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                      
-                                        <th scope="col">Name</th>
-                                        <th scope="col">Email</th>
+                                        <th scope="col">Image</th>
+                                        <th scope="col">Name</th> 
+                                        <th scope="col">Payment</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Date</th>
                                         
-                                        <!-- <th scope="col">PaymentStatus</th> -->
-                                        
-                                        <!-- <th scope="col">Date</th> -->
-                                        <th scope="col" class="text-end">Action</th>
                                     </tr>
                                 </thead>
+                              
                                 <tbody>
                                     <%
                                     if(orderData.length>0){
-                                    for(let i=0;i<orderData.length;i++){
+                                for(let i=0;i<orderData.length;i++){
                                         %>
-                                         <tr>                              
-                                        <td><%=orderData[i].userId.name%></td>
-                                        <td><%=orderData[i].userId.email%></td>
-                                        
+                                         <tr> 
+                                            <td>
+                                                <a href="/admin/orderDetailes?id=<%=orderData[i]._id%>&productId=<%=orderData[i].productId._id%>">
+                                                    <img src="/admin/assets/productImages/<%=orderData[i].productId.image[0]%>" width="40" height="40" class="img-xs" alt="Item" />
+                                                    </a>                       
+                                            </td>      
+                                        <td><%=orderData[i].productId.name%></td>                                 
+                                        <td><span class="badge rounded-pill alert-warning"><%=orderData[i].paymentStatus%></span></td>
+                                        <%
+                                        if(orderData[i].productStatus=="canceled"){
+                                            %>
+                                            <td><span class="badge rounded-pill btn-danger"><%=orderData[i].productStatus%></span></td>
+                                            <%
+                                        }else{
+                                            %>
+                                             <td><span class="badge rounded-pill btn-success"><%=orderData[i].productStatus%></span></td>
+                                            <%
+                                        }
+                                        %>
                                        
-                                       
-                                       
-                                        <td class="text-end">
-                                            
-                                            <a href="/admin/viewOrder?id=<%=orderData[i]._id%>" class="btn btn-md rounded font-sm">Detailes</a>
-                                        </td>
+                                        <td><%=orderData[i].orderDate%></td>
+                                      
                                     </tr>
                                         <%
-                                    }
+                                }
                                 }else{
-            %>
-            <tr>
-                <td colspan="3">No Orders Found</td>
-            </tr>
-            <%
-        }
-        %>
+                                    %>
+
+                                    <tr>
+                                    <td>
+                                        no order
+                                    </td>
+                                    </tr>
+                                    <%
+                                }
+                                    %>            
+                                   
                                 </tbody>
                             </table>
                         </div>
@@ -254,18 +268,7 @@
                     <!-- card-body end// -->
                 </div>
                 <!-- card end// -->
-                <div class="pagination-area mt-15 mb-50">
-                    <nav aria-label="Page navigation example">
-                        <ul class="pagination justify-content-start">
-                         
-                            <li class="page-item active"><a class="page-link" href="#">01</a></li>
-                           
-                            <li class="page-item">
-                                <a class="page-link" href="#"><i class="material-icons md-chevron_right"></i></a>
-                            </li>
-                        </ul>
-                    </nav>
-                </div>
+               
             </section>
             <!-- content-main end// -->
             <footer class="main-footer font-xs">
@@ -282,24 +285,7 @@
                 </div>
             </footer>
         </main>
-        <script>
-            function blokUser(tag,userId){
-                console.log(tag.innerText)
-                if(tag.innerText=='Block'){
-                    tag.innerText="Unblock"
-                    tag.style.background='red'
-                    tag.style.color="white"
-                }else if(tag.innerText=='Unblock'){
-                    tag.innerText="Block"
-                    tag.style.background='green'
-                    tag.style.color="white"
-                   
-                }
-                console.log(userId)
-                fetch(`/admin/blockUser?userId=${userId}`)
 
-            }
-        </script>
         <script src="assets/js/vendors/jquery-3.6.0.min.js"></script>
         <script src="assets/js/vendors/bootstrap.bundle.min.js"></script>
         <script src="assets/js/vendors/select2.min.js"></script>

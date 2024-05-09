@@ -138,9 +138,11 @@ const dashboard = async (req, res) => {
         }
         const uniqueProducts = new Set(arrayProducts.map(JSON.stringify));
         let spreadArray = [...uniqueProducts].map(JSON.parse);
+        // console.log(arrayProducts)
         const top10Product = spreadArray.sort((a, b) => b.count - a.count).slice(0, 10);
 
         categoryData.forEach((value) => arrayCategory.push({ count: value.orderCount, name: value.name }))
+        // console.log(categoryData)
         const top10Category = arrayCategory.sort((a, b) => b.count - a.count).slice(0, 10);
         res.render('dashboard', { dbData: orderData, arrayCount: top10Product, top10Category: top10Category ,data,date});
 

@@ -248,7 +248,7 @@
                                                                         <tr class="text-brand">
                                                                             <td>
                                                                                 <a href='/orderDetailes?id=<%=orderData.products[i]._id%>'>
-                                                                                    <img src="/admin/assets/productimages/<%=orderData.products[i].productId.image[0]%>" width="40" height="40" class="img-xs" alt="Item" />
+                                                                                    <img src="/admin/assets/productImages/<%=orderData.products[i].productId.image[0]%>" width="40" height="40" class="img-xs" alt="Item" />
                                                                                 </a>
                                                                             </td>   
                                                                                              
@@ -266,11 +266,15 @@
                                                                  <%
                                                                  if(orderData.products[i].productStatus=="canceled"){
                                                                     %>
-                                                                    <td><span id="status" class="badge rounded-pill btn-danger"><%=orderData.products[i].productStatus%></span></td>
+                                                                    <td><span id="status" class="badge rounded-pill btn-warning"><%=orderData.products[i].productStatus%></span></td>
+                                                                    <%
+                                                                 }else if(orderData.products[i].productStatus=="pending"){
+                                                                    %>
+                                                                    <td><span id="status" class="badge rounded-pill btn-success"><%=orderData.products[i].productStatus%></span></td>
                                                                     <%
                                                                  }else{
                                                                     %>
-                                                                    <td><span id="status" class="badge rounded-pill btn-success"><%=orderData.products[i].productStatus%></span></td>
+                                                                    <td><span id="status" class="badge rounded-pill btn-danger"><%=orderData.products[i].productStatus%></span></td>
                                                                     <%
                                                                  }
                                                                  %>
