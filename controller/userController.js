@@ -1209,7 +1209,7 @@ const checkOut = async (req,res)=>{
                
              const offer  =  Math.round(subTotal*coupenData.offer/100); 
             
-              res.render('checkout',{ productData:data , addressData:address , offer:offer , coupen:coupen , offerData:offerData , subTotal:subTotal ,cartData,wishlistData});
+              res.render('checkout',{ productData:data , addressData:address , offer:offer , coupen:coupen , offerData:offerData , subTotal:subTotal ,cartData:cartData,wishlistData:wishlistData});
               
               }else{
                     res.redirect('/products')
