@@ -1181,24 +1181,28 @@ const deleteCart = async (req,res)=>{
 //############### checkout ############
 const checkOut = async (req,res)=>{
     try {
+        
        const {coupen} = req.query
        const offerData = await OfferDB.find({});
+       const cartData = await CartDB.findOne({userId:req.session.user_id}).populate({
+        path: 'products.productId',
+        populate: { path: 'categoryID' }})
+    const wishlistData = await WishlistDB.findOne({userId:req.session.user_id}).populate('products.productId')
        if(coupen){
+        console.log("1")
         var a;
-        const cartData = await CartDB.findOne({userId:req.session.user_id}).populate({
-            path: 'products.productId',
-            populate: { path: 'categoryID' }})
-        const wishlistData = await WishlistDB.findOne({userId:req.session.user_id}).populate('products.productId')
-      
           const coupenData = await CoupenDB.findOne({coupenId:coupen});
           if(coupenData){
+            console.log("2")
             const address = await AddressDB.findOne({userID:req.session.user_id}).populate('userID')     
             const data = await CartDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId');
              if(data){
+                console.log("3")
                 const subTotal = data.products.reduce((acc,product)=>{
                     const offer = offerData.find(value => value && (value.iteam === product.productId.name || value.iteam === product.productId.categoryID.name));
                     var amount=0;
                     if(offer){  
+                        console.log("4")
                       return  amount = acc+product.productId.Price*product.quandity-   Math.round(product.productId.Price*offer.offerRate/100)*product.quandity;
                     }
                        
@@ -1208,7 +1212,7 @@ const checkOut = async (req,res)=>{
                 
                
              const offer  =  Math.round(subTotal*coupenData.offer/100); 
-            
+              
               res.render('checkout',{ productData:data , addressData:address , offer:offer , coupen:coupen , offerData:offerData , subTotal:subTotal ,cartData:cartData,wishlistData:wishlistData});
               
               }else{
@@ -1222,7 +1226,8 @@ const checkOut = async (req,res)=>{
       const data = await CartDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId');
        if(data){
          let offer;
-        res.render('checkout',{ productData:data , addressData:address , offer:offer, coupen:coupen  });
+         console.log("hi",wishlistData,cartData)
+        res.render('checkout',{ productData:data , addressData:address , offer:offer, coupen:coupen ,cartData ,wishlistData});
        }else{
         res.redirect('/products')
        }
