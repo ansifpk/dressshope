@@ -1093,7 +1093,7 @@ const updateCart = async (req,res)=>{
         try {       
           const {productId,productPrice,quandity} = req.query;
           const offerData = await OfferDB.find({});
-          
+          console.log("update cart")
         //   const cart =  await CartDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId');
           const cart = await CartDB.findOne({ userId: req.session.user_id })
     .populate('userId')

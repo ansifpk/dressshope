@@ -48,7 +48,7 @@ const addwishlist = async(req,res)=>{
         const exists = await WishlistDB.findOne({userId:req.session.user_id}).populate('products.productId');
         if(!exists){
             console.log("illa");
-            const product = await ProductDB.findById({_id:productId});
+            const product = await ProductDb.findById({_id:productId});
             const data = new WishlistDB({
                 userId:req.session.user_id,
                 products:[{
