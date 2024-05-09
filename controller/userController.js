@@ -28,7 +28,6 @@ const instance = new razorPay({
     key_secret: process.env.RAZOR_SECRET
 });
 
-
 const securePassword = async(password)=>{
     try {
         const passwordHash = await bcrypt.hash(password,10);
