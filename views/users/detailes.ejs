@@ -191,7 +191,7 @@
                                     
                                     <figure class="product-main-image">
                                         <span class="product-label label-sale">Sale</span>
-                                        <img id="product-zoom" src="/admin/assets/productimages/<%=productData.image[0]%>"  data-zoom-image="/admin/assets/productimages/<%=productData.image[0]%>" alt="product image">
+                                        <img id="product-zoom" src="/admin/assets/productImages/<%=productData.image[0]%>"  data-zoom-image="/admin/assets/productImages/<%=productData.image[0]%>" alt="product image">
 
                                         <a href="#" id="btn-product-gallery" class="btn-product-gallery">
                                             <i class="icon-arrows"></i>
@@ -203,8 +203,8 @@
                                     <div id="product-zoom-gallery" class="row">
                                           <% productData.image.forEach(function(image, index) { %>
                                             <div class="col-md-3">
-                                              <a class="d-block mb-4 h-100" href="#" data-image="/admin/assets/productimages/<%= image %>" data-zoom-image="/admin/assets/productimages/<%= image %>">
-                                                <img class="img-fluid img-thumbnail" src="/admin/assets/productimages/<%= image %>" alt="product cross">
+                                              <a class="d-block mb-4 h-100" href="#" data-image="/admin/assets/productImages/<%= image %>" data-zoom-image="/admin/assets/productImages/<%= image %>">
+                                                <img class="img-fluid img-thumbnail" src="/admin/assets/productImages/<%= image %>" alt="product cross">
                                               </a>
                                             </div>
                                           <% }) %>
