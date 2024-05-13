@@ -1227,24 +1227,36 @@ const checkOut = async (req,res)=>{
                
              const offer  =  Math.round(subTotal*coupenData.offer/100); 
               
-              res.render('checkout',{ productData:data , addressData:address , offer:offer , coupen:coupen , offerData:offerData , subTotal:subTotal ,cartData:cartData,wishlistData:wishlistData});
-              
+            
+              res.render('checkout',{ productData:data , addressData:address , offer:offer , coupen:coupen , offerData:offerData , subTotal:subTotal ,cartData:cartData,wishlistData:wishlistData,cartTotal});
               }else{
                     res.redirect('/products')
                
                   }
           }else{
-           
+               
             const address = await AddressDB.findOne({userID:req.session.user_id}).populate('userID')
       
       const data = await CartDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId');
        if(data){
+        const subTotal = data.products.reduce((acc,product)=>{
+            const offer = offerData.find(value => value && (value.iteam === product.productId.name || value.iteam === product.productId.categoryID.name));
+            var amount=0;
+            if(offer){  
+               
+              return  amount = acc+product.productId.Price*product.quandity-   Math.round(product.productId.Price*offer.offerRate/100)*product.quandity;
+            }
+               
+                return amount = acc+product.productId.Price*product.quandity 
+            
+        },0);
          let offer;
-        
-         res.render('checkout',{ productData:data , addressData:address , offer:offer , coupen:coupen , offerData:offerData , subTotal:subTotal ,cartData:cartData,wishlistData:wishlistData});
+         res.render('checkout',{ productData:data , addressData:address , offer:offer , coupen:coupen , offerData:offerData , subTotal:subTotal ,cartData:cartData,wishlistData:wishlistData,cartTotal, message:"Invalid Coupon Code" });
+     
        }else{
         res.redirect('/products')
        }
+
           }
          
        }else{
@@ -1456,8 +1468,22 @@ const coupens = async(req,res)=>{
     }
 }
 
+const about =async(req,res)=>{
+    try {
+        res.render("about")
+    } catch (error) {
+        console.log(error.message);
+    }
+}
 
 
+const contact =async(req,res)=>{
+    try {
+        res.render("contact")
+    } catch (error) {
+        console.log(error.message);
+    }
+}
 
 module.exports={
 //#### login&register######
@@ -1517,6 +1543,7 @@ module.exports={
     test,
     errorpage,
     success,
-    failed
-    
+    failed,
+    about,
+    contact,
 }

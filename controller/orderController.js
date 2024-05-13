@@ -208,14 +208,14 @@ const placeOrder = async (req,res)=>{
                         }
                         
                     },0);
-                    console.log(money)
+                    
                     let coupenmoney = 0;
                     if(coupenId){
                         coupenmoney =  money - Math.round(money*coupenId.offer/100)
                     }else{
                         coupenmoney = money
                     }
-                    console.log('coupenmoney',coupenmoney)
+                    
                     const amount =coupenmoney*100;
                     
                     const options = {
@@ -226,7 +226,7 @@ const placeOrder = async (req,res)=>{
                     instance.orders.create(options, 
                         (err, order)=>{
                             if(!err){
-                                console.log(order)
+                             
                                 res.send({
                                     success:true,
                                     msg:'Order Created',
@@ -256,20 +256,20 @@ const placeOrder = async (req,res)=>{
                 }else{
                     const data = await CartDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId');
                     if(data){
-                       console.log("2")
+                     
                        res.send({addAddress:true})
-                       console.log("2")
+                      
                     }else{
-                       console.log("3")
-                       console.log("product illaa");
+                      
+                      res.send({noProducts:true})
                     }
                 }
             }else{
-                console.log("coupen illadhe");
+              
                 const userData = await User.findOne({userId:req.session.user_id});
              
                     if(addressId){
-                        console.log("razor");
+                       
                      
                         const cartData = await CartDB.findOne({userId:req.session.user_id}).populate('products.productId');;
                                     const userData = await User.findOne({userId: req.session.user_Id})
@@ -324,23 +324,18 @@ const placeOrder = async (req,res)=>{
                        }else{
                         const data = await CartDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId');
                          if(data){
-                            console.log("2")
+                           
                             res.send({addAddress:true})
-                            console.log("2")
+                            
                          }else{
-                            console.log("3")
-                            console.log("product illaa");
+                           
+                            res.send({noProducts:true})
                          }
                        }
-                
-               
             }
-           
-        
-        
-         
+   
         }else{
-              console.log(" cod ss")
+             console.log("cod")
               if(coupen){
                const coupenId = await CoupenDB.findOne({coupenId:coupen});
                     if(addressId){
@@ -357,7 +352,7 @@ const placeOrder = async (req,res)=>{
                        
                            for(let i=0;i<productsData.length;i++){
                             let product = await ProductDb.findOne({_id:productsData[i].productId._id});
-                            console.log("start");
+                       
                             
                             if(productsData[i].productId.stock>0){
                     
@@ -367,7 +362,7 @@ const placeOrder = async (req,res)=>{
                                  const exist = await OrderDB.findOne({userId:req.session.user_id}).populate('products.productId');
 
                                  if(!exist){
-                                   console.log('ivade')
+                                  
                                     const offerProduct = offerData.find( offer => offer.iteam === productsData[i].productId.name || offer.iteam === productsData[i].productId.categoryID.name)
                                     var amount = 0;
                                     var newPrice=0;
@@ -382,7 +377,7 @@ const placeOrder = async (req,res)=>{
                                         newPrice = productsData[i].productId.Price*productsData[i].quandity
                                            
                                     }
-                                       console.log(date)
+                                      
                                         const data = new OrderDB({
                                             userId:req.session.user_id,
                                             products:[{
@@ -393,22 +388,17 @@ const placeOrder = async (req,res)=>{
                                                 orderDate:date,
                                                 paymentMethod:paymentMethod,
                                                 deliveryAddress:address,
-            
                                                 productTotal:newPrice
                                             }],
                                            
                                            });
                                       
                                            await data.save();
-
-                               
-                                 
                                        await CartDB.findOneAndDelete({userId:req.session.user_id}).populate('userId').populate('products.productId')
-                                    
                                        await CoupenDB.findOneAndUpdate({coupenId:coupen},{$push:{usedUsers:req.session.user_id}})
-                                   
+                                       res.send({successPage:true})
                                 }else{
-                                    console.log("00 products kk add akkanam");
+                                    
                                     const offerProduct = offerData.find( offer => offer.iteam === productsData[i].productId.name || offer.iteam === productsData[i].productId.categoryID.name)
                                     var amount = 0;
                                     var newPrice=0;
@@ -424,25 +414,25 @@ const placeOrder = async (req,res)=>{
                                            
                                     }
                                      
-                                      await OrderDB.findOneAndUpdate({userId:req.session.user_id},{$push:{'products':{
-                                        productId:productsData[i].productId,
-                                        productStatus:"pending",
-                                        paymentStatus:"Not paid",
-                                        quandity:productsData[i].quandity,
-                                        orderDate:date,
-                                        paymentMethod:paymentMethod,
-                                        deliveryAddress:address,
-                                        productTotal:newPrice
-                                    }}}).populate('products.productId');
+                                    //   await OrderDB.findOneAndUpdate({userId:req.session.user_id},{$push:{'products':{
+                                    //     productId:productsData[i].productId,
+                                    //     productStatus:"pending",
+                                    //     paymentStatus:"Not paid",
+                                    //     quandity:productsData[i].quandity,
+                                    //     orderDate:date,
+                                    //     paymentMethod:paymentMethod,
+                                    //     deliveryAddress:address,
+                                    //     productTotal:newPrice
+                                    // }}}).populate('products.productId');
 
                                    
                                     await CartDB.findOneAndDelete({userId:req.session.user_id}).populate('userId').populate('products.productId')
                                    
-                                  
+                                   res.send({successPage:true})
                                  };
                   
                             }else{
-                                console.log("false");
+                                
                                 res.send({outofstock:true , product:product.name})
                             }
                             
@@ -455,12 +445,12 @@ const placeOrder = async (req,res)=>{
 
                          const data = await CartDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId');
                           if(data){
-                               console.log("2")
+                             
                                 res.send({addAddress:true})
-                               console.log("2")
+                              
                           }else{
-                               console.log("3")
-                               console.log("product illaa");
+                              
+                               res.send({noProducts:true})
                           }
            
                     }
@@ -468,8 +458,8 @@ const placeOrder = async (req,res)=>{
         
                
               }else{
-              
-                console.log("normal pay");
+                console.log("no cupon cod")
+
                 if(addressId){
                       
 
@@ -485,7 +475,7 @@ const placeOrder = async (req,res)=>{
                    
                        for(let i=0;i<productsData.length;i++){
                         let product = await ProductDb.findOne({_id:productsData[i].productId._id});
-                        console.log("start");
+                      
                 
                         if(productsData[i].productId.stock>0){
                 
@@ -523,16 +513,17 @@ const placeOrder = async (req,res)=>{
 
                            
                                 await CartDB.findOneAndDelete({userId:req.session.user_id}).populate('userId').populate('products.productId')
-                                console.log("success");
+                              
                             }else{
-                                console.log(" products kk add akkanam");
+                             
                                 const offerProduct = offerData.find( offer => offer.iteam === productsData[i].productId.name || offer.iteam === productsData[i].productId.categoryID.name)
                                 var amount = 0;
                                 if(offerProduct){                      
                                   amount =productsData[i].productId.Price*productsData[i].quandity -  Math.round(productsData[i].productId.Price*offerProduct.offerRate/100)*productsData[i].quandity
-                              }else{
+                                }else{
                                     amount = productsData[i].productId.Price*productsData[i].quandity
                                 }
+                                
                                 await OrderDB.findOneAndUpdate({userId:req.session.user_id},{$push:{'products':{
                                     productId:productsData[i].productId,
                                     productStatus:"pending",
@@ -546,11 +537,13 @@ const placeOrder = async (req,res)=>{
                                
                           
                                 await CartDB.findOneAndDelete({userId:req.session.user_id}).populate('userId').populate('products.productId')
-                               
+                                console.log("success page")
+                               res.send({successPage:true})
+                                console.log("true")
                              }
                            
                         }else{
-                            console.log("false");
+                        
                             res.send({outofstock:true , product:product.name})
                         }
                         
@@ -559,17 +552,16 @@ const placeOrder = async (req,res)=>{
                    
                   
                         } else{
-                            console.log("1")
-                            const address = await AddressDB.findOne({userID:req.session.user_id}).populate('userID')
-                      
+                           
+                            const address = await AddressDB.findOne({userID:req.session.user_id}).populate('userID');
                             const data = await CartDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId');
                              if(data){
-                                console.log("2")
+                                
                                 res.send({addAddress:true})
-                                console.log("2")
+                               
                              }else{
-                                console.log("3")
-                                console.log("product illaa");
+                                
+                                console.log("product illa")
                              }
                            
                         }
@@ -581,6 +573,7 @@ const placeOrder = async (req,res)=>{
         console.log(error.message);
     }
 }
+
 
 
 const failePage = async(req,res)=>{

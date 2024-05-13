@@ -609,13 +609,13 @@
         let address = selectElement1.value
         let paymentMethod = selectElement2.value
         let selectElement3 = document.getElementById("sub");
-        console.log(selectElement3.value)
+        
        
       if(paymentMethod=="Razor pay"){
         
         fetch(`/placeOrder?addressId=${address}&paymentMethod=${paymentMethod}&coupen=${coupen}`).then(res=>res.json())
             .then(data=>{
-                
+                 
                  if(data.success){
               
                     var options = {
@@ -671,15 +671,15 @@
                  }
 
             })
-      }
-      else{
+      }else{
+        
         if(selectElement3.value<=1000){
             Swal.fire(`Your order have been placed`);
         if(coupen){
-            
+           
             fetch(`/placeOrder?addressId=${address}&paymentMethod=${paymentMethod}&coupen=${coupen}`).then(res=>res.json())
         .then(data=>{
-            
+           console.log(data)
             if(data.addAddress){
                 console.log("sett")
                 Swal.fire({
@@ -701,15 +701,19 @@
                 Swal.fire(`${data.product} is out of stock`);
                 
             }else if(data.invalidCoupen){
+                
                 Swal.fire(`Invalid Coupen Number`);
+            }else if(data.successPage){
+                console.log("hi")
+                window.open(`/successPage?paymentMethod=${paymentMethod}`,"_self")
             }
            
         }); 
         }else{
-          
+            
             fetch(`/placeOrder?addressId=${address}&paymentMethod=${paymentMethod}`).then(res=>res.json())
         .then(data=>{
-            
+           
             if(data.addAddress){
                 Swal.fire({
   title: "You dont have any address?",
@@ -729,6 +733,8 @@
             }else if(data.outofstock){
                 Swal.fire(`${data.product} is out of stock`);
                 
+            }else if(data.successPage){
+                window.open(`/successPage?paymentMethod=${paymentMethod}`,"_self")
             }
            
         }); 

@@ -111,8 +111,11 @@ user_route.get('/failedPage',auth.loginUser,authBlock.blockUser,orderController.
 user_route.get('/wishlist',auth.loginUser,authBlock.blockUser,wishlistController.wishlist);
 user_route.get('/addwishlist',auth.loginUser,authBlock.blockUser,wishlistController.addwishlist);
 user_route.get('/deletewishlist',auth.loginUser,authBlock.blockUser,wishlistController.deletewishlist);
-
 user_route.get('/coupens',auth.loginUser,authBlock.blockUser,userControll.coupens);
+
+user_route.get('/about',auth.loginUser,authBlock.blockUser,userControll.about);
+user_route.get('/contact',auth.loginUser,authBlock.blockUser,userControll.contact);
+
 user_route.get('/test',auth.loginUser,authBlock.blockUser,userControll.test);
 
 module.exports=user_route;
