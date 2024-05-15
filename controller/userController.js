@@ -954,7 +954,7 @@ const loadeditAddress = async (req,res)=>{
 const veryfyAddress = async (req,res)=>{
     try {
         
-
+        
         const data = await AddressDB.findOne({userID:req.session.user_id}).populate('userID');
         
         const address = data.address.find((a)=>{
@@ -984,7 +984,7 @@ const veryfyAddress = async (req,res)=>{
 
                 }else{       
                     req.flash("msg4","Check Your Email Structure")
-                    res.redirect("/editAddress")
+                    res.redirect(`/editAddress?id=${req.query.id}`)
                 }
                 }else if(!checkAddress){
                    if(/^[A-Za-z0-9.%+-]+@gmail\.com$/.test(req.body.email)){
@@ -1003,26 +1003,26 @@ const veryfyAddress = async (req,res)=>{
 
                 }else{       
                     req.flash("msg4","Check Your Email Structure")
-                    res.redirect("/editAddress")
+                     res.redirect(`/editAddress?id=${req.query.id}`)
                 }
                 }else{  
                     req.flash("msg3","Address Already Exists")
-                    res.redirect("/editAddress")
+                    res.redirect(`/editAddress?id=${req.query.id}`)
 
                 }
             }else{   
                 req.flash("msg3","Invalid Address")
-                res.redirect("/editAddress")
+                res.redirect(`/editAddress?id=${req.query.id}`)
               }
             }else{
                 req.flash("msg2","Invalid Lname")
-                res.redirect("/editAddress")
+               res.redirect(`/editAddress?id=${req.query.id}`)
             }
         }else{
 
             req.flash("msg1","Invalid Fname")
-            res.redirect("/editAddress")
-            
+            res.redirect(`/editAddress?id=${req.query.id}`)
+
         }
         
       
