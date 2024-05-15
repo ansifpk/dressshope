@@ -147,10 +147,10 @@ const createReportPdf = async (req, res) => {
         };
 
         const ejsData = ejs.render(htmlString, data);
-        pdf.create(ejsData, options).toFile('orders.pdf', (err, response) => {
+        pdf.create(ejsData, options).toFile('topdf.pdf', (err, response) => {
             if (err) console.log(err);
 
-            const filePath = path.resolve(__dirname, '../orders.pdf');
+            const filePath = path.resolve(__dirname, '../topdf.pdf');
 
             fs.readFile(filePath, (err, file) => {
                 if (err) {
@@ -159,7 +159,7 @@ const createReportPdf = async (req, res) => {
                 }
 
                 res.setHeader('Content-type', 'application/pdf')
-                res.setHeader('Content-Disposition', 'attachment;filename="orders.pdf"');
+                res.setHeader('Content-Disposition', 'attachment;filename="topdf.pdf"');
 
                 res.send(file)
             })
