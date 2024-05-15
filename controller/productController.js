@@ -64,6 +64,8 @@ const addProducts = async (req, res) => {
 
             const image = req.files.map((file) => file.filename);
             if (image.length > 3) {
+                
+                if( req.body.Description.length<=20){
                 const productData = new ProductDb({
                     name: req.body.name,
                     Price: req.body.Price,
@@ -76,6 +78,11 @@ const addProducts = async (req, res) => {
                 let data = await productData.save();
 
                 res.redirect('/admin/viewProducts')
+                }else{
+                    const category = await CategoryDb.find({});
+
+                    res.render('addProduct', { category: category, message: 'Length Of Description Shoulbe be Less than 20' });
+                }
             } else {
                 const category = await CategoryDb.find({});
 
@@ -130,43 +137,48 @@ const UpdateProducts = async (req, res) => {
         if (/[a-zA-Z]/.test(name)) {
             if (req.body.Price > 0) {
                 if (req.body.stock >= 0) {
-                    if (image.length == 0) {
+                    if( req.body.Description.length<=20){
+                        if (image.length == 0) {
 
-                        const product = await ProductDb.findByIdAndUpdate({ _id: req.query.id }, {
-                            $set: {
-                                name: req.body.name,
-                                Description: req.body.Description,
-                                Price: req.body.Price,
-                                image: alreadyImage,
-                                stock: req.body.stock,
-                                categoryID: req.body.category,
-
-                            }
-                        });
-                        res.redirect('/admin/ViewProducts')
-                    } else {
-                        if (image.length >= 4) {
                             const product = await ProductDb.findByIdAndUpdate({ _id: req.query.id }, {
                                 $set: {
                                     name: req.body.name,
                                     Description: req.body.Description,
                                     Price: req.body.Price,
-                                    image: image,
+                                    image: alreadyImage,
                                     stock: req.body.stock,
-                                    categoryID: req.body.category
+                                    categoryID: req.body.category,
+    
                                 }
                             });
                             res.redirect('/admin/ViewProducts')
                         } else {
-                            const category = await CategoryDb.find({});
-                            const productData = await ProductDb.findById({ _id: req.query.id })
-
-                            res.render('editProduct', { productData: productData, category: category, message: "Add Minimum 4 Images" })
-
+                            if (image.length >= 4) {
+                                const product = await ProductDb.findByIdAndUpdate({ _id: req.query.id }, {
+                                    $set: {
+                                        name: req.body.name,
+                                        Description: req.body.Description,
+                                        Price: req.body.Price,
+                                        image: image,
+                                        stock: req.body.stock,
+                                        categoryID: req.body.category
+                                    }
+                                });
+                                res.redirect('/admin/ViewProducts')
+                            } else {
+                                const category = await CategoryDb.find({});
+                                const productData = await ProductDb.findById({ _id: req.query.id })
+    
+                                res.render('editProduct', { productData: productData, category: category, message: "Add Minimum 4 Images" })
+    
+                            }
                         }
+                    }else{
+                        const category = await CategoryDb.find({});
+                        const productData = await ProductDb.findById({ _id: req.query.id })
+    
+                        res.render('editProduct', { productData: productData, category: category, message: "Length Of Description Shoulbe be Less than 20" })
                     }
-
-
                 } else {
                     const category = await CategoryDb.find({});
                     const productData = await ProductDb.findById({ _id: req.query.id })
