@@ -221,11 +221,27 @@
 		                				<div class="row">
 		                					<div class="col-sm-6">
 		                						<label>First Name *</label>
+                                                <% 
+                                                if(typeof message1!== "undefined"){
+                                                   %>
+                                                   <label style="color: white; color:red; text-align: center;"><%= message1 %> </label>
+                                                
+                                                   <%
+                                                }
+                                                %>
 		                						<input type="text" value="<%=addressData.fname%>" name="fname" class="form-control" >
 		                					</div><!-- End .col-sm-6 -->
 
 		                					<div class="col-sm-6">
 		                						<label>Last Name *</label>
+                                                <% 
+                                        if(typeof message2!== "undefined"){
+                                           %>
+                                           <label style="color: white; color:red; text-align: center;"><%= message2 %> </label>
+                                        
+                                           <%
+                                        }
+                                        %>
 		                						<input type="text" value="<%=addressData.lname%>" name="lname" class="form-control" >
 		                					</div><!-- End .col-sm-6 -->
 		                				</div><!-- End .row -->
@@ -236,6 +252,14 @@
 	            						<input type="text" value="<%=addressData.country%>" class="form-control" name="country" >
 
 	            						<label>Street address *</label>
+                                        <% 
+                                        if(typeof message3 !== "undefined"){
+                                           %>
+                                           <label style="color: white; color:red; text-align: center;"><%= message3 %> </label>
+                                        
+                                           <%
+                                        }
+                                        %>
 	            						<input type="text" class="form-control" value="<%=addressData.address%>" name="address" placeholder="House number and Street name" >
 	            						
 
@@ -264,6 +288,14 @@
 		                				</div><!-- End .row -->
 
 	                					<label>Email address *</label>
+                                        <% 
+                                        if(typeof message4!== "undefined"){
+                                           %>
+                                           <label style="color: white; color:red; text-align: center;"><%= message4 %> </label>
+                                        
+                                           <%
+                                        }
+                                        %>
 	        							<input type="email" name="email" value="<%=addressData.email%>" class="form-control" >
 
                                         <button type="submit" class="btn btn-outline-primary-2 btn-order btn-block">Edit Address</button>

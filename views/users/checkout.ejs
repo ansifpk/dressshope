@@ -136,15 +136,7 @@
             <div class="page-content">
             	<div class="checkout">
 	                <div class="container">
-                        <% 
-
-                        if(typeof message!== "undefined"){
-                           %>
-                           <p style="color:white; background-color:red; text-align: center;"><%= message %> </p>
-                           <%
-                        }
-                        
-                        %>
+                       
             			<div  class="checkout-discount">
             				<form action="/checkout" method="get">
         						<input type="text" name="coupen" class="form-control" id="checkout-discount-input" required >
@@ -157,14 +149,31 @@
 		                	<div class="row">
 		                		<div class="col-lg-9">
 		                			<h2 class="checkout-title">Billing Details</h2><!-- End .checkout-title -->
+                                  
 		                				<div class="row">
 		                					<div class="col-sm-6">
 		                						<label>First Name *</label>
+                                                <% 
+                                                if(typeof message1!== "undefined"){
+                                                   %>
+                                                   <label style="color: white; color:red; text-align: center;"><%= message1 %> </label>
+                                                
+                                                   <%
+                                                }
+                                                %>
 		                						<input type="text" name="fname" required class="form-control" >
 		                					</div><!-- End .col-sm-6 -->
 
 		                					<div class="col-sm-6">
 		                						<label>Last Name *</label>
+                                                <% 
+                                        if(typeof message2!== "undefined"){
+                                           %>
+                                           <label style="color: white; color:red; text-align: center;"><%= message2 %> </label>
+                                        
+                                           <%
+                                        }
+                                        %>
 		                						<input type="text" name="lname" required class="form-control" >
 		                					</div><!-- End .col-sm-6 -->
 		                				</div><!-- End .row -->
@@ -175,6 +184,14 @@
 	            						<input type="text" class="form-control" name="country" >
 
 	            						<label>Street address *</label>
+                                        <% 
+                                        if(typeof message3!== "undefined"){
+                                           %>
+                                           <label style="color: white; color:red; text-align: center;"><%= message3 %> </label>
+                                        
+                                           <%
+                                        }
+                                        %>
 	            						<input type="text" class="form-control" required name="address" placeholder="House number and Street name" >
 	            						
 
@@ -203,8 +220,16 @@
 		                				</div><!-- End .row -->
 
 	                					<label>Email address *</label>
+                                        <% 
+                                        if(typeof message4!== "undefined"){
+                                           %>
+                                           <label style="color: white; color:red; text-align: center;"><%= message4 %> </label>
+                                        
+                                           <%
+                                        }
+                                        %>
 	        							<input type="email" name="email" required class="form-control" >
-
+                                        
                                         <button type="submit" class="btn btn-outline-primary-2 btn-order btn-block">Change Address</button>
 	        							
 		                		</div><!-- End .col-lg-9 -->
@@ -674,12 +699,12 @@
       }else{
         
         if(selectElement3.value<=1000){
-            Swal.fire(`Your order have been placed`);
+           
         if(coupen){
            
             fetch(`/placeOrder?addressId=${address}&paymentMethod=${paymentMethod}&coupen=${coupen}`).then(res=>res.json())
         .then(data=>{
-           console.log(data)
+          
             if(data.addAddress){
                 console.log("sett")
                 Swal.fire({

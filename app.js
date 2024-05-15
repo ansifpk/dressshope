@@ -5,6 +5,7 @@ const nocahe = require('nocache')
 const express = require("express");
 const path = require("path");
 const app = express();
+const flash = require("connect-flash");
 
 const session = require('express-session');
 
@@ -16,6 +17,7 @@ app.set("views",'./views/admin');
 
 
 app.use(nocahe())
+app.use(flash());
 app.use(express.static(path.join(__dirname,"public")));
 app.use(express.static(path.join(__dirname,"public/assets")));
 // for user route 

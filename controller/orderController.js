@@ -414,16 +414,16 @@ const placeOrder = async (req,res)=>{
                                            
                                     }
                                      
-                                    //   await OrderDB.findOneAndUpdate({userId:req.session.user_id},{$push:{'products':{
-                                    //     productId:productsData[i].productId,
-                                    //     productStatus:"pending",
-                                    //     paymentStatus:"Not paid",
-                                    //     quandity:productsData[i].quandity,
-                                    //     orderDate:date,
-                                    //     paymentMethod:paymentMethod,
-                                    //     deliveryAddress:address,
-                                    //     productTotal:newPrice
-                                    // }}}).populate('products.productId');
+                                      await OrderDB.findOneAndUpdate({userId:req.session.user_id},{$push:{'products':{
+                                        productId:productsData[i].productId,
+                                        productStatus:"pending",
+                                        paymentStatus:"Not paid",
+                                        quandity:productsData[i].quandity,
+                                        orderDate:date,
+                                        paymentMethod:paymentMethod,
+                                        deliveryAddress:address,
+                                        productTotal:newPrice
+                                    }}}).populate('products.productId');
 
                                    
                                     await CartDB.findOneAndDelete({userId:req.session.user_id}).populate('userId').populate('products.productId')

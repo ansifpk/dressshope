@@ -17,11 +17,11 @@ const nodemailer = require('nodemailer');
 const path = require('path');
 const { access } = require("fs/promises");
 const { Console, log } = require("console");
-
 const easyinvoice = require('easyinvoice');
 const fs = require("fs");
 const pdf = require('html-pdf');
 const ejs = require('ejs')
+
 
 
 const securePassword = async(password)=>{
@@ -765,7 +765,7 @@ const addAddress = async (req,res)=>{
             }
          },0)
         }
-       res.render('addAddress',{cartData,wishlistData,cartTotal,});
+       res.render('addAddress',{cartData,wishlistData,cartTotal,message1:req.flash('msg1'),message2:req.flash('msg2'),message3:req.flash('msg3'),message4:req.flash('msg4')});
     } catch (error) {
         console.log(error.message);
     }
@@ -777,70 +777,97 @@ const saveAddress = async (req,res)=>{
          
        const exists =  await AddressDB.findOne({userID:req.session.user_id}).populate('userID')
         if(!exists){
-            const address = await AddressDB({
-                userID:req.session.user_id,
-                address:[{
-                    fname:req.body.fname,
-                    lname:req.body.lname,
-                    country:req.body.country,
-                    address:req.body.address,
-                    city:req.body.city,
-                    state:req.body.state,
-                    pincode:req.body.pincode,
-                    mobile:req.body.mobile,
-                    email:req.body.email
-                }]
-            })
-             
-          await address.save();
-           
-           res.redirect('/Addresses')
-        }else{
-            
-            const checkAddress = exists.address.find((a) => {
-                return a.address === req.body.address;
-            });
-          
-            if(checkAddress){
-                const fname = checkAddress.fname
-                const lname = checkAddress.lname
-                
-            if(fname==req.body.fname&&lname==req.body.lname){
+            const fname = req.body.fname.trim()
+            const lname = req.body.lname.trim()
+            const name = req.body.address.trim()
+            if(/^[a-zA-Z]+$/.test(fname) ){
+                if(/^[a-zA-Z]+$/.test(lname) ){
+                  if(/^[a-zA-Z\s]+$/.test(name)){
+                     if(/^[A-Za-z0-9.%+-]+@gmail\.com$/.test(req.body.email)){
+                        const address = await AddressDB({
+                            userID:req.session.user_id,
+                            address:[{
+                                fname:req.body.fname,
+                                lname:req.body.lname,
+                                country:req.body.country,
+                                address:req.body.address,
+                                city:req.body.city,
+                                state:req.body.state,
+                                pincode:req.body.pincode,
+                                mobile:req.body.mobile,
+                                email:req.body.email
+                            }]
+                        })
+                         
+                      await address.save();
+                       
+                       res.redirect('/Addresses')
+                    }else{
+                          
+                        req.flash("msg4","Check Your Email Structure")
+                        res.redirect("/addAddress")
+                    }
+              }else{
               
-                res.render('addAddress',{message:'This Address Already Exists'});
-               
-                
-               
+                req.flash("msg3","Invalid Address")
+                res.redirect("/addAddress")
+              }
             }else{
-                const data = await AddressDB.findOneAndUpdate({userID:req.session.user_id},{$push:{address:{
-                                        fname:req.body.fname,
-                                        lname:req.body.lname,
-                                        country:req.body.country,
-                                        address:req.body.address,
-                                        city:req.body.city,
-                                        state:req.body.state,
-                                        pincode:req.body.pincode,
-                                        mobile:req.body.mobile,
-                                        email:req.body.email
-                                    }}});
-                                    res.redirect('/Addresses')
+                req.flash("msg2","Invalid Lname")
+                res.redirect("/addAddress")
             }
         }else{
-            const data = await AddressDB.findOneAndUpdate({userID:req.session.user_id},{$push:{address:{
-                                    fname:req.body.fname,
-                                    lname:req.body.lname,
-                                    country:req.body.country,
-                                    address:req.body.address,
-                                    city:req.body.city,
-                                    state:req.body.state,
-                                    pincode:req.body.pincode,
-                                    mobile:req.body.mobile,
-                                    email:req.body.email
-                                }}});
-                                res.redirect('/Addresses')
+            req.flash("msg1","Invalid Fname")
+            res.redirect("/addAddress")
         }
-   
             
+        }else{
+            const fname = req.body.fname.trim()
+            const lname = req.body.lname.trim()
+            const name = req.body.address.trim()
+            if(/^[a-zA-Z]+$/.test(fname) ){
+                if(/^[a-zA-Z]+$/.test(lname) ){
+                  if(/^[a-zA-Z\s]+$/.test(name)){
+                    const checkAddress = exists.address.find( address => address.fname == fname && address.lname == lname && address.address == name);
+                    if(!checkAddress){
+                        if(/^[A-Za-z0-9.%+-]+@gmail\.com$/.test(req.body.email)){
+                            const data = await AddressDB.findOneAndUpdate({userID:req.session.user_id},{$push:{address:{
+                                                            fname:req.body.fname,
+                                                            lname:req.body.lname,
+                                                            country:req.body.country,
+                                                            address:req.body.address,
+                                                            city:req.body.city,
+                                                            state:req.body.state,
+                                                            pincode:req.body.pincode,
+                                                            mobile:req.body.mobile,
+                                                            email:req.body.email
+                                                        }}});
+                            res.redirect('/Addresses')
+                            
+                        }else{
+                          
+                            req.flash("msg4","Check Your Email Structure")
+                            res.redirect("/addAddress")
+                        }
+                    }else{
+                      
+                        req.flash("msg3","This Address Already Exist")
+                        res.redirect("/addAddress")
+                    }
+                  }else{
+                  
+                    req.flash("msg3","Invalid Address")
+                    res.redirect("/addAddress")
+                  }
+                }else{
+                    req.flash("msg2","Invalid Lname")
+                    res.redirect("/addAddress")
+                }
+            }else{
+                req.flash("msg1","Invalid Fname")
+                res.redirect("/addAddress")
+            }
+          
         }
      
     } catch (error) {
@@ -927,24 +954,76 @@ const loadeditAddress = async (req,res)=>{
 const veryfyAddress = async (req,res)=>{
     try {
         
-console.log(req.body.fname)
+
         const data = await AddressDB.findOne({userID:req.session.user_id}).populate('userID');
         
         const address = data.address.find((a)=>{
            return a._id.equals(req.query.id)
         });
-         address.fname=req.body.fname;
-         address.lname=req.body.lname;
-         address.address=req.body.address;
-         address.country=req.body.country;
-         address.state=req.body.state;
-         address.city=req.body.city;
-         address.pincode=req.body.pincode;
-         address.email=req.body.email;
-         address.mobile=req.body.mobile;
-        const x = await  data.save();
+        const fname = req.body.fname.trim()
+        const lname = req.body.lname.trim()
+        const name = req.body.address.trim()
+        if(/^[a-zA-Z]+$/.test(fname) ){
+            if(/^[a-zA-Z]+$/.test(lname) ){
+              if(/^[a-zA-Z\s]+$/.test(name)){
+                const checkAddress = data.address.find( address => address.address == req.body.address )
+                if(address.address == req.body.address){
+                    if(/^[A-Za-z0-9.%+-]+@gmail\.com$/.test(req.body.email)){
+                    address.fname=req.body.fname;
+                    address.lname=req.body.lname;
+                    address.address=req.body.address;
+                    address.country=req.body.country;
+                    address.state=req.body.state;
+                    address.city=req.body.city;
+                    address.pincode=req.body.pincode;
+                    address.email=req.body.email;
+                    address.mobile=req.body.mobile;
 
-      res.redirect("/addresses")
+                    const x = await  data.save();
+                    res.redirect("/addresses");
+
+                }else{       
+                    req.flash("msg4","Check Your Email Structure")
+                    res.redirect("/addAddress")
+                }
+                }else if(!checkAddress){
+                   if(/^[A-Za-z0-9.%+-]+@gmail\.com$/.test(req.body.email)){
+                    address.fname=req.body.fname;
+                    address.lname=req.body.lname;
+                    address.address=req.body.address;
+                    address.country=req.body.country;
+                    address.state=req.body.state;
+                    address.city=req.body.city;
+                    address.pincode=req.body.pincode;
+                    address.email=req.body.email;
+                    address.mobile=req.body.mobile;
+
+                    const x = await  data.save();
+                    res.redirect("/addresses");
+
+                }else{       
+                    req.flash("msg4","Check Your Email Structure")
+                    res.redirect("/addAddress")
+                }
+                }else{  
+                    req.flash("msg3","Address Already Exists")
+                    res.redirect("/addAddress")
+
+                }
+            }else{   
+                req.flash("msg3","Invalid Address")
+                res.redirect("/addAddress")
+              }
+            }else{
+                req.flash("msg2","Invalid Lname")
+                res.redirect("/addAddress")
+            }
+        }else{
+            req.flash("msg1","Invalid Fname")
+            res.redirect("/addAddress")
+        }
+        
+      
       
     } catch (error) {
         console.log(error.message);
@@ -1228,7 +1307,7 @@ const checkOut = async (req,res)=>{
              const offer  =  Math.round(subTotal*coupenData.offer/100); 
               
             
-              res.render('checkout',{ productData:data , addressData:address , offer:offer , coupen:coupen , offerData:offerData , subTotal:subTotal ,cartData:cartData,wishlistData:wishlistData,cartTotal});
+              res.render('checkout',{ productData:data , addressData:address , offer:offer , coupen:coupen , offerData:offerData , subTotal:subTotal ,cartData:cartData,wishlistData:wishlistData,cartTotal,message1:req.flash('msg1'),message2:req.flash('msg2')});
               }else{
                     res.redirect('/products')
                
@@ -1251,8 +1330,7 @@ const checkOut = async (req,res)=>{
             
         },0);
          let offer;
-         console.log("illa coupen")
-         res.render('checkout',{ productData:data , addressData:address , offer:offer , coupen:coupen , offerData:offerData , subTotal:subTotal ,cartData:cartData,wishlistData:wishlistData,cartTotal, message:"Invalid Coupon Code" });
+         res.render('checkout',{ productData:data , addressData:address , offer:offer , coupen:coupen , offerData:offerData , subTotal:subTotal ,cartData:cartData,wishlistData:wishlistData,cartTotal,message:"Invalid Coupon Code",message1:req.flash('msg1'),message2:req.flash('msg2')});
      
        }else{
         res.redirect('/products')
@@ -1278,7 +1356,7 @@ const checkOut = async (req,res)=>{
             return amount = acc+product.productId.Price*product.quandity 
         },0);
          
-        res.render('checkout',{ productData:data , addressData:address , offer:offer , coupen:coupen , offerData:offerData , subTotal:subTotal ,cartData:cartData,wishlistData:wishlistData,cartTotal});
+        res.render('checkout',{ productData:data , addressData:address , offer:offer , coupen:coupen , offerData:offerData , subTotal:subTotal ,cartData:cartData,wishlistData:wishlistData,cartTotal,message1:req.flash('msg1'),message2:req.flash('msg2'),message3:req.flash('msg3'),message4:req.flash('msg4')});
      
     }else{
         res.redirect('/products')
@@ -1292,64 +1370,128 @@ const checkOut = async (req,res)=>{
 
 const changeAddress = async (req,res)=>{
     try {
-           const check = await AddressDB.findOne({userID:req.session.user_id}).populate('userID')
-           
-           if(!check){
-        
-            const data = new AddressDB({
-                userID:req.session.user_id,
-                address:[{
-                    fname:req.body.fname,
-                    lname:req.body.lname,
-                    country:req.body.country,
-                    address:req.body.address,
-                    city:req.body.city,
-                    state:req.body.state,
-                    pincode:req.body.pincode,
-                    mobile:req.body.mobile,
-                    email:req.body.email
-                }]
-            });
-            await data.save();
-             const address = await AddressDB.findOne({userID:req.session.user_id}).populate('userID')
-             const cart = await CartDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId');
-            
-             res.render('checkout',{productData:cart,addressData:address});
+        const cartData = await CartDB.findOne({userId:req.session.user_id}).populate({
+            path: 'products.productId',
+            populate: { path: 'categoryID' }})
+        const wishlistData = await WishlistDB.findOne({userId:req.session.user_id}).populate('products.productId')
+        const offerData = await OfferDB.find({});
+        const productData = await ProductDB.find({is_listed:true}).populate('categoryID');
+        const  rate = offerData.offerRate/100;
+         let cartTotal=0;
+         if(cartData){
+         cartTotal = cartData.products.reduce((acc,value)=>{value
+           const offer =  offerData.find( iteam => iteam.iteam === value.productId.name || iteam.iteam === value.productId.categoryID.name)
+           if(offer){
+             return acc+ value.productId.Price*value.quandity - Math.round(value.productId.Price*value.quandity * offer.offerRate/100)
            }else{
-            console.log("address ind")
-            const changeAddress = await AddressDB.findOneAndUpdate({userID:req.session.user_id},{$push:{address:{
-                fname:req.body.fname,
-                lname:req.body.lname,
-                country:req.body.country,
-                address:req.body.address,
-                city:req.body.city,
-                state:req.body.state,
-                pincode:req.body.pincode,
-                mobile:req.body.mobile,
-                email:req.body.email
-            }}});
-             const x = await changeAddress.save();
-             const address = await AddressDB.findOne({userID:req.session.user_id}).populate('userID')
-             const data = await CartDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId');
-            
-             res.render('checkout',{productData:data,addressData:address});
+          
+             return acc+value.productId.Price*value.quandity
            }
+        },0)
+    }
+
+
+           const check = await AddressDB.findOne({userID:req.session.user_id}).populate('userID')
+           const name = req.body.address.trim();
+
+           if(!check){
+            const fname = req.body.fname.trim()
+            const lname = req.body.lname.trim()
+            const name = req.body.address.trim()
+            if(/^[a-zA-Z]+$/.test(fname) ){
+                if(/^[a-zA-Z]+$/.test(lname) ){
+                  if(/^[a-zA-Z\s]+$/.test(name)){
+                        if(/^[A-Za-z0-9.%+-]+@gmail\.com$/.test(req.body.email)){
+                            const data = new AddressDB({
+                                userID:req.session.user_id,
+                                address:[{
+                                    fname:req.body.fname,
+                                    lname:req.body.lname,
+                                    country:req.body.country,
+                                    address:req.body.address,
+                                    city:req.body.city,
+                                    state:req.body.state,
+                                    pincode:req.body.pincode,
+                                    mobile:req.body.mobile,
+                                    email:req.body.email
+                                }]
+                            });
+                            await data.save();
+                             const address = await AddressDB.findOne({userID:req.session.user_id}).populate('userID')
+                             const cart = await CartDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId');
+                           
+                            res.redirect("/checkout")
+                        }else{
+                            req.flash("msg4","Check Your Email Structure")
+                            res.redirect("/checkout")
+                        }
+                    }else{
+                        req.flash("msg3","Invalid Address")
+                        res.redirect("/checkout")
+                    }
+                }else{
+                    req.flash("msg2","invalid Lname")
+                    res.redirect("/checkout")
+                }
+            }else{
+                req.flash("msg1","Invalid Fname")
+                res.redirect("/checkout")
+            }
+
+        }else{
+           const exist =  await AddressDB.findOne({userID:req.session.user_id}).populate('userID')
+
+           const fname = req.body.fname.trim()
+           const lname = req.body.lname.trim()
+           const name = req.body.address.trim()
+           if(/^[a-zA-Z]+$/.test(fname) ){
+               if(/^[a-zA-Z]+$/.test(lname) ){
+                 if(/^[a-zA-Z\s]+$/.test(name)){
+                    const checkAddress = exist.address.find( address => address.fname == fname && address.lname == lname && address.address == name);
+                    if(!checkAddress){
+                       if(/^[A-Za-z0-9.%+-]+@gmail\.com$/.test(req.body.email)){
+                        const changeAddress = await AddressDB.findOneAndUpdate({userID:req.session.user_id},{$push:{address:{
+                            fname:req.body.fname,
+                            lname:req.body.lname,
+                            country:req.body.country,
+                            address:req.body.address,
+                            city:req.body.city,
+                            state:req.body.state,
+                            pincode:req.body.pincode,
+                            mobile:req.body.mobile,
+                            email:req.body.email
+                        }}});
+                         const x = await changeAddress.save();
+                         const address = await AddressDB.findOne({userID:req.session.user_id}).populate('userID')
+                         const data = await CartDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId');
+                        
+                         res.redirect("/checkout")
+                       }else{
+                            req.flash("msg4","Check Your Email Structure")
+                            res.redirect("/checkout")
+                        }
+                    }else{
+                        req.flash("msg3","This Address Already Exists")
+                        res.redirect("/checkout")
+                    }
+                }else{
+                    req.flash("msg3","Invalid address")
+                    res.redirect("/checkout")
+                }
+            }else{
+                req.flash("msg2","Invalid Lname")
+                res.redirect("/checkout")
+            }
+        }else{
+            req.flash("msg1","Invalid Fname")
+            res.redirect("/checkout")
+        }
+    }
        
     } catch (error) {
         console.log(error.message);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
 
 const test = async( req,res)=>{
     try {
