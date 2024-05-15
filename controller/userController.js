@@ -943,7 +943,7 @@ const loadeditAddress = async (req,res)=>{
             return a._id.equals(req.query.id)
     })
    
-        res.render('editAddress',{addressData:productUpdate,cartData,wishlistData,cartTotal});
+        res.render('editAddress',{addressData:productUpdate,cartData,wishlistData,cartTotal,message1:req.flash("msg1"),message2:req.flash('msg2'),message3:req.flash('msg3'),message4:req.flash('msg4')});
       
     } catch (error) {
         console.log(error.message);
@@ -984,7 +984,7 @@ const veryfyAddress = async (req,res)=>{
 
                 }else{       
                     req.flash("msg4","Check Your Email Structure")
-                    res.redirect("/addAddress")
+                    res.redirect("/editAddress")
                 }
                 }else if(!checkAddress){
                    if(/^[A-Za-z0-9.%+-]+@gmail\.com$/.test(req.body.email)){
@@ -1003,24 +1003,24 @@ const veryfyAddress = async (req,res)=>{
 
                 }else{       
                     req.flash("msg4","Check Your Email Structure")
-                    res.redirect("/addAddress")
+                    res.redirect("/editAddress")
                 }
                 }else{  
                     req.flash("msg3","Address Already Exists")
-                    res.redirect("/addAddress")
+                    res.redirect("/editAddress")
 
                 }
             }else{   
                 req.flash("msg3","Invalid Address")
-                res.redirect("/addAddress")
+                res.redirect("/editAddress")
               }
             }else{
                 req.flash("msg2","Invalid Lname")
-                res.redirect("/addAddress")
+                res.redirect("/editAddress")
             }
         }else{
             req.flash("msg1","Invalid Fname")
-            res.redirect("/addAddress")
+            res.redirect("/editAddress")
         }
         
       
