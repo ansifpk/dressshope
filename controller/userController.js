@@ -1019,8 +1019,10 @@ const veryfyAddress = async (req,res)=>{
                 res.redirect("/editAddress")
             }
         }else{
+
             req.flash("msg1","Invalid Fname")
             res.redirect("/editAddress")
+            
         }
         
       
