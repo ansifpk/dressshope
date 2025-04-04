@@ -7,7 +7,6 @@ user_route.use(passport.initialize())
 user_route.use(passport.session())
 
 const bodyParser = require('body-parser');
-const nodemailer = require('nodemailer')
 const auth = require('../middleware/userauth');
 const authBlock = require('../middleware/blockUser');
 user_route.set("view engine","ejs");

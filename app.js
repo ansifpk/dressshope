@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-mongoose.connect('mongodb+srv://anu:ansifpk2002@cluster0.15wpcl9.mongodb.net/');
 require('dotenv').config();
+mongoose.connect(process.env.MONGO_URL);
 const nocahe = require('nocache')
 const express = require("express");
 const path = require("path");

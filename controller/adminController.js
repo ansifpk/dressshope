@@ -74,7 +74,8 @@ const viewUser = async (req, res) => {
         if (req.query.page) {
             page = req.query.page;
         }
-
+      
+         
         const limit = 2;
 
         const userData = await UserDb.find({
@@ -88,6 +89,7 @@ const viewUser = async (req, res) => {
         }).limit(limit * 1)
             .skip((page - 1) * limit)
             .exec();
+
 
 
         const count = await UserDb.find({
