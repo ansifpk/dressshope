@@ -67,9 +67,9 @@ const ordersList = async (req, res) => {
 
 const orderDetailes = async (req, res) => {
     try {
-        const id = req.query.id
-        const productId = req.query.productId
-
+ 
+        const id = req.query._id
+        
         const Data = await OrderDB.find({}).populate('userId').populate('products.productId');
         let product;
         let user;
@@ -110,17 +110,18 @@ const orderStatus = async (req, res) => {
     try {
 
         const { changeStatus, productId } = req.query;
-
         const data = await OrderDB.findOne({ 'products._id': productId }).populate('userId').populate('products.productId')
         const order = data.products.find((p) => {
             return p._id.equals(productId)
         });
-
-        
+        if(order.productStatus == "Delivered"){
+           res.json({success:false,message:"This order is deliverd!."})
+           return
+        }
         const product = await ProductDb.findOne({ _id: order.productId._id }).populate("categoryID");
      
         if (changeStatus == "Delivered") {
-            console.log(product)
+     
             order.productStatus = changeStatus;
             product.orderCount++;
             await data.save();
@@ -137,9 +138,8 @@ const orderStatus = async (req, res) => {
         } else {
             order.productStatus = changeStatus
             await data.save();
-
         }
-
+        res.json({success:true,message:"Successfully change the order status!."})
 
     } catch (error) {
         console.log(error.message);
@@ -172,7 +172,8 @@ const order = async (req,res)=>{
 
     }
     
-        const data =  await OrderDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId')  
+        const data =  await OrderDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId') 
+        data.products.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
         res.render('order',{orderData:data,cartData,wishlistData,cartTotal})
     } catch (error) {
         console.log(error.message);
@@ -183,392 +184,86 @@ const order = async (req,res)=>{
 
 const placeOrder = async (req,res)=>{
     try {
-        const {addressId,paymentMethod,coupen} = req.query
+        const {addressId,paymentMethod,coupen} = req.body
+        if(!addressId){
+            res.send({success:false,message:"Address Not Found!."})
+        }
         const offerData = await OfferDB.find({});
-        console.log("address");
-       
-        if(paymentMethod=="Razor pay"){
-            console.log(coupen)
-            if(coupen!=='undefined'){
-                console.log("coupen vech");
-                
-                const userData= await User.findOne({userId:req.session.user_id})
-                if(addressId){
-                    const cartData = await CartDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId');
-                    const userData = await User.findOne({userId: req.session.user_Id});
-        
-                    const coupenId = await CoupenDB.findOne({coupenId:coupen})
-                    const money = cartData.products.reduce((acc,value)=>{
-                                       
-                        const offerProduct = offerData.find( offer => offer.iteam === value.productId.name || offer.iteam === value.productId.categoryID.name)
-                        if(offerProduct){
-                            return acc+ value.productId.Price*value.quandity - parseInt(value.productId.Price)*offerProduct.offerRate/100*value.quandity; 
-                        }else{
-                            return acc+parseInt(value.productId.Price)*value.quandity
-                        }
-                        
-                    },0);
-                    
-                    let coupenmoney = 0;
-                    if(coupenId){
-                        coupenmoney =  money - Math.round(money*coupenId.offer/100)
-                    }else{
-                        coupenmoney = money
-                    }
-                    
-                    const amount =coupenmoney*100;
-                    
-                    const options = {
-                        amount: amount,
-                        currency: 'INR',
-                        receipt: 'pkansif39@gmail.com'
-                    }
-                    instance.orders.create(options, 
-                        (err, order)=>{
-                            if(!err){
-                             
-                                res.send({
-                                    success:true,
-                                    msg:'Order Created',
-                                    order_id:order.id,
-                                    amount:amount,
-                                    key_id:process.env.RAZOR_ID,
-                                    // product_name:req.body.name,
-                                    // description:req.body.description,
-                                    contact:"7994566779",
-                                    name:userData.name,
-                                    email: "pkansif39@gmail.com",
-                                    addressId:addressId,
-                                    coupenId:coupen,
-                                    paymentMethod:paymentMethod,
-                                });
+        let coupenData;
 
-                            }else{
-                                console.error("Error creating order:", err);
-        
-                                res.send({success:false,msg:'Something went wrong!'});
-                            }
-                        }
-                    );
-                    
+        if(coupen){
+             coupenData = await CoupenDB.findOne({_id:coupen});
+             if(!coupenData){
+              return  res.send({success:false,message:"Coupen Not Found!."})
+            }
+        }
+        const cartData = await CartDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId');
+        const userData = await User.findById({_id: req.session.user_id});
+     
+        const cherckStock = cartData.products.filter((value)=>value.productId.stock == 0)
 
+        //* calculating money start
 
+        let money = cartData.products.reduce((acc,value)=>{
+            if(value.productId.stock >0){
+                const offerProduct = offerData.find( offer => offer.iteam === value.productId.name || offer.iteam === value.productId.categoryID.name)
+                if(offerProduct){
+                    return acc+ value.productId.Price*value.quandity - parseInt(value.productId.Price)*offerProduct.offerRate/100*value.quandity; 
                 }else{
-                    const data = await CartDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId');
-                    if(data){
-                     
-                       res.send({addAddress:true})
-                      
-                    }else{
-                      
-                      res.send({noProducts:true})
-                    }
+                    return acc+parseInt(value.productId.Price)*value.quandity
                 }
             }else{
-              
-                const userData = await User.findOne({userId:req.session.user_id});
-             
-                    if(addressId){
-                       
-                     
-                        const cartData = await CartDB.findOne({userId:req.session.user_id}).populate('products.productId');;
-                                    const userData = await User.findOne({userId: req.session.user_Id})
-                                    const money = cartData.products.reduce((acc,value)=>{
-                                       
-                                        const offerProduct = offerData.find( offer => offer.iteam === value.productId.name || offer.iteam === value.productId.categoryID.name)
-                                        if(offerProduct){
-                                            return acc+ value.productId.Price*value.quandity - parseInt(value.productId.Price)*offerProduct.offerRate/100*value.quandity; 
-                                        }else{
-                                            return acc+parseInt(value.productId.Price)*value.quandity
-                                        }
-                                        
-                                    },0);
-                                    
-                                    const amount =money*100;
-                                    const options = {
-                                        amount: amount,
-                                        currency: 'INR',
-                                        receipt: 'pkansif39@gmail.com'
-                                    }
-                                    instance.orders.create(options, 
-                                        (err, order)=>{
-                                            if(!err){
-                                               
-                                                res.send({
-                                                    success:true,
-                                                    msg:'Order Created',
-                                                    order_id:order.id,
-                                                    amount:amount,
-                                                    key_id:process.env.RAZOR_ID,
-                                                    // product_name:req.body.name,
-                                                    // description:req.body.description,
-                                                    contact:"7994566779",
-                                                    name:userData.name,
-                                                    email: "pkansif39@gmail.com",
-                                                    addressId:addressId,
-                                                    coupenId:coupen,
-                                                    paymentMethod:paymentMethod,
-                                                });
-                                                
-            
-                                            }else{
-                                                console.log(err)
-                                                console.error("Error creating order:", err);
-                        
-                                                res.send({success:false,msg:'Something went wrong!'});
-                                            }
-                                        }
-                                    );
-            
-            
-                       }else{
-                        const data = await CartDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId');
-                         if(data){
-                           
-                            res.send({addAddress:true})
-                            
-                         }else{
-                           
-                            res.send({noProducts:true})
-                         }
-                       }
-            }
-   
-        }else{
-             console.log("cod")
-              if(coupen){
-               const coupenId = await CoupenDB.findOne({coupenId:coupen});
-                    if(addressId){
-                            const products = await CartDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId').populate('products.productId.categoryID')
-       
-                            const addressdb = await AddressDB.findOne({userID:req.session.user_id}).populate('userID');
-                             const address =  addressdb.address.find((a)=>{
-                                return a.equals(addressId)
-                           });
-
-                           const  date =  new Date().toISOString().slice(0,10);
-                           console.log(date)
-                           let productsData = products.products;
-                       
-                           for(let i=0;i<productsData.length;i++){
-                            let product = await ProductDb.findOne({_id:productsData[i].productId._id});
-                       
-                            
-                            if(productsData[i].productId.stock>0){
-                    
-                                product.stock = product.stock-productsData[i].quandity;
-                                 await product.save();
-                            
-                                 const exist = await OrderDB.findOne({userId:req.session.user_id}).populate('products.productId');
-
-                                 if(!exist){
-                                  
-                                    const offerProduct = offerData.find( offer => offer.iteam === productsData[i].productId.name || offer.iteam === productsData[i].productId.categoryID.name)
-                                    var amount = 0;
-                                    var newPrice=0;
-                                    const offer = coupenId.offer/100;
-                                     
-                                    if(offerProduct){         
-                                      
-                                        amount =productsData[i].productId.Price*productsData[i].quandity -  Math.round(productsData[i].productId.Price*offerProduct.offerRate/100)*productsData[i].quandity
-                                        newPrice = amount -  Math.round(amount*offer)
-
-                                    }else{
-                                        newPrice = productsData[i].productId.Price*productsData[i].quandity
-                                           
-                                    }
-                                      
-                                        const data = new OrderDB({
-                                            userId:req.session.user_id,
-                                            products:[{
-                                                productId:productsData[i].productId._id,
-                                                productStatus:"pending",
-                                                paymentStatus:"Not paid",
-                                                quandity:productsData[i].quandity,
-                                                orderDate:date,
-                                                paymentMethod:paymentMethod,
-                                                deliveryAddress:address,
-                                                productTotal:newPrice
-                                            }],
-                                           
-                                           });
-                                      
-                                           await data.save();
-                                       await CartDB.findOneAndDelete({userId:req.session.user_id}).populate('userId').populate('products.productId')
-                                       await CoupenDB.findOneAndUpdate({coupenId:coupen},{$push:{usedUsers:req.session.user_id}})
-                                       res.send({successPage:true})
-                                }else{
-                                    
-                                    const offerProduct = offerData.find( offer => offer.iteam === productsData[i].productId.name || offer.iteam === productsData[i].productId.categoryID.name)
-                                    var amount = 0;
-                                    var newPrice=0;
-                                    const offer = coupenId.offer/100;
-
-                                    if(offerProduct){         
-                                      
-                                        amount =productsData[i].productId.Price*productsData[i].quandity -  Math.round(productsData[i].productId.Price*offerProduct.offerRate/100)*productsData[i].quandity
-                                        newPrice = amount -  Math.round(amount*offer)
-
-                                    }else{
-                                        newPrice = productsData[i].productId.Price*productsData[i].quandity
-                                           
-                                    }
-                                     
-                                      await OrderDB.findOneAndUpdate({userId:req.session.user_id},{$push:{'products':{
-                                        productId:productsData[i].productId,
-                                        productStatus:"pending",
-                                        paymentStatus:"Not paid",
-                                        quandity:productsData[i].quandity,
-                                        orderDate:date,
-                                        paymentMethod:paymentMethod,
-                                        deliveryAddress:address,
-                                        productTotal:newPrice
-                                    }}}).populate('products.productId');
-
-                                   
-                                    await CartDB.findOneAndDelete({userId:req.session.user_id}).populate('userId').populate('products.productId')
-                                   
-                                   res.send({successPage:true})
-                                 };
-                  
-                            }else{
-                                
-                                res.send({outofstock:true , product:product.name})
-                            }
-                            
-                          
-                           };
-                       
-                     
-                    }else{
-                        console.log("1")
-
-                         const data = await CartDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId');
-                          if(data){
-                             
-                                res.send({addAddress:true})
-                              
-                          }else{
-                              
-                               res.send({noProducts:true})
-                          }
-           
-                    }
-             
-        
                
-              }else{
-                console.log("no cupon cod")
+            }
+        },0);
+     
+        if(coupenData){
+          money =   money - Math.ceil(money*coupenData.offer/100)
+        }
+         //* calculating money end
 
-                if(addressId){
-                      
+        if(cherckStock.length){
+            res.send({outofstock:true,message:"Some of the products from your cart is out of stock"})
+            return;
+        }
 
-                        const products = await CartDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId').populate('products.productId.categoryID')
-                     
-                        const addressdb = await AddressDB.findOne({userID:req.session.user_id}).populate('userID');
-                         const address =  addressdb.address.find((a)=>{
-                            return a.equals(addressId)
-                       })
-                       const  date =  new Date().toISOString().slice(0,10);
-                       console.log(date)
-                       let productsData = products.products;
-                   
-                       for(let i=0;i<productsData.length;i++){
-                        let product = await ProductDb.findOne({_id:productsData[i].productId._id});
-                      
-                
-                        if(productsData[i].productId.stock>0){
-                
-                            product.stock = product.stock-productsData[i].quandity;
-                             await product.save();
-                        
-                             const exist = await OrderDB.findOne({userId:req.session.user_id}).populate('products.productId');
-                             if(!exist){
-                                const offerProduct = offerData.find( offer => offer.iteam === productsData[i].productId.name || offer.iteam === productsData[i].productId.categoryID.name)
-                                var amount = 0;
-                                if(offerProduct){                      
-                                    amount =productsData[i].productId.Price*productsData[i].quandity -  Math.round(productsData[i].productId.Price*offerProduct.offerRate/100)*productsData[i].quandity
-                                }else{
-                                      amount = productsData[i].productId.Price*productsData[i].quandity
-                                  }
-                        
-                                  console.log("2",date)
-                            const data = new OrderDB({
-                                userId:req.session.user_id,
-                                products:[{
-                                    productId:productsData[i].productId._id,
-                                    productStatus:"pending",
-                                    paymentStatus:"Not paid",
-                                    quandity:productsData[i].quandity,
-                                    orderDate:date,
-                                    paymentMethod:paymentMethod,
-                                    deliveryAddress:address,
+        if(paymentMethod=="Razor pay"){
+          //* Razor pay payment method
 
-                                    productTotal:amount
-                                }],
-                               
-                               });
-                           
-                               await data.save();
+            const options = {
+                 amount: money * 100,
+                 currency: 'INR',
+                 receipt: process.env.MY_EMAIL
+            }
 
-                           
-                                await CartDB.findOneAndDelete({userId:req.session.user_id}).populate('userId').populate('products.productId')
-                              
-                            }else{
-                             
-                                const offerProduct = offerData.find( offer => offer.iteam === productsData[i].productId.name || offer.iteam === productsData[i].productId.categoryID.name)
-                                var amount = 0;
-                                if(offerProduct){                      
-                                  amount =productsData[i].productId.Price*productsData[i].quandity -  Math.round(productsData[i].productId.Price*offerProduct.offerRate/100)*productsData[i].quandity
-                                }else{
-                                    amount = productsData[i].productId.Price*productsData[i].quandity
-                                }
-                                
-                                await OrderDB.findOneAndUpdate({userId:req.session.user_id},{$push:{'products':{
-                                    productId:productsData[i].productId,
-                                    productStatus:"pending",
-                                    paymentStatus:"Not paid",
-                                    quandity:productsData[i].quandity,
-                                    orderDate:date,
-                                    paymentMethod:paymentMethod,
-                                    deliveryAddress:address,
-                                    productTotal:amount
-                                }}}).populate('products.productId');
-                               
-                          
-                                await CartDB.findOneAndDelete({userId:req.session.user_id}).populate('userId').populate('products.productId')
-                                console.log("success page")
-                               res.send({successPage:true})
-                                console.log("true")
-                             }
-                           
-                        }else{
-                        
-                            res.send({outofstock:true , product:product.name})
-                        }
-                        
-                      
-                       };
-                   
-                  
-                        } else{
-                           
-                            const address = await AddressDB.findOne({userID:req.session.user_id}).populate('userID');
-                            const data = await CartDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId');
-                             if(data){
-                                
-                                res.send({addAddress:true})
-                               
-                             }else{
-                                
-                                console.log("product illa")
-                             }
-                           
-                        }
-              }
-    
-    }
-        
+            instance.orders.create(options, 
+                (err, order)=>{
+                    if(!err){
+                    
+                        res.send({
+                           success:true,
+                           msg:'Order Created',
+                           order_id:order.id,
+                           amount:money * 100,
+                           key_id:process.env.RAZOR_ID,
+                           contact: process.env.MY_NUMBER,
+                           name:userData.name,
+                           email: process.env.MY_EMAIL,
+                           addressId:addressId,
+                           coupenId:coupen,
+                           paymentMethod:paymentMethod,
+                        });
+                    }else{
+                        console.error("Error creating order:", err);
+                        res.send({success:false,msg:'Something went wrong!'});
+                    }
+                    });
+
+        }else{
+            //* COD payment method
+            res.send({success:true})
+        }
+ 
     } catch (error) {
         console.log(error.message);
     }
@@ -576,251 +271,107 @@ const placeOrder = async (req,res)=>{
 
 
 
-const failePage = async(req,res)=>{
-    try {
-       const {addressId,coupen,paymentMethod} = req.query;
-       console.log('failePage',req.query);
-       const coupenData = await CoupenDB.findOne({coupenId:coupen});
-       const offerData = await OfferDB.find({});
-          
+const saveOrder = async(req,res)=>{
+   try { 
+       const {addressId,coupen,paymentMethod,paymentStatus,productStatus} = req.body;
+       
+      
        const products = await CartDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId').populate('products.productId.categoryID')
+        let productsData = products.products;
+        if(productsData.length == 0){
+           return;
+        }
+       
+       const offerData = await OfferDB.find({});
        const addressdb = await AddressDB.findOne({userID:req.session.user_id}).populate('userID');
-       console.log(addressdb)
        const address =  addressdb.address.find((a)=>{
-           return a.equals(addressId);
+        return a.equals(addressId);
        });
-
-       const  date =  new Date().toISOString().slice(0,10);
-      let productsData = products.products;
+      
+       const  date =  new Date()
+      
+       let coupenData=null;
+       let money = productsData.reduce((acc,value)=>{                      
+        const offerProduct = offerData.find( offer => offer.iteam === value.productId.name || offer.iteam === value.productId.categoryID.name)
+        if(offerProduct){
+            acc + value.productId.Price*value.quandity - parseInt(value.productId.Price)*offerProduct.offerRate/100*value.quandity;
+            value.productId.Price =  value.productId.Price*value.quandity - parseInt(value.productId.Price)*offerProduct.offerRate/100*value.quandity; 
+            return acc; 
+        }else{
+            return acc + parseInt(value.productId.Price)*value.quandity
+        }
+       },0);
+       if(coupen){
+        coupenData = await CoupenDB.findById({_id:coupen});
+        if(coupenData){
+            money = money - Math.round(money*coupenData.offer/100);
+            await CoupenDB.findOneAndUpdate({coupenId:coupen},{$push:{usedUsers:req.session.user_id}})
+        }
+       }
 
       for(let i=0;i<productsData.length;i++){
-       let product = await ProductDb.findOne({_id:productsData[i].productId._id});
-       console.log("start");
-       
-       if(productsData[i].productId.stock>0){
-
-          
-            await product.save();
-       
-            const exist = await OrderDB.findOne({userId:req.session.user_id}).populate('products.productId');
-
-            if(!exist){
-               const money = products.products.reduce((acc,value)=>{
-                                  
-                   const offerProduct = offerData.find( offer => offer.iteam === value.productId.name || offer.iteam === value.productId.categoryID.name)
-                   if(offerProduct){
-                       return acc+ value.productId.Price*value.quandity - parseInt(value.productId.Price)*offerProduct.offerRate/100*value.quandity; 
-                   }else{
-                       return acc+parseInt(value.productId.Price)*value.quandity
-                   }
-                   
-               },0);
-               let coupenmoney = 0;
-                     console.log('money',money);
-                if(coupenData){
-                  
-                   coupenmoney = money - Math.round(money*coupenData.offer/100);
-                   await CoupenDB.findOneAndUpdate({coupenId:coupen},{$push:{usedUsers:req.session.user_id}})
-               }else{
-                   
-                   coupenmoney = money
-               }
-               
-               console.log('coupenmoney',coupenmoney);
-           const data = new OrderDB({
-               userId:req.session.user_id,
-               products:[{
-                   productId:productsData[i].productId._id,
-                   productStatus:"pending",
-                   paymentStatus:"Failed",
-                   quandity:productsData[i].quandity,
-                   orderDate:date,
-                   paymentMethod:paymentMethod,
-                   deliveryAddress:address,
-                   productTotal:coupenmoney
-               }]
-           });
-              await data.save();
-              await CartDB.findOneAndDelete({userId:req.session.user_id}).populate('userId').populate('products.productId')
-               console.log("success");
-           }else{
-               console.log(" products kk add akkanam");
-                   let money=0;   
-                   const offerProduct = offerData.find( offer => offer.iteam === productsData[i].productId.name || offer.iteam === productsData[i].productId.categoryID.name)
-                   if(offerProduct){
-                       money =  productsData[i].productId.Price*productsData[i].quandity - parseInt(productsData[i].productId.Price)*offerProduct.offerRate/100*productsData[i].quandity; 
-                  
-                   }else{
-                       money = parseInt(productsData[i].productId.Price)*productsData[i].quandity
-                   }
-
-              let coupenmoney = 0;
-
-                if(coupenData){
-                   console.log('coupenData', money*coupenData.offer/100)
-                   coupenmoney = Math.round(money - money*coupenData.offer/100);
-                   await CoupenDB.findOneAndUpdate({coupenId:coupen},{$push:{usedUsers:req.session.user_id}})
-               }else{
-                   
-                   coupenmoney = money
-               }
-           
-               await OrderDB.findOneAndUpdate({userId:req.session.user_id},{$push:{'products':{
-                   productId:productsData[i].productId._id,
-                   productStatus:"pending",
-                   paymentStatus:"Failed",
-                   quandity:productsData[i].quandity,
-                   orderDate:date,
-                   paymentMethod:paymentMethod,
-                   deliveryAddress:address,
-                   productTotal:coupenmoney
-               }}}).populate('products.productId');
-
-              
-               await CartDB.findOneAndDelete({userId:req.session.user_id}).populate('userId').populate('products.productId')
-
-            };
-               
-       }else{
-           console.log("false");
-           res.send({outofstock:true , product:product.name})
-       }
-       
-     
-      };
-
-         
-    } catch (error) {
-       console.log(error.message);
-    }
-}
-const successPage = async(req,res)=>{
-   try { 
-       const {addressId,coupen,paymentMethod} = req.query;
-       const coupenData = await CoupenDB.findOne({coupenId:coupen});
-       const offerData = await OfferDB.find({});
-       if(paymentMethod=='Razor pay'){
-
-           const products = await CartDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId').populate('products.productId.categoryID')
-           const addressdb = await AddressDB.findOne({userID:req.session.user_id}).populate('userID');
-           console.log(addressdb)
-           const address =  addressdb.address.find((a)=>{
-               return a.equals(addressId);
-           });
-
-           const  date =  new Date().toISOString().slice(0,10);
-          
-          let productsData = products.products;
-      
-          for(let i=0;i<productsData.length;i++){
-           let product = await ProductDb.findOne({_id:productsData[i].productId._id});
-           console.log("start");
-           
-           if(productsData[i].productId.stock>0){
-   
-               product.stock=product.stock-productsData[i].quandity;
+             let product = await ProductDb.findOne({_id:productsData[i].productId._id});
+             if(productsData[i].productId.stock>0){
+                product.stock=product.stock-productsData[i].quandity;
                 await product.save();
-           
-                const exist = await OrderDB.findOne({userId:req.session.user_id}).populate('products.productId');
+             }
+             const exist = await OrderDB.findOne({userId:req.session.user_id});
+             if(exist){
+                await OrderDB.findByIdAndUpdate({_id:exist._id},{$push:{
+                     products:{
+                        productId:productsData[i].productId._id,
+                        productStatus,
+                        paymentStatus,
+                         orderDate:date,
+                        quandity:productsData[i].quandity,
+                        paymentMethod:paymentMethod,
+                        deliveryAddress:address,
+                        productTotal:money
+                    }
+                }})
+             }else{
 
-                if(!exist){
-                   const money = products.products.reduce((acc,value)=>{
-                                      
-                       const offerProduct = offerData.find( offer => offer.iteam === value.productId.name || offer.iteam === value.productId.categoryID.name)
-                       if(offerProduct){
-                           return acc+ value.productId.Price*value.quandity - parseInt(value.productId.Price)*offerProduct.offerRate/100*value.quandity; 
-                       }else{
-                           return acc+parseInt(value.productId.Price)*value.quandity
-                       }
-                       
-                   },0);
-                   let coupenmoney = 0;
-                         console.log('money',money);
-                    if(coupenData){
-                      
-                       coupenmoney = money - Math.round(money*coupenData.offer/100);
-                       await CoupenDB.findOneAndUpdate({coupenId:coupen},{$push:{usedUsers:req.session.user_id}})
-                   }else{
-                       
-                       coupenmoney = money
-                   }
-                   
-                   console.log('coupenmoney',coupenmoney);
-               const data = new OrderDB({
-                   userId:req.session.user_id,
-                   products:[{
-                       productId:productsData[i].productId._id,
-                       productStatus:"pending",
-                       paymentStatus:"Paid",
-                       quandity:productsData[i].quandity,
-                       orderDate:date,
-                       paymentMethod:paymentMethod,
-                       deliveryAddress:address,
-                       productTotal:coupenmoney
-                   }]
-               });
-               console.log("data",data)
-                  await data.save();
-                  await CartDB.findOneAndDelete({userId:req.session.user_id}).populate('userId').populate('products.productId')
-                   console.log("success");
-               }else{
-                   console.log(" products kk add akkanam");
-                       let money=0;   
-                       const offerProduct = offerData.find( offer => offer.iteam === productsData[i].productId.name || offer.iteam === productsData[i].productId.categoryID.name)
-                       if(offerProduct){
-                           money =  productsData[i].productId.Price*productsData[i].quandity - parseInt(productsData[i].productId.Price)*offerProduct.offerRate/100*productsData[i].quandity; 
-                      
-                       }else{
-                           money = parseInt(productsData[i].productId.Price)*productsData[i].quandity
-                       }
-    
-                  let coupenmoney = 0;
+                const data = new OrderDB({
+                    userId:req.session.user_id,
+                    products:[{
+                        productId:productsData[i].productId._id,
+                        productStatus,
+                        paymentStatus,
+                        quandity:productsData[i].quandity,
+                        orderDate:date,
+                        paymentMethod:paymentMethod,
+                        deliveryAddress:address,
+                        productTotal:money
+                    }]
+                });
+                await data.save();
+             }
+         }
 
-                    if(coupenData){
-                       console.log('coupenData', money*coupenData.offer/100)
-                       coupenmoney = Math.round(money - money*coupenData.offer/100);
-                       await CoupenDB.findOneAndUpdate({coupenId:coupen},{$push:{usedUsers:req.session.user_id}})
-                   }else{
-                       
-                       coupenmoney = money
-                   }
-               
-                   await OrderDB.findOneAndUpdate({userId:req.session.user_id},{$push:{'products':{
-                       productId:productsData[i].productId._id,
-                       productStatus:"pending",
-                       paymentStatus:"Paid",
-                       quandity:productsData[i].quandity,
-                       orderDate:date,
-                       paymentMethod:paymentMethod,
-                       deliveryAddress:address,
-                       productTotal:coupenmoney
-                   }}}).populate('products.productId');
-
-                  
-                   await CartDB.findOneAndDelete({userId:req.session.user_id}).populate('userId').populate('products.productId')
+       await CartDB.findOneAndUpdate({userId:req.session.user_id},{$set:{products:[]}});
+       res.json({success:true});
    
-                };
-                   
-           }else{
-               console.log("false");
-               res.send({outofstock:true , product:product.name})
-           }
-           
-         
-          };
-
-          res.render('success');
-
-       }else{
-           res.render('success');
-       }
-          
       
    } catch (error) {
        console.log(error.message);
    }
 }
 
+const successPage = async(req,res)=>{
+   try {
+       res.render('success');
+   } catch (error) {
+       console.error(error.message)
+   }
+}
+
+const failePage = async(req,res)=>{
+    try {
+       res.render("faile")
+    } catch (error) {
+       console.log(error.message);
+    }
+}
 const payAgain = async(req,res)=>{
    try {
        const {productId,productTotal,quandity,addressId} = req.query
@@ -1063,8 +614,9 @@ module.exports={
     placeOrder,
     orderUserDetailes,
     cancelUserOrder,
-    failePage,
+    saveOrder,
     successPage,
+    failePage,
     payAgain,
     repay,
     wallet,

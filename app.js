@@ -14,6 +14,7 @@ app.use(session({secret:process.env.SESSION_SECRET,resave:false,saveUninitialize
 app.set("view engine","ejs");
 app.set("views",'./views/users');
 app.set("views",'./views/admin');
+app.set("views",'./views/layout');
 
 
 app.use(nocahe())

@@ -46,10 +46,10 @@
                         <a href="/wishlist" class="wishlist-link">
                             <i class="icon-heart-o"></i>
                             <%if(wishlistData){%>
-                                <span class="wishlist-count"><%=wishlistData?.products?.length%></span>
+                                <span id="wishlist-count" class="wishlist-count"><%=wishlistData?.products?.length%></span>
                                 <span class="wishlist-txt">My Wishlist</span>
                             <%}else{%>
-                                <span class="wishlist-count">0</span>
+                                <span id="wishlist-count" class="wishlist-count">0</span>
                                 <span class="wishlist-txt">My Wishlist</span>
                             <%}%>
                            
@@ -59,64 +59,17 @@
                             <a href="/cart" class="dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-display="static">
                                 <i class="icon-shopping-cart"></i>
                                 <%if(cartData){%>
-                                    <span class="cart-count"><%=cartData?.products?.length%></span>
-                                    <span class="cart-txt">Rs:<%=cartTotal%></span>
+                                    <span id="cart-count" class="cart-count"><%=cartData?.products?.length%></span>
+                                    <span id="cart-txt" class="cart-txt">Rs:<%=cartTotal%></span>
                                 <%}else{%>
-                                    <span class="cart-count">0</span>
-                                    <span class="cart-txt">Rs:00.00</span>
+                                    <span id="cart-count" class="cart-count">0</span>
+                                    <span id="cart-txt" class="cart-txt">Rs:00.00</span>
                                 <%}%>
                                
                             </a>
 
                             <div class="dropdown-menu dropdown-menu-right">
-                                <!-- <div class="dropdown-cart-products">
-                                    <div class="product">
-                                        <div class="product-cart-details">
-                                            <h4 class="product-title">
-                                                <a href="product.html">Beige knitted elastic runner shoes</a>
-                                            </h4>
-
-                                            <span class="cart-product-info">
-                                                <span class="cart-product-qty">1</span>
-                                                x $84.00
-                                            </span>
-                                        </div>End .product-cart-details -->
-
-                                        <!-- <figure class="product-image-container">
-                                            <a href="product.html" class="product-image">
-                                                <img src="assets/images/products/cart/product-1.jpg" alt="product">
-                                            </a>
-                                        </figure>
-                                        <a href="#" class="btn-remove" title="Remove Product"><i class="icon-close"></i></a>
-                                    </div>End .product -->
-
-                                    <!-- <div class="product">
-                                        <div class="product-cart-details">
-                                            <h4 class="product-title">
-                                                <a href="product.html">Blue utility pinafore denim dress</a>
-                                            </h4>
-
-                                            <span class="cart-product-info">
-                                                <span class="cart-product-qty">1</span>
-                                                x $76.00
-                                            </span>
-                                        </div>End .product-cart-details -->
-
-                                        <!-- <figure class="product-image-container">
-                                            <a href="product.html" class="product-image">
-                                                <img src="assets/images/products/cart/product-2.jpg" alt="product">
-                                            </a>
-                                        </figure>
-                                        <a href="#" class="btn-remove" title="Remove Product"><i class="icon-close"></i></a>
-                                    </div> End .product -->
-                                <!-- </div>End .cart-product --> 
-
-                                <!-- <div class="dropdown-cart-total">
-                                    <span>Total</span>
-
-                                    <span class="cart-total-price">$160.00</span>
-                                </div>End .dropdown-cart-total -->
-
+                               
                                 <div class="dropdown-cart-action">
                                     <a href="/cartt" class="btn btn-primary">View Cart</a>
                                     <a href="/checkout" class="btn btn-outline-primary-2"><span>Checkout</span><i class="icon-long-arrow-right"></i></a>
@@ -222,17 +175,17 @@ if (wishlistData) {
 
         if (wishlistData && wishlistProducts.has(productData[i]._id.toString())) {
 %>
-            <a id="wishlist<%=i%>" onclick="addwishlist('<%=productData[i]._id%>','<%=i%>')" class="btn-product-icon btn-wishlist bg-danger btn-expandable"><span id="text<%=i%>">remove from wishlist</span></a>
+            <a id="wishlist<%=i%>" onclick="handlewishlist('<%=productData[i]._id%>','<%=i%>')" class="btn-product-icon btn-wishlist bg-danger btn-expandable"><span id="text<%=i%>">remove from wishlist</span></a>
 <%
         } else {
 %>
-            <a id="wishlist<%=i%>" onclick="addwishlist('<%=productData[i]._id%>','<%=i%>')" class="btn-product-icon btn-wishlist btn-expandable"><span id="text<%=i%>">add to wishlist</span></a>
+            <a id="wishlist<%=i%>" onclick="handlewishlist('<%=productData[i]._id%>','<%=i%>')" class="btn-product-icon btn-wishlist btn-expandable"><span id="text<%=i%>">add to wishlist</span></a>
 <%
         }
   
 } else {
 %>
-    <a id="wishlist<%=i%>" onclick="addwishlist('<%=productData[i]._id%>','<%=i%>')" class="btn-product-icon btn-wishlist  btn-expandable"><span id="text<%=i%>">add to wishlist</span></a>
+    <a id="wishlist<%=i%>" onclick="handlewishlist('<%=productData[i]._id%>','<%=i%>')" class="btn-product-icon btn-wishlist  btn-expandable"><span id="text<%=i%>">add to wishlist</span></a>
 <%
 }
 %>
@@ -243,7 +196,17 @@ if (wishlistData) {
 
                         <div class="product-body">
                             <div class="product-action">
-                                <button  class="btn-product btn-cart"  onclick="addtoCart('<%=productData[i]._id%>')"><span>add to cart</span></button>
+                                <%
+                                if(cartData.products.find((pro)=>pro.productId._id == productData[i]._id.toString())){
+                                  %>
+                                  <a  class="btn-product btn-cart"  onclick="handleCart('<%=productData[i]._id%>')"><span id="cart<%=productData[i]._id%>">remove from cart</span></a>
+                                  <%
+                                }else{
+                                    %>
+                                    <a  class="btn-product btn-cart"  onclick="handleCart('<%=productData[i]._id%>')"><span id="cart<%=productData[i]._id%>">add to cart</span></a>
+                                    <%
+                                }
+                                %>
                             </div><!-- End .product-action -->
                             <div class="product-cat">
                                 <a href="/wcollection"><%=productData[i].categoryID.name%></a>
@@ -680,28 +643,47 @@ if (wishlistData) {
     </div>
     <!-- Plugins JS File -->
     <script>
-    function addtoCart(productId){
-       fetch(`/addToCart?productId=${productId}`)
-    }
+        async function handleCart(productId){
+const response = await fetch(`/cart?productId=${productId}`,{method:"PATCH",body:JSON.stringify({quantity:1}),headers:{"Content-Type": "application/json"}});
+const res = await response.json();
+if(res.success){
+  if(res.added){
+     Swal.fire("Product added to your Cart!");
+     document.getElementById(`cart${productId}`).innerText="remove from cart";
+     document.getElementById('cart-count').innerText=`${res.count}`;
+     document.getElementById('cart-txt').innerText=`Rs.${res.totel}.00`;
+  }else if(res.removed){
+     Swal.fire("Product removed from your Cart!");
+     document.getElementById(`cart${productId}`).innerText="add to cart";
+     document.getElementById('cart-count').innerText=`${res.count}`;
+     document.getElementById('cart-txt').innerText=`Rs.${res.totel}.00`;
+  }
+}else{
+ Swal.fire(res.message);
+}
+}
 
-    function addwishlist(productId,num){
+    function handlewishlist(productId,num){
                 console.log(productId,num)
-            fetch(`/addwishlist?productId=${productId}`).then(res=>res.json())
+                fetch(`/wishlist?productId=${productId}`,{method:"PATCH"}).then(res=>res.json())
             .then(data=>{
                 
                 if(data.added){
+                    console.log(data);
+                    
                     const wishlist = document.getElementById(`wishlist${num}`);
                     const text = document.getElementById(`text${num}`);
+                     document.getElementById('wishlist-count').innerText=`${data.totelProducts}`;
              
                     wishlist.style.backgroundColor="red";
                     text.innerText="remove from wishlist"
                     Swal.fire("Product added to your wishlist!");
 
-                }else if(data.remove){
+                }else if(data.removed){
                    
                     const wishlist2 = document.getElementById(`wishlist${num}`);
                     const text2 = document.getElementById(`text${num}`);
-                  
+                    document.getElementById('wishlist-count').innerText=`${data.totelProducts}`;
                     wishlist2.style.backgroundColor="white";
                     text2.innerText="add to wishlist";
                     Swal.fire("Product removed to your wishlist!");

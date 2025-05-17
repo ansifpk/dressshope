@@ -137,7 +137,7 @@
 							</ul>
 							<div class="tab-content">
 							    <div class="tab-pane fade show active" id="register-2" role="tabpanel" aria-labelledby="register-tab-2">
-							    	<form action="" method="post"> 
+							    	<form> 
                                         <div class="form-group">
                                             <% 
 
@@ -151,27 +151,32 @@
                                          </div>   
                                         <div class="form-group">
                                             <label>Enter your name *</label>
-                                            <input type="string" class="form-control" id="register-email-2" name="name" required>
+                                            <input type="string" class="form-control" id="name" name="name" required>
+                                            
+                                            <p id="nameError" class="errors">Invalid name</p>
                                         </div>
                                         <!-- End .form-group -->
                                         
 							    		<div class="form-group">
 							    			<label>Your email address *</label>
-							    			<input type="email" class="form-control" id="register-email-2" name="email" required>
+							    			<input type="email" class="form-control"  id="email" name="email" required>
+                                            <p id="emailError" class="errors"></p>
 							    		</div><!-- End .form-group -->
 
                                         <div class="form-group">
 							    			<label >Enter your mobile number *</label>
-							    			<input type="number" class="form-control" id="register-email-2" name="mobile" required>
+							    			<input type="number"  class="form-control" id="mobile" name="mobile" required>
+                                            <p id="mobileError" class="errors">hfiuehiuf</p>
 							    		</div><!-- End .form-group -->
 
 							    		<div class="form-group">
 							    			<label >Password *</label>
-							    			<input type="password" class="form-control" id="register-password-2" name="password" required>
-							    		</div><!-- End .form-group -->
+							    			<input type="password" class="form-control" id="password" name="password" required>
+                                            <p id="passwordError" class="errors">hfiuehiuf</p>
+                                        </div><!-- End .form-group -->
 
 							    		<div class="form-footer">
-							    			<button type="submit" class="btn btn-outline-primary-2">
+							    			<button onclick={handleClick()} type="button" class="btn btn-outline-primary-2">
 			                					<span>SIGN UP</span>
 			            						<i class="icon-long-arrow-right"></i>
 			                				</button>
@@ -336,6 +341,69 @@
    
    
     <!-- Plugins JS File -->
+    <script>
+       async function handleClick(){
+            
+            const email = document.getElementById("email").value.trim()
+            const name = document.getElementById("name").value.trim()
+            const mobile = document.getElementById("mobile").value.trim()
+            const password = document.getElementById("password").value.trim()
+
+            const emailError = document.getElementById("emailError")
+            const nameError = document.getElementById("nameError")
+            const mobileError = document.getElementById("mobileError")
+            const passwordError = document.getElementById("passwordError")
+           
+            let success = true;
+            if(name.length == 0){
+                nameError.style.display = "block"
+
+            }else{
+
+                nameError.style.display = "none"
+            }
+             if(email.length == 0 || !/^[A-Za-z0-9.%+-]+@gmail\.com$/.test(email)){
+                emailError.style.display = "block"
+                emailError.textContent="Invalid Email Structure."
+            }else{
+                emailError.style.display = "none"
+            }
+             if(password.length < 8 || password.length >20){
+                passwordError.style.display = "block"
+                passwordError.textContent="Password should be inbetween 8 - 20."
+            }else{
+                passwordError.style.display = "none"
+            }
+             if(mobile.length !==10){
+                mobileError.style.display = "block"
+                mobileError.textContent="Invalid mobile number."
+            }else{
+                mobileError.style.display = "none"
+            }
+            if(nameError.style.display == "none" && emailError.style.display == "none" && passwordError.style.display == "none" && mobileError.style.display == "none"){
+              const data = await  fetch("/register",{ method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body:JSON.stringify({name,email,password,mobile})}
+                )
+
+               const res = await data.json();
+               if(res.nameError){
+
+               }else if(res.emailError){
+                emailError.style.display = "block"
+                emailError.textContent=res.emailError
+               }else if(res.passwordError){
+
+               }else if(res.mobileError){
+
+               }else if(res.success){
+                window.location.href=`/otp?email=${email}`;
+               }
+            }
+        }
+    </script>
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/jquery.hoverIntent.min.js"></script>

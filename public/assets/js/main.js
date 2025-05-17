@@ -753,7 +753,7 @@ $(document).ready(function () {
 
     if(document.getElementById('newsletter-popup-form')) {
         setTimeout(function() {
-            var mpInstance = $.magnificPopup.instance;
+            var mpInstance = $.magnificPopup?.instance;
             if (mpInstance.isOpen) {
                 mpInstance.close();
             }

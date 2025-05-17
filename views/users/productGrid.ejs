@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/images/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/icons/favicon-16x16.png">
+    <link rel="manifest" href="assets/images/icons/site.html">
+    <link rel="mask-icon" href="assets/images/icons/safari-pinned-tab.svg" color="#666666">
+    <link rel="shortcut icon" href="assets/images/icons/favicon.ico">
+    <meta name="apple-mobile-web-app-title" content="Molla">
+    <meta name="application-name" content="Molla">
+    <meta name="msapplication-TileColor" content="#cc9966">
+    <meta name="msapplication-config" content="assets/images/icons/browserconfig.xml">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="stylesheet" href="assets/vendor/line-awesome/line-awesome/line-awesome/css/line-awesome.min.css">
+    <!-- Plugins CSS File -->
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/plugins/owl-carousel/owl.carousel.css">
+    <link rel="stylesheet" href="assets/css/plugins/magnific-popup/magnific-popup.css">
+    <link rel="stylesheet" href="assets/css/plugins/jquery.countdown.css">
+    <!-- Main CSS File -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/demos/demo-16.css">
+
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/plugins/owl-carousel/owl.carousel.css">
+    <link rel="stylesheet" href="assets/css/plugins/magnific-popup/magnific-popup.css">
+    <link rel="stylesheet" href="assets/css/plugins/jquery.countdown.css">
+    <!-- Main CSS File -->
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    
+</head>
+<body>
+    
+                <%
+                if(productData.length > 0){                  
+                        for(let i=0;i<productData.length;i++){
+                            if(productData[i].is_listed===true){
+                             if(productData[i].categoryID.is_listed===true){
+                                %>
+                    <div class="col-6 col-md-4 col-lg-3">
+                       <div class="product product-3">
+                        <figure class="product-media">
+                            <span class="product-label">
+                              <%= productData[i].stock > 0 ? "Sale" : "Out of Stock" %>
+                            </span>
+                          
+                           
+                            <a href="/detailes?id=<%=productData[i]._id%>">
+                                <img src="/admin/assets/productImages/<%=productData[i].image[0]%>" alt="Product image" class="product-image">
+                            </a>
+   
+                            <%if(offerData){
+                                    const productName = productData[i].name;
+                                    const productCategory = productData[i].categoryID.name;
+                                    const productOffer = offerData.find(offer => offer.iteam === productName);
+                                    const categoryOffer = offerData.find(offer => offer.iteam === productCategory);  
+
+                                    if(productOffer){%>
+                                        <div class="product-countdown-container">
+                                               <span class="product-contdown-title">offer ends in:</span>
+                                               <div class="product-contdown-title text-danger" data-until="2019, 10, 5" data-compact="true"><%=productOffer.validity%></div><!-- End .product-countdown -->
+                                       </div><!-- End .product-countdown-container -->
+                                    <%}else if(categoryOffer){
+                                        %>
+                                        <div class="product-countdown-container">
+                                    <span class="product-contdown-title">offer ends in:</span>
+                                    <div class="product-contdown-title text-danger" data-until="2019, 10, 5" data-compact="true"><%=categoryOffer.validity%></div><!-- End .product-countdown -->
+                            </div><!-- End .product-countdown-container -->
+                                        <%
+                                    }
+                                    else{%>
+                                        
+                                    <%}
+                                }
+                                %>
+                            <div class="product-action-vertical">
+                                <%
+                                    if(wishlistData.products.some((pro)=>pro.productId==productData[i]._id.toString())){
+                                        %>
+                                        <a id="wishlist<%=i%>" onclick="handlewishlist('<%=productData[i]._id%>','<%=i%>')" class="btn-product-icon btn-wishlist bg-danger btn-expandable"><span id="text<%=i%>">remove from wishlist</span></a>
+                                        <%
+                                    }else{
+                                        %>
+                                        <a id="wishlist<%=i%>" onclick="handlewishlist('<%=productData[i]._id%>','<%=i%>')" class="btn-product-icon btn-wishlist btn-expandable"><span id="text<%=i%>">add to wishlist</span></a>
+                                        <%
+                                    }
+                                %>
+                            </div><!-- End .product-action-vertical -->
+                        </figure><!-- End .product-media -->
+
+                        <div class="product-body">
+                            <%
+                            if(productData[i].stock>0){
+                                %>
+                                <%
+                                
+                                const cartProducts = new Map(cartData.products.map(product => [product.productId._id.toString(), true]));
+                                if(cartProducts.has(productData[i]._id.toString())){
+                                    %>
+                                    <div class="product-action">
+                                      <a id="cartBtn" class="btn-product btn-cart"  onclick="handleCart('<%=productData[i]._id%>')"><span id="cart<%=productData[i]._id%>">remove from cart </span></a>
+                                    </div>
+                                    <%
+                                }else{
+                                    %>
+                                    <div class="product-action">
+                                      <a  class="btn-product btn-cart"  onclick="handleCart('<%=productData[i]._id%>')"><span id="cart<%=productData[i]._id%>">add to cart </span></a>
+                                    </div>
+                                    <%
+                                }
+                              
+                                %>
+                                <%
+                            }else{
+                                %>
+                                <div class="product-action">
+                                <a  class="btn-product btn-cart" ><span>Out of stock</span></a>
+                               
+                            </div><!-- End .product-action -->
+                                <%
+                            }
+                            %>
+                           
+                            <div class="product-cat">
+                                <a href=""><%=productData[i].categoryID.name%></a>
+                            </div><!-- End .product-cat -->
+                            <h3 class="product-title"><a href="/detailes"><%=productData[i].name%></a></h3><!-- End .product-title -->
+                            <div class="product-price">
+                                <%if(offerData){
+                                    const productName = productData[i].name;
+                                    const productCategory = productData[i].categoryID.name;
+                                    const productOffer = offerData.find(offer => offer.iteam === productName);
+                                    const categoryOffer = offerData.find(offer => offer.iteam === productCategory);  
+
+                                    if(productOffer){%>
+                                       
+                                        <span class="new-price">Rs.<%=productData[i].Price-Math.round(productData[i].Price*productOffer.offerRate/100)%>.00</span>
+                                        <span class="old-price">Rs.<%=productData[i].Price%>.00</span>
+                                    <%}else if(categoryOffer){
+                                        %>
+                                        <span class="new-price">Rs.<%=productData[i].Price-Math.round(productData[i].Price*categoryOffer.offerRate/100)%>.00</span>
+                                        <span class="old-price">Rs.<%=productData[i].Price%>.00</span>
+                                        <%
+                                    }
+                                    else{%>
+                                        <span class="new-price">Rs.<%=productData[i].Price%>.00</span>
+                                    <%}
+                                }else{%> 
+                                        <span class="new-price">Rs.<%=productData[i].Price%>.00</span><%
+                                }%>
+                               
+                            </div><!-- End .product-price -->
+                        </div><!-- End .product-body -->
+
+                        <div class="product-footer">
+                            <div class="ratings-container">
+                                <div class="ratings">
+                                    <div class="ratings-val" style="width: 40%;"></div><!-- End .ratings-val -->
+                                </div><!-- End .ratings -->
+                                <span class="ratings-text">( 4 Reviews )</span>
+                            </div><!-- End .rating-container -->
+                        </div><!-- End .product-footer -->
+                    </div><!-- End .product -->
+                </div><!-- End .col-sm-6 col-lg-3 -->
+
+                    <%
+                            }          
+                    }
+                }
+                  
+                }
+
+                %> 
+      
+</body>
+</html>

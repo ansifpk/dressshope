@@ -11,7 +11,10 @@ html,
 body {
     height: 100%
 }
-
+.errors{
+    color: red;
+    display:none;
+}
 body {
     font: normal 300 1.4rem/1.86 "Poppins", sans-serif;
     color: #666;
@@ -8009,6 +8012,7 @@ p {
     position: relative;
     display: flex;
     align-items: center;
+    cursor: pointer;
     justify-content: center;
     font-size: 1.8rem;
     line-height: 1;

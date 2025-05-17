@@ -223,7 +223,7 @@
                                         <th scope="col">Image</th>
                                         <th scope="col">Name</th> 
                                         <th scope="col">Payment</th>
-                                        <th scope="col">Status</th>
+                                        <th scope="col">Delivery Status</th>
                                         <th scope="col">Date</th>
                                         
                                     </tr>
@@ -236,7 +236,7 @@
                                         %>
                                          <tr> 
                                             <td>
-                                                <a href="/admin/orderDetailes?id=<%=orderData[i]._id%>&productId=<%=orderData[i].productId._id%>">
+                                                <a href="/admin/orderDetailes?_id=<%=orderData[i]._id%>&productId=<%=orderData[i].productId._id%>">
                                                     <img src="/admin/assets/productImages/<%=orderData[i].productId.image[0]%>" width="40" height="40" class="img-xs" alt="Item" />
                                                     </a>                       
                                             </td>      

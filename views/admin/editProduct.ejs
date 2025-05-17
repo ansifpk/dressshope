@@ -31,7 +31,7 @@
         </div>
         <nav>
             <ul class="menu-aside">
-                <li   class="menu-item active"   >
+                <li   class="menu-item "   >
                     <a class="menu-link" href="/admin/dashboard">
                         <i class="icon material-icons md-home"></i>
                         <span class="text">Dashboard</span>
@@ -41,7 +41,7 @@
                        
                     </div>
                 </li>
-                <li class="menu-item has-submenu">
+                <li class="menu-item has-submenu active">
                     <a class="menu-link" href="/admin/products">
                         <i class="icon material-icons md-shopping_bag"></i>
                         <span class="text">Products</span>
@@ -185,12 +185,12 @@
             <div class="row">
                 <div class="col-6">
                     <div class="content-header">
-                        <h2 class="content-title">Add New Product</h2>
+                        <h2 class="content-title">Edit Product</h2>
                     </div>
                 </div>
             </div>
             <div class="row">
-                <div class="col-lg-6">
+                <div class="col-lg-12">
                     <div class="card mb-4">
                         <div class="card-body">
                             <div class="row">
@@ -267,9 +267,29 @@
                                         </div>
                                        
                                       
-                                            <div class="fallback">
-                                                <input name="file"  accept="image/*" type="file" multiple   class="form-control"/> 
-                                            </div>
+                                             <div class="row">
+                                            <% for (let i = 0; i < productData.image.length; i++) { %>
+                                                <div class="col-3 mb-3 d-flex flex-column align-items-center">
+                                                <label for="file-upload<%= i %>" class="form-label">Upload Image <%= i + 1 %></label>
+                                                <input 
+                                                    name="file" 
+                                                    id="file-upload<%= i %>" 
+                                                    onchange="preview('<%= i %>')"  
+                                                    type="file" 
+                                                    required
+                                                    value="<%=productData.image[i]%>"
+                                                    accept="image/*"
+                                                    class="form-control mb-2"  
+                                                />
+                                                    <img 
+                                                        src="" 
+                                                        alt="Preview" 
+                                                        id="file-preview<%= i %>" 
+                                                        style="width: 200px; height: 150px; border-radius: 10px; object-fit: cover; border: 1px solid #ccc;" 
+                                                    />
+                                                    </div>
+                                                <% } %>                                     
+                                    </div>
                                                 
                                            
                                     </div>
@@ -315,47 +335,25 @@
     <script src="assets/js/vendors/bootstrap.bundle.min.js"></script>
     <script src="assets/js/vendors/select2.min.js"></script>
     <script src="assets/js/vendors/perfect-scrollbar.js"></script>
-//     <script>
-//         function imagePreview(num){
-//             console.log(num)
-//         const previewImage = document.getElementById(`previewImage${num}`);
-//         const preview = document.getElementById(`preview${num}`);
-//         const file = document.getElementById(`inpfile${num}`);
-//         const id = document.getElementById(`id`).value;
-//         const photo = file.files[0];
-    
-//         const newPhoto= photo.name;    
-//         const  oldPhoto =preview.value;
-//         console.log(oldPhoto);
-      
-//         if (photo) {
-//             console.log(",,,")
-//             const reader = new FileReader();
+    <script>
 
-//             reader.onload = function (e) {
-//                 previewImage.src = e.target.result;
-                
-//             };
-//             reader.readAsDataURL(photo);
+        function preview(id) {
+          const input = document.getElementById(`file-upload${id}`);
+          const file = input.files
+                if (file) {
+                    const fileReader = new FileReader();
+                    const preview = document.getElementById(`file-preview${id}`);
+                    fileReader.onload = function (event) {
+                      
+                        
+                        preview.setAttribute('src', event.target.result);
+                    }
+                    fileReader.readAsDataURL(file[0]);
+                }
+          
+        }
         
-//             } else {
-//             preview.src = `/admin/assets/productimages/${oldPhoto}`;
-//             console.log("illaa")
-        
-//         };
-
-//          fetch('/admin/editProducts', {
-//   method: 'post',
-//   headers: {
-//     'Content-Type': 'application/json' // Assuming you're sending JSON data
-//   },
-//   body: JSON.stringify({ newPhoto: newPhoto, oldPhoto: oldPhoto, index:num , id:id })
-// })
-
-        
-//     }
-    
-//      </script>
+    </script>
     <script src="assets/js/vendors/jquery.fullscreen.min.js"></script>
     <!-- Main Script -->
     <script src="assets/js/main.js?v=1.1" type="text/javascript"></script>

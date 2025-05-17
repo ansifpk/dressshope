@@ -135,25 +135,28 @@
                                 <span class="wishlist-count"><%=wishlistData?.products?.length%></span>
                             <%}else{%>
                                 <span class="wishlist-count">0</span>
-                            <%}%>
-                           
-                            
+                            <%}%>   
                         </a>
+                        
                         <div class="dropdown cart-dropdown">
-                            <a href="/cart" class="dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-display="static">
+                            <a href="/cartt" class="dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-display="static">
                                 <i class="icon-shopping-cart"></i>
                                 <%if(cartData){%>
-                                    <span class="cart-count"><%=cartData?.products?.length%></span>
-                                    <span class="product-title">Rs:<%=cartTotal%></span>
+                                  <span id="cart-count" class="cart-count"><%=cartData?.products?.length%></span>
+                                  <span id="product-title" class="product-title">Rs:<%=cartTotal%></span>
                                 <%}else{%>
-                                    <span class="cart-count">0</span>
-                                    <span class="product-title">Rs:00.00</span>
-                                <%}%>
-                               
+                                  <span id="cart-count" class="cart-count">0</span>
+                                  <span id="product-title" class="product-title">Rs:00.00</span>
+                                <%}%>  
                             </a>
-
-                            
+                            <div class="dropdown-menu dropdown-menu-right">
+                                <div class="dropdown-cart-action">
+                                    <a href="/cartt" class="btn btn-primary">View Cart</a>
+                                    <a href="/checkout" class="btn btn-outline-primary-2"><span>Checkout</span><i class="icon-long-arrow-right"></i></a>
+                                </div><!-- End .dropdown-cart-total -->
+                            </div><!-- End .dropdown-menu -->
                         </div><!-- End .cart-dropdown -->
+
                     </div><!-- End .header-right -->
                 </div><!-- End .container -->
             </div><!-- End .header-middle -->
@@ -300,27 +303,40 @@
 
                                         <a href="#" class="size-guide"><i class="icon-th-list"></i>size guide</a>
                                     </div><!-- End .details-filter-row -->
-
-                                    <div class="details-filter-row details-row-size">
-                                        <label for="qty">Qty:</label>
-                                        <div  class="product-details-quantity">
-                                            <input type="number" id="quandity" class="form-control" value="1" min="1" max="4" step="1" data-decimals="0" onchange="limite()" required>
-                                        </div><!-- End .product-details-quantity -->
-                                    </div><!-- End .details-filter-row -->
-
+                                    <%
+                                     if(!cartData.products.find((val)=>val.productId._id == productData._id.toString())){
+                                        %>
+                                        <div id="qty" class="details-filter-row details-row-size">
+                                            <label for="qty">Qty:</label>
+                                            <div  class="product-details-quantity">
+                                                <input type="number" id="quandity" class="form-control" value="1" min="1" max="4" step="1" data-decimals="0" onchange="limite()" required>
+                                            </div><!-- End .product-details-quantity -->
+                                        </div><!-- End .details-filter-row -->
+                                        <%
+                                     }else{
+                                        %>
+                                        <%
+                                     }
+                                     %>
                                     <div class="product-details-action">
                                         <%
                                         if(productData.stock>0){
-                                        %>
-                                        <a  href="/cartt"   class="btn-product btn-cart" onclick="addtoCart('<%=productData._id%>')"><span>add to cart</span></a>
-                                        <%
+                                            if(cartData.products.find((val)=>val.productId._id == productData._id.toString())){
+                                                %>
+                                                <a href="/cartt" class="btn-product btn-cart" ><span>go to cart</span></a>
+                                                <%
+                                            }else{   
+                                                %>
+                                                <a id="btn-cart1" class="btn-product btn-cart" onclick="addtoCart('<%=productData._id%>')" ><span id="btn-car">add to cart</span></a>
+                                                <%
+                                            }
                                         }else{
                                             %>
                                             <button class="btn-product btn-cart"><span>out of stock</span></button>
                                             <%
                                         }
                                         %>
-                                        
+                                       
 
                                        
                                     </div><!-- End .product-details-action -->
@@ -1092,14 +1108,25 @@
         let quandity = document.getElementById(`quandity`);
         if(quandity.value==quandity.max){
             Swal.fire("Maximum quandity is exceeds!");
-
         }
     }
-    function addtoCart(productId){
-        console.log(productId)
-        let quandity = document.getElementById(`quandity`).value;
-        console.log(quandity)
-        fetch(`/addToCart?productId=${productId}&quandity=${quandity}`)
+    async function addtoCart(productId){
+      
+        let quantity = document.getElementById(`quandity`).value;
+        const response = await fetch(`/cart?productId=${productId}`,{method:"PATCH",body:JSON.stringify({quantity}),headers:{"Content-Type": "application/json"}})
+        const res = await response.json();
+        if(res.success){
+            Swal.fire("Product added to your Cart!");
+            document.getElementById("cart-count").innerText=`${res.count}`;
+            document.getElementById("product-title").innerText=`RS:${res.totel}`;
+            document.getElementById("btn-car").innerText="go to cart";
+            document.getElementById("btn-cart1").onclick=null;
+            document.getElementById("btn-cart1").href="/cartt"
+            document.getElementById("qty").style.display="none"
+        }else{
+            Swal.fire(res.message);
+        }
+        
     }
     </script>
     <script src="assets/js/jquery.min.js"></script>

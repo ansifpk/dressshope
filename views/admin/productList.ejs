@@ -30,7 +30,7 @@
             </div>
             <nav>
                 <ul class="menu-aside">
-                    <li   class="menu-item active"   >
+                    <li   class="menu-item "   >
                         <a class="menu-link" href="/admin/dashboard">
                             <i class="icon material-icons md-home"></i>
                             <span class="text">Dashboard</span>
@@ -40,7 +40,7 @@
                            
                         </div>
                     </li>
-                    <li class="menu-item has-submenu">
+                    <li class="menu-item has-submenu active">
                         <a class="menu-link" href="/admin/products">
                             <i class="icon material-icons md-shopping_bag"></i>
                             <span class="text">Products</span>
@@ -252,7 +252,7 @@
                         <%
                         if(productData[i].is_listed === true){
                             %>
-                            <button class="btn btn-sm font-sm rounded text-white btn-success " onclick="listProduct(this,'<%=productData[i]._id%>') "> Unlist </button>
+                            <button class="btn btn-sm font-sm rounded text-white btn-success " onclick="listProduct(this,'<%=productData[i]._id%>')"> Unlist </button>
                             <%
                         }else{
                             %>
@@ -313,7 +313,7 @@
         </main>
         <script>
             function listProduct(tag,userId){
-                console.log(tag.innerText)
+              
                 if(tag.innerText=='List'){
                     Swal.fire({
   title: "Are you sure?",
@@ -354,7 +354,7 @@
                     tag.innerText="List"
                     tag.style.background='red'
                     tag.style.color='white'
-                    fetch(`/admin/listProducts?userId=${userId}`)
+                    fetch(`/admin/listProducts?userId=${userId}`,{method:'post'})
   }
 });
                     

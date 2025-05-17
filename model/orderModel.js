@@ -26,8 +26,9 @@ products:[{
         default: "none"
     },
     orderDate:{
-        type:String,
-        require:true
+        type:Date,
+        require:true,
+        default: new Date()
        },
     paymentMethod:{
         type:String,

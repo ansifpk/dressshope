@@ -31,7 +31,7 @@
             </div>
             <nav>
                 <ul class="menu-aside">
-                    <li   class="menu-item active"   >
+                    <li   class="menu-item "   >
                         <a class="menu-link" href="/admin/dashboard">
                             <i class="icon material-icons md-home"></i>
                             <span class="text">Dashboard</span>
@@ -63,7 +63,7 @@
                     </li>
                   
                   
-                    <li class="menu-item has-submenu">
+                    <li class="menu-item has-submenu active">
                         <a class="menu-link" href="/admin/viewOrders">
                             <i class="icon material-icons md-monetization_on"></i>
                             <span class="text">View Orders</span>
@@ -129,18 +129,7 @@
         <main class="main-wrap">
             <header class="main-header navbar">
                 <div class="col-search">
-                    <form class="searchform">
-                        <div class="input-group">
-                            <input list="search_terms" type="text" class="form-control" placeholder="Search term" />
-                            <button class="btn btn-light bg" type="button"><i class="material-icons md-search"></i></button>
-                        </div>
-                        <datalist id="search_terms">
-                            <option value="Products"></option>
-                            <option value="New orders"></option>
-                            <option value="Apple iphone"></option>
-                            <option value="Ahmed Hassan"></option>
-                        </datalist>
-                    </form>
+                   
                 </div>
                 <div class="col-nav">
                     <button class="btn btn-icon btn-mobile me-auto" data-trigger="#offcanvas_aside"><i class="material-icons md-apps"></i></button>
@@ -194,25 +183,7 @@
                             <div class="col-lg-6 col-md-6 mb-lg-0 mb-15">
                                 <span> <i class="material-icons md-calendar_today"></i> <b>Wed, Aug 13, 2020, 4:34PM</b> </span> <br />
                                 <small class="text-muted">Order ID: 3453012</small>
-                            </div>
-                            <!-- <div class="dropdown">
-                                <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                                    aria-expanded="false">
-                                    Actions
-                                </button>
-                               
-                            </div> -->
-                            <!-- <div class="col-lg-6 col-md-6 ms-auto text-md-end">
-                                <select class="form-select d-inline-block mb-lg-0 mr-5 mw-200">
-                                    <option>Change status</option>
-                                    <option>Awaiting payment</option>
-                                    <option>Confirmed</option>
-                                    <option>Shipped</option>
-                                    <option>Delivered</option>
-                                </select>
-                            </div> -->
-                                <!-- <a class="btn btn-primary" href="#">Save</a> -->
-                               
+                            </div> 
                         </div>
                     </header>
                     <!-- card-header end// -->
@@ -276,7 +247,7 @@
                                     <table class="table"  >
                                         <div class="col-lg-6 col-md-6 ms-auto text-md-end">
                                             <select id="changeStatus" class="form-select d-inline-block mb-lg-0 mr-5 mw-200">
-                                                <option>Change status</option>
+                                                <option disabled selected>Change status</option>
                                                 <option>pending</option>
                                                 <option>canceled</option>
                                                 <option>Delivered</option>
@@ -293,7 +264,7 @@
                                                 <th >Quantity</th>
                                                 <th >Total</th>
                                                 <th >Date</th>
-                                                <th >Status</th>
+                                                <th >Delivery Status</th>
                                                 <th >Action</th>
                                             </tr>
                                         </thead>
@@ -374,16 +345,32 @@
 function orderStatus(productId){
     const  changeStatus = document.getElementById("changeStatus");
     const status =  document.getElementById("badge");
-   console.log(productId)
-    fetch(`/admin/orderStatus?changeStatus=${changeStatus.value}&productId=${productId}`);
-    
-    status.innerText=changeStatus.value;
-    if(status.innerText==="canceled"){
-        status.style.backgroundColor="red";
-    }else{
-        status.style.backgroundColor="green";
-    }
-   
+ 
+   if(changeStatus.value == 'Change status') {
+    return ;
+   }
+    fetch(`/admin/orderStatus?changeStatus=${changeStatus.value}&productId=${productId}`).then((res)=>res.json())
+    .then((res)=>{
+        if(res.success){
+            status.innerText=changeStatus.value;
+            if(status.innerText==="canceled"){
+                status.style.backgroundColor="red";
+            }else{
+                status.style.backgroundColor="green";
+            }
+            Swal.fire({
+            title: "Success!.",
+            text: res.message,
+            icon: "success"
+            });
+        }else{
+            Swal.fire({
+            title: "Warning!.",
+            text: res.message,
+            icon: "warning"
+            });
+        }
+    });  
 }
   
 
@@ -422,7 +409,6 @@ function orderStatus(productId){
 
 function reason(){
    const  reason = document.getElementById("reason");
-   console.log(reason);
    Swal.fire({
   position: "center",
   title:reason.value ,

@@ -137,13 +137,16 @@
             	<div class="checkout">
 	                <div class="container">
                        
-            			<div  class="checkout-discount">
-            				<form action="/checkout" method="get">
-        						<input type="text" name="coupen" class="form-control" id="checkout-discount-input" required >
-            					<label for="checkout-discount-input"   class="text-truncate">Have a coupon? <span>Click here to enter your code</span></label>
-            				</form>
-                            
-            			</div><!-- End .checkout-discount -->
+            			<div  class="row">
+                            <div class="col-sm-4"> 
+                                <input type="text" id="coupon" name="city" placeholder="Have a coupon? Click here to enter your code" required class="form-control" >
+                            </div>
+                          
+            			</div>
+                        <a  onclick="applyCoupon()"  class="btn btn-outline-primary-2 btn-order ">
+                            <span class="btn-text">Apply</span>
+                            <span class="btn-hover-text">Apply</span>
+                        </a>
             			<form action="" method="post">
                           
 		                	<div class="row">
@@ -193,7 +196,7 @@
                                         }
                                         %>
 	            						<input type="text" class="form-control" required name="address" placeholder="House number and Street name" >
-	            						
+	            						<input type="hidden" id="addressId" value="">
 
 	            						<div class="row">
 		                					<div class="col-sm-6">
@@ -230,7 +233,7 @@
                                         %>
 	        							<input type="email" name="email" required class="form-control" >
                                         
-                                        <button type="submit" class="btn btn-outline-primary-2 btn-order btn-block">Change Address</button>
+                                        <button type="submit" class="btn btn-outline-primary-2 btn-order btn-block">Save Address</button>
 	        							
 		                		</div><!-- End .col-lg-9 -->
 		                		<aside class="col-lg-3">
@@ -279,18 +282,18 @@
                                                     %>
                                                 <tr class="summary-subtotal">
 		                							<td>Subtotal:</td>
-		                							<td>Rs.<%=subTotal%>.00</td>
+		                							<td id="subTotel">Rs.<%=subTotal%>.00</td>
 		                						</tr><!-- End .summary-subtotal -->
                                                 <%
                                                 if(!offer){
                                                     %>
                                                     <tr>
                                                         <td>Offer Price</td>
-		                							    <td>Free shipping</td>
+		                							    <td id="couponOffer">RS:00.00</td>
                                                     </tr>
                                                     <tr class="summary-total">
 		                							<td>Total:</td>
-		                							<td>Rs.<%=subTotal%>.00</td>
+		                							<td id="offerTotal">Rs.<%=subTotal%>.00</td>
                                                     <input type="hidden" id="sub" value="<%=subTotal%>">
 		                						</tr><!-- End .summary-total -->
                                                     <%
@@ -347,23 +350,12 @@
                                     %>
                                 </select>
                             </div>
-                            <%
-                            if(coupen){
-                                %>
-                                <a   onclick="order('<%=coupen%>')"  class="btn btn-outline-primary-2 btn-order btn-block">
+                         
+                                        <a   onclick='order()'  class="btn btn-outline-primary-2 btn-order btn-block">
 		                					<span class="btn-text">Place Order</span>
 		                					<span class="btn-hover-text">Proceed to Checkout</span>
 		                				</a>
-                                <%
-                            }else{
-                                %>
-                                <a   onclick="order()"  class="btn btn-outline-primary-2 btn-order btn-block">
-		                					<span class="btn-text">Place Order</span>
-		                					<span class="btn-hover-text">Proceed to Checkout</span>
-		                				</a>
-                                <%
-                            }
-                            %>
+                             
 		                				
 		                			</div><!-- End .summary -->
 		                		</aside><!-- End .col-lg-3 -->
@@ -621,158 +613,339 @@
             </div>
         </div>
     </div>
-    <!-- Plugins JS File -->
+   
     <script>
      
+       async function applyCoupon() {
+         const coupon = document.getElementById("coupon").value
+         let subTotel = document.getElementById("subTotel").innerText
+         let total = document.getElementById("offerTotal")
+         let couponOffer = document.getElementById("couponOffer")
+         subTotel=subTotel.replace("Rs.","")
+         subTotel=subTotel.replace(".00","")
 
+         fetch("/applyCoupon",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({couponCode:coupon,amount:subTotel})})
+         .then((res)=>res.json())
+         .then((res)=>{
+             console.log(res,"coipo");
+             
+            if(res.success){
+                document.getElementById("addressId").value = res.coupon._id
+                let offerPrice = Math.floor((subTotel*1)*(40/100));
+                couponOffer.innerText = `Rs:${offerPrice}.00`;
+                total.innerText=total.innerText.replace("Rs.","")
+                total.innerText=total.innerText.replace(".00","")
+                total.innerText=`RS:${parseInt(total.innerText)-offerPrice}.00`
+                Swal.fire(res.message);
+                            
+            }else{
+                Swal.fire({
+                    title: res.message,
+                    text: res.message,
+                    icon: "warning",
+                    confirmButtonColor: "#3085d6",
+                    confirmButtonText: "ok!"
+                });
+            }
+         });
+       }
 
-        function order(coupen) {
-       
-        let selectElement0 = document.getElementById("offerTotal")
+        function order() {
+        const counponId =   document.getElementById("addressId").value ;
+        let selectElement0 = document.getElementById("offerTotal").innerText.replace("Rs.","").replace(".00","");
         let selectElement1 = document.getElementById("chooseAddress");
         let selectElement2 = document.getElementById("paymentMethod");
-        let address = selectElement1.value
-        let paymentMethod = selectElement2.value
+        let address = selectElement1.value;
+        let paymentMethod = selectElement2.value;
         let selectElement3 = document.getElementById("sub");
-        
+        let couponOffer = document.getElementById("couponOffer").innerText.replace("RS:","").replace(".00","");;
+        console.log(couponOffer,paymentMethod,selectElement0,'address',address);
        
-      if(paymentMethod=="Razor pay"){
-        
-        fetch(`/placeOrder?addressId=${address}&paymentMethod=${paymentMethod}&coupen=${coupen}`).then(res=>res.json())
-            .then(data=>{
-                 
-                 if(data.success){
-              
+        if (parseInt(selectElement0)>1000 && paymentMethod == "COD" ) {
+            Swal.fire(`Paying Total Amount greater than 1000 is not possile in COD`);
+            return;
+        } 
+      
+        if(!address){
+            Swal.fire({
+            title: "You dont have any address?",
+            text: "Add a address first!",
+            icon: "warning",
+            confirmButtonColor: "#3085d6",
+            confirmButtonText: "ok!",
+          })
+        .then((result) => {
+            if (result.isConfirmed) {
+                window.location.href="/addAddress"
+            }
+          });
+        }
+     
+       
+        if(paymentMethod=="Razor pay"){
+            fetch(`/orders`,{method:"POST",body:JSON.stringify({addressId:address,paymentMethod,coupen:counponId}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
+            .then((data)=>{
+               
+                if(data.success){
                     var options = {
 						"key": `${data.key_id}`,
 						"amount": `${data.amount}`,
 						"currency": "INR",
 						"name":`${data.name}` ,
-						// "description": ""+res.description+"",
-						// "image": "https://dummyimage.com/600x400/000/fff",
 						"order_id": `${data.order_id}`,
-						"handler": function (response){
-                           
+						"handler": function (response){ 
+
 							alert("Payment Succeeded");
-							window.open(`/successPage?addressId=${data.addressId}&coupen=${data.coupenId}&paymentMethod=${paymentMethod}`,"_self")
+                            fetch(`/saveOrder`,{method:"POST",body:JSON.stringify({addressId:data.addressId,coupen:data.coupenId,paymentMethod:paymentMethod,paymentStatus:"Paid",productStatus:"Pending"}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
+                            .then((res)=>{
+                               
+                                    window.location.href="/successPage"
+                                
+                            })      
+							
 						},
 						"prefill": {
-							// "contact":""+res.contact+"",
 							"name":`${data.name}`,
 							"email": `${data.email}`
 						},
-						// "notes" : {
-						// 	"description":""+res.description+""
-						// },
 						"theme": {
 							"color": "#2300a3"
 						}
 					};
-                  
-					var razorpayObject = new Razorpay(options);
+
+                    var razorpayObject = new Razorpay(options);
 					razorpayObject.on('payment.failed', function (response){
-                        console.log(response);
-							alert("Payment Failed");
-                            fetch(`/failedPage?addressId=${data.addressId}&coupen=${data.coupenId}&paymentMethod=${paymentMethod}`)      
+							  fetch(`/saveOrder`,{method:"POST",body:JSON.stringify({addressId:data.addressId,coupen:data.coupenId,paymentMethod:paymentMethod,paymentStatus:"Failed",productStatus:"Failed"}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
+                              .then((res)=>{
+                                 window.location.href="/failePage"
+                              })
 					});
+                    
 					razorpayObject.open();
                  }else if(data.addAddress){
                     Swal.fire({
-  title: "You dont have any address?",
-  text: "Add a address first!",
-  icon: "warning",
-  
-  confirmButtonColor: "#3085d6",
- 
-  confirmButtonText: "ok!"
-}).then((result) => {
-  if (result.isConfirmed) {
-   
-    window.location.href="/addAddress"
-  }
-});
-                 }else{
-                    
-                 }
+                    title: "You dont have any address?",
+                    text: "Add a address first!",
+                    icon: "warning",
+                    confirmButtonColor: "#3085d6",
+                    confirmButtonText: "ok!"
+                    }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href="/addAddress"
+                    }
+                  });  
 
+                }else if(data.outofstock){
+                    Swal.fire({
+                    title:data.message,
+                    text: "Click the Continue button to remove the out of stock products from your cart and Continue purchasing!.",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Continue"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            fetch('/removeOutofStock',{method:"PATCH"}).then((res)=>res.json())
+                            .then((res)=>{
+                               
+                                if(res.success){
+                                    fetch(`/orders`,{method:"POST",body:JSON.stringify({addressId:address,paymentMethod,coupen:counponId}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
+                                    .then((res)=>{
+                                        var options = {
+                                        "key": `${data.key_id}`,
+                                        "amount": `${data.amount}`,
+                                        "currency": "INR",
+                                        "name":`${data.name}` ,
+                                        "order_id": `${data.order_id}`,
+                                        "handler": function (response){ 
+                                            alert("Payment Succeeded");
+                                             fetch(`/saveOrder`,{method:"POST",body:JSON.stringify({addressId:data.addressId,coupen:data.coupenId,paymentMethod:paymentMethod,paymentStatus:"Paid",productStatus:"Failed"}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
+                                             .then((res)=>{
+                                                 window.location.href="/successPage"
+                                             })
+                                           
+                                        },
+                                        "prefill": {
+                                            "name":`${data.name}`,
+                                            "email": `${data.email}`
+                                        },
+                                        "theme": {
+                                            "color": "#2300a3"
+                                        }
+                                     };
+
+                            var razorpayObject = new Razorpay(options);
+                            razorpayObject.on('payment.failed', function (response){
+                                 fetch(`/saveOrder`,{method:"POST",body:JSON.stringify({addressId:data.addressId,coupen:data.coupenId,paymentMethod:paymentMethod,paymentStatus:"Failed",productStatus:"Failed"}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
+                                 .then(()=>{
+                                    window.location.href="/failePage"
+                                 })
+                            });
+                            razorpayObject.open();
+                                    }) 
+                                }else{
+                                    Swal.fire({
+                                        title:data.message,
+                                        text: "Go to product page and some new products to your Cart!.",
+                                        icon: "warning",
+                                        confirmButtonColor: "#3085d6",
+                                        confirmButtonText: "Continue"
+                                    }).then((res)=>{
+                                        if(res.isConfirmed){
+                                          window.location.href="/products"
+                                        }
+                                    })
+                                }
+                            }) 
+                        }
+                    });
+                }
             })
-      }else{
-        
-        if(selectElement3.value<=1000){
-           
-        if(coupen){
-           
-            fetch(`/placeOrder?addressId=${address}&paymentMethod=${paymentMethod}&coupen=${coupen}`).then(res=>res.json())
-        .then(data=>{
-          
-            if(data.addAddress){
-                console.log("sett")
-                Swal.fire({
-  title: "You dont have any address?",
-  text: "Add a address first!",
-  icon: "warning",
-  
-  confirmButtonColor: "#3085d6",
- 
-  confirmButtonText: "ok!"
-}).then((result) => {
-  if (result.isConfirmed) {
-   
-    window.location.href="/addAddress"
-  }
-});
-                   
-            }else if(data.outofstock){
-                Swal.fire(`${data.product} is out of stock`);
-                
-            }else if(data.invalidCoupen){
-                
-                Swal.fire(`Invalid Coupen Number`);
-            }else if(data.successPage){
-                console.log("hi")
-                window.open(`/successPage?paymentMethod=${paymentMethod}`,"_self")
-            }
-           
-        }); 
         }else{
-            
-            fetch(`/placeOrder?addressId=${address}&paymentMethod=${paymentMethod}`).then(res=>res.json())
-        .then(data=>{
-           
-            if(data.addAddress){
-                Swal.fire({
-  title: "You dont have any address?",
-  text: "Add a address first!",
-  icon: "warning",
-  
-  confirmButtonColor: "#3085d6",
- 
-  confirmButtonText: "ok!"
-}).then((result) => {
-  if (result.isConfirmed) {
-   
-    window.location.href="/addAddress"
-  }
-});
-                   
-            }else if(data.outofstock){
-                Swal.fire(`${data.product} is out of stock`);
-                
-            }else if(data.successPage){
-                window.open(`/successPage?paymentMethod=${paymentMethod}`,"_self")
-            }
-           
-        }); 
+            fetch(`/orders`,{method:"POST",body:JSON.stringify({addressId:address,paymentMethod,coupen:counponId}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
+            .then((data)=>{
+                console.log(data,"cod")
+                if(data.success){
+                     fetch(`/saveOrder`,{method:"POST",body:JSON.stringify({addressId:address,coupen:counponId,paymentMethod:paymentMethod,paymentStatus:"Not paid",productStatus:"pending"}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
+                     .then(()=>{
+                        window.location.href="/successPage"
+                     })
+                    
+                }
+            })
         }
-        }else{
-            Swal.fire(`Paying Total Amount greater than 1000 is not possile in COD`);
-        }
-       
-       
-       
-    }
+      
+//       if(paymentMethod=="Razor pay"){
+//         fetch(`/orders`,{method:"POST",body:JSON.stringify({addressId:address,paymentMethod,coupen}),headers:{"Content-Type":"application/json"}})
+//             .then(data=>{
+                 
+//                  if(data.success){
+              
+//                     var options = {
+// 						"key": `${data.key_id}`,
+// 						"amount": `${data.amount}`,
+// 						"currency": "INR",
+// 						"name":`${data.name}` ,
+// 						// "description": ""+res.description+"",
+// 						// "image": "https://dummyimage.com/600x400/000/fff",
+// 						"order_id": `${data.order_id}`,
+// 						"handler": function (response){
+                           
+// 							alert("Payment Succeeded");
+// 							window.open(`/successPage?addressId=${data.addressId}&coupen=${data.coupenId}&paymentMethod=${paymentMethod}`,"_self")
+// 						},
+// 						"prefill": {
+// 							// "contact":""+res.contact+"",
+// 							"name":`${data.name}`,
+// 							"email": `${data.email}`
+// 						},
+// 						// "notes" : {
+// 						// 	"description":""+res.description+""
+// 						// },
+// 						"theme": {
+// 							"color": "#2300a3"
+// 						}
+// 					};
+                  
+				// 	var razorpayObject = new Razorpay(options);
+				// 	razorpayObject.on('payment.failed', function (response){
+                //         console.log(response);
+				// 			alert("Payment Failed");
+                //             fetch(`/failedPage?addressId=${data.addressId}&coupen=${data.coupenId}&paymentMethod=${paymentMethod}`)      
+				// 	});
+				// 	razorpayObject.open();
+                //  }else if(data.addAddress){
+                //     Swal.fire({
+                //     title: "You dont have any address?",
+                //     text: "Add a address first!",
+                //     icon: "warning",
+                    
+                //     confirmButtonColor: "#3085d6",
+                    
+                //     confirmButtonText: "ok!"
+                //     }).then((result) => {
+                //     if (result.isConfirmed) {
+                    
+                //         window.location.href="/addAddress"
+                //     }
+                //   });         
+//                  }else{
+                    
+//                  }
 
-       
+//             })
+//        }else{
+        
+//          if(selectElement3.value<=1000){
+           
+//         if(coupen){
+//             fetch(`/orders`,{method:"POST",body:JSON.stringify({addressId:address,paymentMethod,coupen}),headers:{"Content-Type":"application/json"}})
+//         .then(data=>{
+          
+//             if(data.addAddress){
+//                 console.log("sett")
+//                 Swal.fire({
+//   title: "You dont have any address?",
+//   text: "Add a address first!",
+//   icon: "warning",
+  
+//   confirmButtonColor: "#3085d6",
+ 
+//   confirmButtonText: "ok!"
+// }).then((result) => {
+//   if (result.isConfirmed) {
+   
+//     window.location.href="/addAddress"
+//   }
+// });
+                   
+//             }else if(data.outofstock){
+//                 Swal.fire(`${data.product} is out of stock`);
+                
+//             }else if(data.invalidCoupen){
+                
+//                 Swal.fire(`Invalid Coupen Number`);
+//             }else if(data.successPage){
+//                 console.log("hi")
+//                 window.open(`/successPage?paymentMethod=${paymentMethod}`,"_self")
+//             }
+           
+//         }); 
+//         }else{
+            
+//             fetch(`/orders`,{method:"POST",body:JSON.stringify({addressId:address,paymentMethod}),headers:{"Content-Type":"application/json"}}).then(res=>res.json())
+//         .then(data=>{
+           
+//             if(data.addAddress){
+//                 Swal.fire({
+//   title: "You dont have any address?",
+//   text: "Add a address first!",
+//   icon: "warning",
+  
+//   confirmButtonColor: "#3085d6",
+ 
+//   confirmButtonText: "ok!"
+// }).then((result) => {
+//   if (result.isConfirmed) {
+   
+//     window.location.href="/addAddress"
+//   }
+// });
+                   
+//             }else if(data.outofstock){
+//                 Swal.fire(`${data.product} is out of stock`);
+                
+//             }else if(data.successPage){
+//                 window.open(`/successPage?paymentMethod=${paymentMethod}`,"_self")
+//             }
+           
+//         }); 
+//         }
+//         }else{
+//             Swal.fire(`Paying Total Amount greater than 1000 is not possile in COD`);
+//         }     
+//     }      
 }  
     </script>
     <script src="assets/js/jquery.min.js"></script>

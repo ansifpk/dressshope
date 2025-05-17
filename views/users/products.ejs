@@ -1,5 +1,5 @@
 <% include("../layout/header.ejs") %>
-<link rel="apple-touch-icon" sizes="180x180" href="assets/images/icons/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/images/icons/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/images/icons/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/images/icons/favicon-16x16.png">
     <link rel="manifest" href="assets/images/icons/site.html">
@@ -25,25 +25,26 @@
     <link rel="stylesheet" href="assets/css/plugins/magnific-popup/magnific-popup.css">
     <link rel="stylesheet" href="assets/css/plugins/jquery.countdown.css">
     <!-- Main CSS File -->
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="assets/css/style.css">
     
 
     <div class="page-wrapper">
-        <header class="header header-6">
+      
+         <header class="header header-6">
             <div class="header-middle">
                 <div class="container">
-                    <div class="header-left">
-                        <div class="header-search header-search-extended header-search-visible d-none d-lg-block">
-                            <a href="#" class="search-toggle" role="button"><i class="icon-search"></i></a>
-                            <form action="#" method="get">
+                    <div class="header-left ">
+                         <div class="header-search header-search-extended header-search-visible d-none d-lg-block">
+                            <a class="search-toggle" role="button"><i class="icon-search"></i></a>
+                            <form >
                                 <div class="header-search-wrapper search-wrapper-wide">
                                     <label for="q" class="sr-only">Search</label>
                                     <button class="btn btn-primary" type="submit"><i class="icon-search"></i></button>
                                     <input type="search" class="form-control" name="search" id="q" placeholder="Search product ..." required>
-                                </div><!-- End .header-search-wrapper -->
+                                </div>
                             </form>
-                        </div><!-- End .header-search -->
-                        
+                        </div>
                     </div>
                     <div class="header-center">
                         <a href="index.html" class="logo">
@@ -55,11 +56,11 @@
                         <a href="/wishlist" class="wishlist-link">
                             <i class="icon-heart-o"></i>
                             <%if(wishlistData){%>
-                                <span class="wishlist-count"><%=wishlistData?.products?.length%></span>
-                                <span class="wishlist-txt">My Wishlist</span>
+                                <span id="wishlist-count" class="wishlist-count"><%=wishlistData?.products?.length%></span>
+                                <span  class="wishlist-txt">My Wishlist</span>
                             <%}else{%>
-                                <span class="wishlist-count">0</span>
-                                <span class="wishlist-txt">My Wishlist</span>
+                                <span id="wishlist-count" class="wishlist-count">0</span>
+                                <span  class="wishlist-txt">My Wishlist</span>
                             <%}%>
                            
                         </a>
@@ -68,16 +69,17 @@
                             <a href="/cart" class="dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-display="static">
                                 <i class="icon-shopping-cart"></i>
                                 <%if(cartData){%>
-                                    <span class="cart-count"><%=cartData?.products?.length%></span>
-                                    <span class="cart-txt">Rs:<%=cartTotal%></span>
+                                    <span id="cart-count" class="cart-count"><%=cartData?.products?.length%></span>
+                                    <span id="cart-txt" class="cart-txt">Rs:<%=cartTotal%></span>
                                 <%}else{%>
-                                    <span class="cart-count">0</span>
-                                    <span class="cart-txt">Rs:00.00</span>
+                                    <span id="cart-count" class="cart-count">0</span>
+                                    <span id="cart-txt" class="cart-txt">Rs:00.00</span>
                                 <%}%>
                                
                             </a>
 
                             <div class="dropdown-menu dropdown-menu-right">
+                               
                                 <div class="dropdown-cart-action">
                                     <a href="/cartt" class="btn btn-primary">View Cart</a>
                                     <a href="/checkout" class="btn btn-outline-primary-2"><span>Checkout</span><i class="icon-long-arrow-right"></i></a>
@@ -95,12 +97,12 @@
                             <ul class="menu sf-arrows">
                                
                               
-                                <li >
+                                <li class="megamenu-container active">
                                     <a href="/home" class="sf-with-ul">Home</a>
 
                                     
                                 </li>
-                                <li class="megamenu-container active" >
+                                <li>
                                     <a href="/products" class="sf-with-ul">Product</a>
 
                                     
@@ -124,7 +126,6 @@
                                 
                             </ul><!-- End .menu -->
                         </nav><!-- End .main-nav -->
-
                         <button class="mobile-menu-toggler">
                             <span class="sr-only">Toggle mobile menu</span>
                             <i class="icon-bars"></i>
@@ -132,11 +133,10 @@
                     </div><!-- End .header-left -->
 
                     <div class="header-right">
-                       
-                        <form action="" method="get" class="details-filter-row details-row-size">
+                        <form class="details-filter-row details-row-size">
                             
-                            <div class="select-custom pt-1">
-                                <select name="sort" id="size" class="form-control">
+                            <div class="select-custom">
+                                <select name="sort" id="size" onchange="filteringAndSort()" class="form-control">
                                      <option >Defult Sort</option>
                                     <option >Sort by Price: low to high</option>
                                     <option >Sort by Price: high to low</option>
@@ -144,179 +144,40 @@
                                     <option>Sort by Name : Z-A</option>
                                 </select>
                             </div><!-- End .select-custom -->
-                            <div class="input-group-append">  
+                            <!-- <div class="input-group-append">  
                                 <button class="btn btn-primary mt-1" type="submit"><span>Sort</span></button>
-                            </div><!-- .End .input-group-append -->
-                           
+                            </div> -->
                         </form><!-- End .details-filter-row -->
+                        
                     </div>
                 </div><!-- End .container -->
             </div><!-- End .header-bottom -->
         </header><!-- End .header -->
 
         <main class="main">
-       
-            <div class="row">
-                <%
-                if(productData.length > 0){                  
-                        for(let i=0;i<productData.length;i++){
-                            if(productData[i].is_listed===true){
-                             if(productData[i].categoryID.is_listed===true){
-                                %>
-                    <div class="col-6 col-md-4 col-lg-3">
-                       <div class="product product-3">
-                        <figure class="product-media">
-                            <%
-                            if(productData[i].stock>0){
-                            %>
-                            <span class="product-label">Sale</span>
-                            <%
-                            }else{
-                                %>
-                                <span class="product-label">Out of Stock</span>
-                                <%
-                            }
-                            %>
-                           
-                            <a href="/detailes?id=<%=productData[i]._id%>">
-                                <img src="/admin/assets/productImages/<%=productData[i].image[0]%>" alt="Product image" class="product-image">
-                            </a>
-   
-                            <%if(offerData){
-                                    const productName = productData[i].name;
-                                    const productCategory = productData[i].categoryID.name;
-                                    const productOffer = offerData.find(offer => offer.iteam === productName);
-                                    const categoryOffer = offerData.find(offer => offer.iteam === productCategory);  
-
-                                    if(productOffer){%>
-                                        <div class="product-countdown-container">
-                                               <span class="product-contdown-title">offer ends in:</span>
-                                               <div class="product-contdown-title text-danger" data-until="2019, 10, 5" data-compact="true"><%=productOffer.validity%></div><!-- End .product-countdown -->
-                                       </div><!-- End .product-countdown-container -->
-                                    <%}else if(categoryOffer){
-                                        %>
-                                        <div class="product-countdown-container">
-                                    <span class="product-contdown-title">offer ends in:</span>
-                                    <div class="product-contdown-title text-danger" data-until="2019, 10, 5" data-compact="true"><%=categoryOffer.validity%></div><!-- End .product-countdown -->
-                            </div><!-- End .product-countdown-container -->
-                                        <%
-                                    }
-                                    else{%>
-                                        
-                                    <%}
-                                }
-                                %>
-                            <div class="product-action-vertical">
-                                <%
-if (wishlistData) {
-   
-    const wishlistProducts = new Map(wishlistData.products.map(product => [product.productId._id.toString(), true]));
-
-        if (wishlistData && wishlistProducts.has(productData[i]._id.toString())) {
-%>
-            <a id="wishlist<%=i%>" onclick="addwishlist('<%=productData[i]._id%>','<%=i%>')" class="btn-product-icon btn-wishlist bg-danger btn-expandable"><span id="text<%=i%>">remove from wishlist</span></a>
-<%
-        } else {
-%>
-            <a id="wishlist<%=i%>" onclick="addwishlist('<%=productData[i]._id%>','<%=i%>')" class="btn-product-icon btn-wishlist btn-expandable"><span id="text<%=i%>">add to wishlist</span></a>
-<%
-        }
-  
-} else {
-%>
-    <a id="wishlist<%=i%>" onclick="addwishlist('<%=productData[i]._id%>','<%=i%>')" class="btn-product-icon btn-wishlist  btn-expandable"><span id="text<%=i%>">add to wishlist</span></a>
-<%
-}
-%>
-                            </div><!-- End .product-action-vertical -->
-                        </figure><!-- End .product-media -->
-
-                        <div class="product-body">
-                            <%
-                            if(productData[i].stock>0){
-                                %>
-                                <div class="product-action">
-                                <a href="/cartt" class="btn-product btn-cart"  onclick="addtoCart('<%=productData[i]._id%>')"><span>add to cart</span></a>
-                               
-                            </div><!-- End .product-action -->
-                                <%
-                            }else{
-                                %>
-                                <div class="product-action">
-                                <a  class="btn-product btn-cart" ><span>Out of stock</span></a>
-                               
-                            </div><!-- End .product-action -->
-                                <%
-                            }
-                            %>
-                           
-                            <div class="product-cat">
-                                <a href=""><%=productData[i].categoryID.name%></a>
-                            </div><!-- End .product-cat -->
-                            <h3 class="product-title"><a href="/detailes"><%=productData[i].name%></a></h3><!-- End .product-title -->
-                            <div class="product-price">
-                                <%if(offerData){
-                                    const productName = productData[i].name;
-                                    const productCategory = productData[i].categoryID.name;
-                                    const productOffer = offerData.find(offer => offer.iteam === productName);
-                                    const categoryOffer = offerData.find(offer => offer.iteam === productCategory);  
-
-                                    if(productOffer){%>
-                                       
-                                        <span class="new-price">Rs.<%=productData[i].Price-Math.round(productData[i].Price*productOffer.offerRate/100)%>.00</span>
-                                        <span class="old-price">Rs.<%=productData[i].Price%>.00</span>
-                                    <%}else if(categoryOffer){
-                                        %>
-                                        <span class="new-price">Rs.<%=productData[i].Price-Math.round(productData[i].Price*categoryOffer.offerRate/100)%>.00</span>
-                                        <span class="old-price">Rs.<%=productData[i].Price%>.00</span>
-                                        <%
-                                    }
-                                    else{%>
-                                        <span class="new-price">Rs.<%=productData[i].Price%>.00</span>
-                                    <%}
-                                }else{%> 
-                                        <span class="new-price">Rs.<%=productData[i].Price%>.00</span><%
-                                }%>
-                               
-                            </div><!-- End .product-price -->
-                        </div><!-- End .product-body -->
-
-                        <div class="product-footer">
-                            <div class="ratings-container">
-                                <div class="ratings">
-                                    <div class="ratings-val" style="width: 40%;"></div><!-- End .ratings-val -->
-                                </div><!-- End .ratings -->
-                                <span class="ratings-text">( 4 Reviews )</span>
-                            </div><!-- End .rating-container -->
-                        </div><!-- End .product-footer -->
-                    </div><!-- End .product -->
-                </div><!-- End .col-sm-6 col-lg-3 -->
-
-                    <%
-                            }          
-                    }
-                }
-                  
-                }
-
-                %> 
-            </div><!-- End .row -->
-
-           
-
-           
-                  
-                
-            </div><!-- End .bg-lighter pt-5 pb-5 -->
-
+            <div id="product-grid " class="row" >
+               <%- include('../users/productGrid', { productData, offerData, wishlistData, cartData }) %>
+            </div>    
             
+            <div class="mb-6"></div> 
 
-            <div class="mb-6"></div><!-- End .mb-6 -->
-             
-            
             <nav class="portfolio-nav">
                 <ul class="nav-filter portfolio-filter justify-content-center">
-                    <li class="active"><a href="/home" data-filter="*">More Products</a></li>
+                    <div class="pagination-area mt-15 mb-50">
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination justify-content-start">
+                            <li class="page-item">
+                                <a class="page-link "><i class="bi bi-arrow-left-short "  onclick="changePage('<%=totalPage%>','decrement')"></i></a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" id="currentPage" >1</a></li>
+                            <li class="page-item"><a class="page-link dot">...</a></li>
+                            <li class="page-item"><a class="page-link" ><%=totalPage%></a></li>
+                            <li class="page-item">
+                                <a class="page-link cursor-pointer"><i class="bi bi-arrow-right-short cursor-pointer" onclick="changePage('<%=totalPage%>','increment')"></i></a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
                 </ul>
             </nav><!-- End .portfolio-nav -->
 
@@ -399,6 +260,7 @@ if (wishlistData) {
                 </div><!-- End .container -->
             </div><!-- End .footer-bottom -->
         </footer><!-- End .footer -->
+
     </div><!-- End .page-wrapper -->
     <button id="scroll-top" title="Back to Top"><i class="icon-arrow-up"></i></button>
 
@@ -443,49 +305,87 @@ if (wishlistData) {
     <script>
 
 
-        function addtoCart(productId){
+       async function handleCart(productId){
 
-
-           
-            fetch(`/addToCart?productId=${productId}`);
+           const response = await fetch(`/cart?productId=${productId}`,{method:"PATCH",body:JSON.stringify({quantity:1}),headers:{"Content-Type": "application/json"}});
+           const res = await response.json();
+           if(res.success){
+             if(res.added){
+                Swal.fire("Product added to your Cart!");
+                document.getElementById(`cart${productId}`).innerText="remove from cart";
+                document.getElementById('cart-count').innerText=`${res.count}`;
+                document.getElementById('cart-txt').innerText=`Rs.${res.totel}.00`;
+             }else if(res.removed){
+                Swal.fire("Product removed from your Cart!");
+                document.getElementById(`cart${productId}`).innerText="add to cart";
+                document.getElementById('cart-count').innerText=`${res.count}`;
+                document.getElementById('cart-txt').innerText=`Rs.${res.totel}.00`;
+             }
+           }else{
+            Swal.fire(res.message);
+           }
         }
 
 
 
 
-        function addwishlist(productId,num){
-            fetch(`/addwishlist?productId=${productId}`).then(res=>res.json())
+        function handlewishlist(productId,num){
+            fetch(`/wishlist?productId=${productId}`,{method:"PATCH",headers:{"Content-Type":"application/json"}}).then(res=>res.json())
             .then(data=>{
                 
                 if(data.added){
+                    console.log("added");
+                    
                     const wishlist = document.getElementById(`wishlist${num}`);
                     const text = document.getElementById(`text${num}`);
-             
                     wishlist.style.backgroundColor="red";
                     text.innerText="remove from wishlist"
+                    document.getElementById("wishlist").innerText=`${data.totelProducts}`
                     Swal.fire("Product added to your wishlist!");
 
-                }else if(data.remove){
-                   
+                }else if(data.removed){
                     const wishlist2 = document.getElementById(`wishlist${num}`);
+                    console.log("removed",wishlist2);
                     const text2 = document.getElementById(`text${num}`);
-                  
-                    wishlist2.style.backgroundColor="white";
+                    wishlist2.style.backgroundColor="white"
                     text2.innerText="add to wishlist";
+                     document.getElementById("wishlist").innerText=`${data.totelProducts}`
                     Swal.fire("Product removed to your wishlist!");
                    
                 }else{
-                  console.log("no")
-                }
-                
+                    Swal.fire(data.message);
                     
-                  
-                  
-              
+                }  
             });
-              
-        }
-      
+        }  
+    </script>
+    <script>
+       function changePage(totel,status) {
+           let page = document.getElementById("currentPage").innerText*1
+           if(status == "increment" && page<totel){
+             page++
+            }else if(status == "decrement" && page>1){
+               page--
+           }else{
+            return;
+           }
+           document.getElementById("currentPage").innerText=`${page}`;
+           fetch(`/changePage?page=${page}`).then((res)=>res.json())
+           .then((res)=>{
+            console.log(res);
+            
+           })
+       }    
+    </script>
+
+    <script>
+       function filteringAndSort(){
+         const sort = document.getElementById("size").value
+         fetch(`/sort?sort=${sort}`,{method:"GET"}).then((res)=>res.text())
+         .then((res)=>{
+            document.getElementById("product-grid ").innerHTML=res
+         })
+       }
     </script>
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/bootstrap.bundle.min.js"></script>
@@ -506,4 +406,4 @@ if (wishlistData) {
 </html>
 
 
-<% include("../layout/footer.ejs") %>
+<%- include("../layout/footer.ejs") %>

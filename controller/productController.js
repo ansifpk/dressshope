@@ -28,7 +28,7 @@ const viewProducts = async (req, res) => {
                 { name: { $regex: '.*' + search + '.*', $options: 'i' } },
             ]
         }).populate('categoryID').countDocuments();
-        console.log(Math.ceil(count / limit))
+       
         res.render('productList', {
             productData: productData,
             totalPages: Math.ceil(count / limit),
@@ -109,7 +109,7 @@ const editProducts = async (req, res) => {
 
         const category = await CategoryDb.find({});
         const productData = await ProductDb.findById({ _id: req.query.id });
-
+        console.log(productData)
         res.render('editProduct', {
             productData: productData,
             category: category,
@@ -226,80 +226,95 @@ const listProduct = async (req, res) => {
 //#########################    user side            ##########################################
 //############################################################################################
 
-
-
-const loadProducts = async(req,res)=>{
+const getStoreDataForUser = async(req,res)=>{
     try {
-        const id = req.query.sort
         const cartData = await CartDB.findOne({userId:req.session.user_id}).populate({
             path: 'products.productId',
             populate: { path: 'categoryID' }})
-        const wishlistData = await WishlistDB.findOne({userId:req.session.user_id}).populate('products.productId')
+           
+        const wishlistData = await WishlistDB.findOne({userId:req.session.user_id})
         const offerData = await OfferDB.find({});
-        const productData = await ProductDb.find({is_listed:true}).populate('categoryID');
-        const  rate = offerData.offerRate/100;
-         let cartTotal=0;
-         if(cartData){
-         cartTotal = cartData.products.reduce((acc,value)=>{value
+        const  cartTotal = cartData.products.reduce((acc,value)=>{value
            const offer =  offerData.find( iteam => iteam.iteam === value.productId.name || iteam.iteam === value.productId.categoryID.name)
            if(offer){
              return acc+ value.productId.Price*value.quandity - Math.round(value.productId.Price*value.quandity * offer.offerRate/100)
            }else{
-          
              return acc+value.productId.Price*value.quandity
            }
-        },0)
+       },0);
+        return {cartData,wishlistData,offerData,cartTotal}
+    } catch (error) {
+        console.error(error.message)
     }
-       
+}
 
-        var search='';
-        if(req.query.search){
-            search=req.query.search
-        }
-        let sort;
-        if (id === "Defult Sort") {
-            console.log('1')
-            const productData = await ProductDb.find({is_listed:true}).populate('categoryID')
-            res.render('products',{productData,wishlistData,offerData,rate,cartData,cartTotal});
-        } else if (id === "Sort by Price: low to high") {
-            console.log('2')
-            sort = { Price: 1 };
-            const productData = await ProductDb.find({is_listed:true}).populate('categoryID').lean().sort(sort).exec()
-            productData.sort((a,b)=>a.Price-b.Price)
-            res.render('products',{productData:productData,wishlistData,offerData,rate,cartData,cartTotal});
-        } else if (id === "Sort by Price: high to low") {
-            console.log('3')
-            sort = { Price: -1 };
-            const productData = await ProductDb.find({is_listed:true}).populate('categoryID').lean().sort(sort).exec()
-            productData.sort((a,b)=>b.Price-a.Price)
-            res.render('products',{productData:productData,wishlistData,offerData,rate,cartData,cartTotal});
-       } else if (id === "Sort by Name : A-Z") {
-        console.log('4')
-           sort = { name: 1 };
-           const productData = await ProductDb.find({is_listed:true}).populate('categoryID').lean().sort(sort)
-           res.render('products',{productData,wishlistData,offerData,rate,cartData,cartTotal});
-       } else if (id === "Sort by Name : Z-A") {
-        console.log('5')
-           sort = { name: -1 };
-           const productData = await ProductDb.find({is_listed:true}).populate('categoryID').lean().sort(sort)
-           res.render('products',{productData,wishlistData,offerData,rate,cartData,cartTotal});
-       } else {
-        console.log('6')
-        const productData = await ProductDb.find({is_listed:true}).populate('categoryID')
-        console.log(productData)
-        res.render('products',{productData,wishlistData,offerData,rate,cartData,cartTotal});
-        }
-         
-         
+const loadProducts = async(req,res)=>{
+    try {
+  
+        const {cartData,wishlistData,offerData,cartTotal} = await getStoreDataForUser(req,res);
+        const limit = 8
+        const totalProducts = await ProductDb.find({is_listed:true}).countDocuments();
+        const productData = await ProductDb.find({is_listed:true}).limit(limit).populate('categoryID')
+        const  rate = offerData.offerRate/100;
+  
+   
       
-         
+       console.log(totalProducts)
+        const totalPage = Math.ceil(totalProducts/limit);
+
+
+    //     var search='';
+    //     if(req.query.search){
+    //         search=req.query.search
+    //     }
+    //     let sort;
+    //     if (req.query.sort === "Defult Sort") {
+    //         const productData = await ProductDb.find({is_listed:true}).populate('categoryID')
+    //         res.render('products',{productData,wishlistData,offerData,rate,cartData,cartTotal});
+    //     } else if (req.query.sort === "Sort by Price: low to high") {
+    //         sort = { Price: 1 };
+    //         const productData = await ProductDb.find({is_listed:true}).populate('categoryID').lean().sort(sort).exec()
+    //         productData.sort((a,b)=>a.Price-b.Price)
+    //         res.render('products',{productData:productData,wishlistData,offerData,rate,cartData,cartTotal});
+    //     } else if (req.query.sort === "Sort by Price: high to low") {
+           
+    //         sort = { Price: -1 };
+    //         const productData = await ProductDb.find({is_listed:true}).populate('categoryID').lean().sort(sort).exec()
+    //         productData.sort((a,b)=>b.Price-a.Price)
+    //         res.render('products',{productData:productData,wishlistData,offerData,rate,cartData,cartTotal});
+    //    } else if (req.query.sort === "Sort by Name : A-Z") {
        
+    //        sort = { name: 1 };
+    //        const productData = await ProductDb.find({is_listed:true}).populate('categoryID').lean().sort(sort)
+    //        res.render('products',{productData,wishlistData,offerData,rate,cartData,cartTotal});
+    //    } else if (req.query.sort === "Sort by Name : Z-A") {
+        
+    //        sort = { name: -1 };
+    //        const productData = await ProductDb.find({is_listed:true}).populate('categoryID').lean().sort(sort)
+    //        res.render('products',{productData,wishlistData,offerData,rate,cartData,cartTotal});
+    //    } else {
+      
+    //     const productData = await ProductDb.find({is_listed:true}).populate('categoryID')
+ 
+        
+        res.render('products',{productData,wishlistData,offerData,rate,cartData,cartTotal,totalPage});
+    //     }
     } catch (error) {
         console.log(error.message);
     }
 };
 
-
+const changePage = async(req,res)=>{
+    try {
+        const {page} = req.query;
+        const limit = 8;
+         const {cartData,wishlistData,offerData,cartTotal} = await getStoreDataForUser(req,res);
+        const products =  await ProductDb.find({is_listed:true}).skip((page-1)*limit).limit(page*limit).populate('categoryID')
+        res.json({products,wishlistData,offerData,cartData,cartTotal})
+    } catch (error) {
+         console.error(error.message);
+    }
+}
 
 module.exports = {
     viewProducts,
@@ -310,6 +325,6 @@ module.exports = {
     listProduct,
 
     //user side 
-
+    changePage,
     loadProducts,
 }

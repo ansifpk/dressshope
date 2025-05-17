@@ -1,11 +1,11 @@
 const mongoose = require('mongoose')
-const CupenDB = require("../model/cuppenModel");
+const CoupenDB = require("../model/cuppenModel");
 
 
 
 const coupens = async (req, res) => {
     try {
-        const data = await CupenDB.find({});
+        const data = await CoupenDB.find({});
         res.render('coupens', { data: data });
     } catch (error) {
         console.log(error.message);
@@ -16,6 +16,39 @@ const coupens = async (req, res) => {
 const loadaddCuppen = async (req, res) => {
     try {
         res.render('addCuppen')
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+const applyCoupon = async (req, res) => {
+    try {
+        const {couponCode,amount} = req.body;
+        const checkCoupon = await CoupenDB.findOne({coupenId:couponCode})
+        if(!checkCoupon){
+            return res.json({success:false,message:"Invalid Coupon Code!."})
+        }
+        // HKyYAfbE Xx2AFiXu eMMncJ00
+        const today = new Date();
+      
+        if(new Date(checkCoupon.expiryDate).getFullYear()==today.getFullYear()&&new Date(checkCoupon.expiryDate).getMonth()==today.getMonth()&&new Date(checkCoupon.expiryDate).getDate()<today.getDate()){
+            return res.json({success:false,message:"Coupon Expired!."})
+        }
+
+        if(new Date(checkCoupon.expiryDate).getFullYear()>=today.getFullYear()&&new Date(checkCoupon.expiryDate).getMonth()>=today.getMonth()){
+            
+            if(checkCoupon.minLimite>amount){
+                return res.json({success:false,message:`You need to purchase more than ${checkCoupon.minLimite} to use this coupon!.`})
+            }
+            if(checkCoupon.usedUsers.includes(req.session.user_id)){
+                return res.json({success:false,message:`Coupon Already used!.`})
+            }
+            return res.json({success:true,coupon:checkCoupon,message:"Successfully Applied Coupon"})
+        }else{
+            return res.json({success:false,message:"Coupon Expired!."})
+        }
+
+        
+        
     } catch (error) {
         console.log(error.message);
     }
@@ -31,7 +64,7 @@ const addCuppen = async (req, res) => {
             if (expiryDate.getFullYear() >= today.getFullYear() & expiryDate.getMonth() >= today.getMonth()) {
                     if(expiryDate.getFullYear() == today.getFullYear() & expiryDate.getMonth() == today.getMonth()){
                        if(expiryDate.getDate() >= today.getDate() & expiryDate.getDate()<=31 ){
-                        const data = new CupenDB({
+                        const data = new CoupenDB({
                             name: req.body.name,
                             expiryDate: req.body.date,
                             offer: offerPrice,
@@ -47,7 +80,7 @@ const addCuppen = async (req, res) => {
                        }
                        
                     }else{
-                        const data = new CupenDB({
+                        const data = new CoupenDB({
                                 name: req.body.name,
                                 expiryDate: req.body.date,
                                 offer: offerPrice,
@@ -75,7 +108,7 @@ const addCuppen = async (req, res) => {
 
 const loadeditCuppen = async (req, res) => {
         try {
-            const data = await CupenDB.findById({ _id: req.query.id });
+            const data = await CoupenDB.findById({ _id: req.query.id });
             res.render('editCoupens', { data: data })
         } catch (error) {
             console.log(error.message);
@@ -85,7 +118,7 @@ const loadeditCuppen = async (req, res) => {
     
     const editCuppen = async (req, res) => {
         try {
-            const data = await CupenDB.findById({ _id: req.query.id });
+            const data = await CoupenDB.findById({ _id: req.query.id });
             const alreadyImage = data.image;
             const today = new Date();
             const offerPrice = req.body.offerPrice;
@@ -95,7 +128,7 @@ const loadeditCuppen = async (req, res) => {
                     if (expiryDate.getFullYear() >= today.getFullYear() & expiryDate.getMonth() >= today.getMonth()) {
                         if(expiryDate.getFullYear() == today.getFullYear() & expiryDate.getMonth() == today.getMonth()){
                            if(expiryDate.getDate() >= today.getDate() & expiryDate.getDate()<=31 ){
-                            const data = await CupenDB.findByIdAndUpdate({ _id: req.query.id }, {
+                            const data = await CoupenDB.findByIdAndUpdate({ _id: req.query.id }, {
                             $set: {
                                 name: req.body.name,
                                 expiryDate: req.body.validity,
@@ -112,7 +145,7 @@ const loadeditCuppen = async (req, res) => {
                            }
                         }else{
                             
-                        const data = await CupenDB.findByIdAndUpdate({ _id: req.query.id }, {
+                        const data = await CoupenDB.findByIdAndUpdate({ _id: req.query.id }, {
                             $set: {
                                 name: req.body.name,
                                 expiryDate: req.body.validity,
@@ -137,7 +170,7 @@ const loadeditCuppen = async (req, res) => {
                     if (expiryDate.getFullYear() >= today.getFullYear() & expiryDate.getMonth() >= today.getMonth()) {
                         if(expiryDate.getFullYear() == today.getFullYear() & expiryDate.getMonth() == today.getMonth()){
                            if(expiryDate.getDate() >= today.getDate() & expiryDate.getDate()<=31 ){
-                            const data = await CupenDB.findByIdAndUpdate({ _id: req.query.id }, {
+                            const data = await CoupenDB.findByIdAndUpdate({ _id: req.query.id }, {
                             $set: {
                                 name: req.body.name,
                                 expiryDate: req.body.validity,
@@ -154,7 +187,7 @@ const loadeditCuppen = async (req, res) => {
                            }
                         }else{
                             
-                        const data = await CupenDB.findByIdAndUpdate({ _id: req.query.id }, {
+                        const data = await CoupenDB.findByIdAndUpdate({ _id: req.query.id }, {
                             $set: {
                                 name: req.body.name,
                                 expiryDate: req.body.validity,
@@ -185,7 +218,7 @@ const deleteCoupen = async (req, res) => {
     try {
 
         const { id } = req.query;
-        await CupenDB.findByIdAndDelete({ _id: id });
+        await CoupenDB.findByIdAndDelete({ _id: id });
 
     } catch (error) {
         console.log(error.message);
@@ -198,4 +231,5 @@ module.exports = {
     loadeditCuppen,
     editCuppen,
     deleteCoupen,
+    applyCoupon
 }

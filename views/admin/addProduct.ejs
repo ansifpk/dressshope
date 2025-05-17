@@ -31,7 +31,7 @@
         </div>
         <nav>
             <ul class="menu-aside">
-                <li   class="menu-item active"   >
+                <li   class="menu-item "   >
                     <a class="menu-link" href="/admin/dashboard">
                         <i class="icon material-icons md-home"></i>
                         <span class="text">Dashboard</span>
@@ -41,7 +41,7 @@
                        
                     </div>
                 </li>
-                <li class="menu-item has-submenu">
+                <li class="menu-item has-submenu active">
                     <a class="menu-link" href="/admin/products">
                         <i class="icon material-icons md-shopping_bag"></i>
                         <span class="text">Products</span>
@@ -191,7 +191,7 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-lg-6">
+                <div class="col-lg-12">
                     <div class="card mb-4">
                         <div class="card-body">
                             <div class="row">
@@ -255,7 +255,7 @@
                                 <hr class="mb-4 mt-0">
                                 <div class="row">
                                    
-                                   <div class="card mb-4">
+                                   <div class="card mb-4 col-12">
                                     <div class="card-header d-flex justify-content-between align-items-center">
                                       <h5 class="mb-0 card-title">Media</h5>
                                       <a href="javascript:void(0);" class="fw-medium">Add media from URL</a>
@@ -266,15 +266,30 @@
                                           <small class="text-muted d-block fs-6 my-2">or</small>
                                           <span class="note needsclick btn bg-label-primary d-inline" id="btnBrowse">Browse image</span>
                                         </div>
-                                        <div class="fallback">
-                                          <input name="file"  type="file" class="form-control" multiple />
-                                        </div>
-                                       
-                                      
+                                        <div class="row">
+                                            <% for (let i = 0; i < 4; i++) { %>
+                                                <div class="col-3 mb-3 d-flex flex-column align-items-center">
+                                                <label for="file-upload<%= i %>" class="form-label">Upload Image <%= i + 1 %></label>
+                                                <input 
+                                                    name="file" 
+                                                    id="file-upload<%= i %>" 
+                                                    onchange="preview('<%= i %>')"  
+                                                    type="file" 
+                                                    required
+                                                    class="form-control mb-2"  
+                                                />
+                                                    <img 
+                                                        src="" 
+                                                        alt="Preview" 
+                                                        id="file-preview<%= i %>" 
+                                                        style="width: 200px; height: 150px; border-radius: 10px; object-fit: cover; border: 1px solid #ccc;" 
+                                                    />
+                                                    </div>
+                                                <% } %>                                     
                                     </div>
                                   </div>
                                   <div class="mb-4">
-                                    <button type="submit" class="btn btn-primary w-100">Add Product</button>
+                                    <button type="submit" class="btn btn-primary w-25">Add Product</button>
                                 </div>
                                 </form>
                                
@@ -302,6 +317,25 @@
             </div>
         </footer>
     </main>
+    <script>
+
+        function preview(id) {
+          const input = document.getElementById(`file-upload${id}`);
+          const file = input.files
+                if (file) {
+                    const fileReader = new FileReader();
+                    const preview = document.getElementById(`file-preview${id}`);
+                    fileReader.onload = function (event) {
+                      
+                        
+                        preview.setAttribute('src', event.target.result);
+                    }
+                    fileReader.readAsDataURL(file[0]);
+                }
+          
+        }
+        
+    </script>
     <script src="assets/js/vendors/jquery-3.6.0.min.js"></script>
     <script src="assets/js/vendors/bootstrap.bundle.min.js"></script>
     <script src="assets/js/vendors/select2.min.js"></script>

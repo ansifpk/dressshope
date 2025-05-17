@@ -59,23 +59,18 @@ form .input-field {
 .input-field input::-webkit-outer-spin-button {
   display: none;
 }
-form button {
-  margin-top: 25px;
+.error{
+  color: red;
+  display: none;
+}
+form button{
   width: 100%;
+  margin-top: 25px;
   color: #fff;
   font-size: 1rem;
   border: none;
   padding: 9px 0;
   cursor: pointer;
   border-radius: 6px;
-  pointer-events: none;
-  background: #6e93f7;
-  transition: all 0.2s ease;
-}
-form button.active {
-  background: #4070f4;
-  pointer-events: auto;
-}
-form button:hover {
-  background: #0e4bf1;
+  background: #1a50e6;
 }

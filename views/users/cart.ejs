@@ -143,7 +143,7 @@
                         <a href="/wishlist" class="wishlist-link">
                             <i class="icon-heart-o"></i>
                             <%
-                            if(productData){
+                            if(productData.products.length){
                                 %>
                                 <span class="wishlist-count"><%=wishlistData?.products?.length%></span>
                                 <%
@@ -160,9 +160,9 @@
                             <a href="#" class="dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-display="static">
                                 <i class="icon-shopping-cart"></i>
                                 <%
-                                if(productData){
+                                if(productData.products.length){
                                     %>
-                                    <span class="cart-count"><%=productData.products.length%></span>
+                                    <span id="count" class="cart-count"><%=productData.products.length%></span>
                                     <%
                                 }else{
                                     %>
@@ -209,7 +209,7 @@
                                      
                                        
                                         <%
-                                    if(productData){
+                                    if(productData.products.length){
                                        for(let i=0;i<productData.products.length;i++){
                                         
                                         %>
@@ -258,7 +258,7 @@
                                                 <td class="quantity-col">
                                                 <div class="cart-product-quantity">
                                                    
-                                                    <input type="number" class="form-control" id="quandity<%=productData.products[i].productId._id%>" value="<%=productData.products[i].quandity%>" min="1" max="4" onchange="updateCart(this,'<%=productData.products[i].productId.Price%>','<%=productData.products[i].productId._id%>',)" step="1" data-decimals="0" required>
+                                                    <input type="number" class="form-control" id="quandity<%=productData.products[i].productId._id%>" value="<%=productData.products[i].quandity%>" min="1" max="4" onchange="updateCart(this,'<%=productData.products[i].productId._id%>',)" step="1" data-decimals="0" required>
                                                 </div><!-- End .cart-product-quantity -->                                 
                                             </td>
                                             <%
@@ -300,22 +300,10 @@
                                     </tbody>
                                 </table><!-- End .table table-wishlist -->
             
-                                <div class="cart-bottom">
-                                    <div class="cart-discount">
-                                        <form action="#">
-                                            <div class="input-group">
-                                                <input type="text" class="form-control" required placeholder="coupon code">
-                                                <div class="input-group-append">
-                                                    <button class="btn btn-outline-primary-2" type="submit"><i class="icon-long-arrow-right"></i></button>
-                                                </div><!-- .End .input-group-append -->
-                                            </div><!-- End .input-group -->
-                                        </form>
-                                    </div><!-- End .cart-discount -->
-                                   
-                                </div><!-- End .cart-bottom -->
+                              
                             </div><!-- End .col-lg-9 -->
                             <%
-                            if(productData){
+                            if(productData.products.length){
                                 %>
                                 <aside class="col-lg-3">
                                     <div class="summary summary-cart">
@@ -332,7 +320,7 @@
                                     </table><!-- End .table table-summary -->
               
                                   
-                                        <a href="/checkout" class="btn btn-outline-primary-2 btn-order btn-block">PROCEED TO CHECKOUT</a>
+                                        <a href="/checkout" class="btn btn-outline-primary-2 btn-order btn-block" >PROCEED TO CHECKOUT</a>
                                         
                                         
                                 </div><!-- End .summary -->
@@ -440,26 +428,20 @@
         </footer><!-- End .footer -->
     </div><!-- End .page-wrapper -->
     <button id="scroll-top" title="Back to Top"><i class="icon-arrow-up"></i></button>
-
-  
-    
-
-    <!-- Plugins JS File -->
     <script>
         
-        function updateCart(quandity,productPrice,productId){
+        function updateCart(quandity,productId){
            const  limit = document.getElementById(`quandity${productId}`);
            
           
            if(limit.value==limit.max){
             Swal.fire("Maximum quandity is exceeds!");
-            
+            return;
            }
-            const Quantity = quandity.value
+            const Quantity = quandity.value;
             
           
-            fetch(`/updateCart?productPrice=${productPrice}&productId=${productId}&quandity=${Quantity}`)
-              
+            fetch(`/updateCart?productId=${productId}&quandity=${Quantity}`)
             .then(res=>res.json())
             .then(data=>{              
                       document.getElementById(`productTotal${productId}`).innerText = `Rs.${data.productTotal}.00`;
@@ -496,9 +478,8 @@ swalWithBootstrapButtons.fire({
         fetch(`/deleteCart?productId=${productId}`)
         .then(res=>res.json())
         .then(data=>{
-           
          document.getElementById('SubTotal').innerText=`Rs.${data.subTotal}.00`
-       
+         document.getElementById('count').innerText=data.totalProducts
         });
          
   } else if (
