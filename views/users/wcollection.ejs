@@ -87,7 +87,7 @@
                             <ul class="menu sf-arrows">
                                
                               
-                                <li class="megamenu-container active">
+                                <li class="megamenu-container active" >
                                     <a href="/home" class="sf-with-ul">Home</a>
 
                                     
@@ -123,10 +123,10 @@
                     </div><!-- End .header-left -->
 
                     <div class="header-right">
-                        <form action="" method="get" class="details-filter-row details-row-size">
+                        <div  class="details-filter-row details-row-size">
                             
                             <div class="select-custom">
-                                <select name="sort" id="size" class="form-control">
+                                <select name="sort" id="size" onchange="filteringAndSort()" class="form-control">
                                      <option >Defult Sort</option>
                                     <option >Sort by Price: low to high</option>
                                     <option >Sort by Price: high to low</option>
@@ -134,156 +134,20 @@
                                     <option>Sort by Name : Z-A</option>
                                 </select>
                             </div><!-- End .select-custom -->
-                            <div class="input-group-append">  
-                                <button class="btn btn-primary mt-1" type="submit"><span>Sort</span></button>
-                            </div><!-- .End .input-group-append -->
-                        </form><!-- End .details-filter-row -->
+                           
+                        </div><!-- End .details-filter-row -->
                         
                     </div>
                 </div><!-- End .container -->
             </div><!-- End .header-bottom -->
         </header><!-- End .header -->
-
-        <main class="main">
             <nav class="portfolio-nav">
                 <ul class="nav-filter portfolio-filter justify-content-center">
                     <li class="active"><h3>WOMEN</h3></li>
                 </ul>
             </nav><!-- End .portfolio-nav -->
-         
-                    <div class="row">
-                        <%
-                        for(let i =0;i<productData.length;i++){
-                            if(productData[i].categoryID.is_listed===true){
-                                if(productData[i].categoryID.name=='WOMEN'){
-                              %>
-                <div class="col-3 ">
-                    <div class="product product-3">
-                        <figure class="product-media">
-                            <span class="product-label">Sale</span>
-                            <a href="/detailes?id=<%=productData[i]._id%>">
-                                
-                                <img src="/admin/assets/productImages/<%=productData[i].image[0]%>" alt="Product image" class="product-image">
-                            </a>
-
-                            <div class="product-action-vertical">
-                                <%
-if (wishlistData) {
-   
-    const wishlistProducts = new Map(wishlistData.products.map(product => [product.productId._id.toString(), true]));
-
-        if (wishlistData && wishlistProducts.has(productData[i]._id.toString())) {
-%>
-            <a id="wishlist<%=i%>" onclick="handlewishlist('<%=productData[i]._id%>','<%=i%>')" class="btn-product-icon btn-wishlist bg-danger btn-expandable"><span id="text<%=i%>">remove from wishlist</span></a>
-<%
-        } else {
-%>
-            <a id="wishlist<%=i%>" onclick="handlewishlist('<%=productData[i]._id%>','<%=i%>')" class="btn-product-icon btn-wishlist btn-expandable"><span id="text<%=i%>">add to wishlist</span></a>
-<%
-        }
-  
-} else {
-%>
-    <a id="wishlist<%=i%>" onclick="handlewishlist('<%=productData[i]._id%>','<%=i%>')" class="btn-product-icon btn-wishlist  btn-expandable"><span id="text<%=i%>">add to wishlist</span></a>
-<%
-}
-%>
-                                
-                              
-                            </div><!-- End .product-action-vertical -->
-                        </figure><!-- End .product-media -->
-
-                        <div class="product-body">
-                            <div class="product-action">
-                                <%
-                                 if(cartData.products.filter((pro)=>pro.productId._id == productData[i]._id.toString())){
-                                    %>
-                                    <a  class="btn-product btn-cart"  onclick="handleCart('<%=productData[i]._id%>')"><span id="cart<%=productData[i]._id%>">remove from cart</span></a>
-                                    <%
-                                 }else{
-                                    %>
-                                    <a  class="btn-product btn-cart"  onclick="handleCart('<%=productData[i]._id%>')"><span id="cart<%=productData[i]._id%>">add to cart</span></a>
-                                    <%
-                                 }
-                                %>
-                               
-                            </div>
-                            <div class="product-cat">
-                                <a href="/wcollection"><%=productData[i].categoryID.name%></a>
-                            </div> 
-                            <h3 class="product-title"><a href="/detailes?id=<%=productData[i]._id%>"><%=productData[i].name%></a></h3><!-- End .product-title -->
-                            <div class="product-price">
-                                <%
-                                const offer = offerData.find( value => value.iteam === productData[i].name || value.iteam === productData[i].categoryID.name)
-                                if(offer){%>
-                                    <span class="new-price">Rs.<%=productData[i].Price - Math.round(productData[i].Price*offer.offerRate/100)%>.00</span>
-                                    <span class="old-price">Rs.<%=productData[i].Price%>.00</span>
-                                <%}else{%>
-                                    <span class="new-price">Rs.<%=productData[i].Price%>.00</span>
-                                <%}
-                                %>
-                                
-                                
-                            </div><!-- End .product-price -->
-                        </div><!-- End .product-body -->
-
-                        <div class="product-footer">
-                            <div class="ratings-container">
-                                <div class="ratings">
-                                    <div class="ratings-val" style="width: 40%;"></div><!-- End .ratings-val -->
-                                </div><!-- End .ratings -->
-                                <span class="ratings-text">( 4 Reviews )</span>
-                            </div><!-- End .rating-container -->
-
-                            <div class="product-nav product-nav-thumbs">
-                                <a href="/detailes" class="active">
-                                    <img src="assets/images/products/elements/product-thumb-1.jpg" alt="product desc">
-                                </a>
-                                <a href="/detailes">
-                                    <img src="assets/images/products/elements/product-thumb-2.jpg" alt="product desc">
-                                </a>
-
-                                <a href="/detailes">
-                                    <img src="assets/images/products/elements/product-thumb-3.jpg" alt="product desc">
-                                </a>
-                            </div><!-- End .product-nav -->
-                        </div><!-- End .product-footer -->
-                    </div><!-- End .product -->
-                </div><!-- End .col-sm-6 col-lg-3 -->
-
-         
-                <%
-                }
-                            }
-                         
-              
-              }
-             %>
-            </div><!-- End .row -->
-                
-          
-
-           
-
-           
-                  
-                
-            </div><!-- End .bg-lighter pt-5 pb-5 -->
-
-            
-
-            <div class="mb-6"></div><!-- End .mb-6 -->
-             
-            
-            <nav class="portfolio-nav">
-                <ul class="nav-filter portfolio-filter justify-content-center">
-                    <li class="active"><a href="/home" data-filter="*">More Products</a></li>
-                </ul>
-            </nav><!-- End .portfolio-nav -->
-
-          
-
-           
+        <main class="main">
+            <%- include('../users/productGrid', { productData, offerData, wishlistData, cartData,totalPage }) %>          
         </main><!-- End .main -->
 
         <footer class="footer">
@@ -692,6 +556,17 @@ if(res.success){
                 } 
             });    
         }
+    </script>
+     <script>
+       function filteringAndSort(){
+     
+         const sort = document.getElementById("size").value
+      
+         fetch(`/sort?sort=${sort}&&filter=WOMEN`,{method:"GET"}).then((res)=>res.text())
+         .then((res)=>{
+            document.getElementById("main").innerHTML=res
+         })
+       }
     </script>
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/bootstrap.bundle.min.js"></script>

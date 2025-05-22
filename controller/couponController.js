@@ -6,6 +6,7 @@ const CoupenDB = require("../model/cuppenModel");
 const coupens = async (req, res) => {
     try {
         const data = await CoupenDB.find({});
+        console.log(new Date(data[3].expiryDate).toLocaleDateString())
         res.render('coupens', { data: data });
     } catch (error) {
         console.log(error.message);
@@ -60,14 +61,16 @@ const addCuppen = async (req, res) => {
         const offerPrice = req.body.offerPrice * 1;
         const expiryDate = new Date(req.body.date);
         const today = new Date();
+
         if (offerPrice >= 20 & offerPrice <= 70) { 
             if (expiryDate.getFullYear() >= today.getFullYear() & expiryDate.getMonth() >= today.getMonth()) {
                     if(expiryDate.getFullYear() == today.getFullYear() & expiryDate.getMonth() == today.getMonth()){
                        if(expiryDate.getDate() >= today.getDate() & expiryDate.getDate()<=31 ){
                         const data = new CoupenDB({
                             name: req.body.name,
-                            expiryDate: req.body.date,
+                            expiryDate: expiryDate,
                             offer: offerPrice,
+                            status:"active",
                             minLimite: req.body.max,
                             image: req.file.filename,
                             coupenId: req.body.coupenId,
@@ -82,8 +85,9 @@ const addCuppen = async (req, res) => {
                     }else{
                         const data = new CoupenDB({
                                 name: req.body.name,
-                                expiryDate: req.body.date,
+                                expiryDate: expiryDate,
                                 offer: offerPrice,
+                                status:"active",
                                 minLimite: req.body.max,
                                 image: req.file.filename,
                                 coupenId: req.body.coupenId,

@@ -8,11 +8,12 @@ name:{
     require:true
  },
  status:{
-    type:Date,enum:['active','expired']
-   
+    type:String,
+    enum:['active','expired','used'],
+    require:true
  },
  expiryDate:{
-    type:String,
+    type:Date,
     require:true
  },
  offer:{
@@ -33,10 +34,11 @@ name:{
  },
  usedUsers: {
    type: Array,
-   // ref: 'User',
    default: [],
  },
 
+},{
+   timestamps:true
 });
 
 module.exports = mongoose.model('cupen',cupenModel);

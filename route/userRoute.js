@@ -54,8 +54,8 @@ user_route.get("/home",auth.loginUser,authBlock.blockUser,userControll.loadHome)
 
 // ########################products##############################
 
-user_route.get("/wcollection",auth.loginUser,authBlock.blockUser,userControll.wcollection);
-user_route.get("/mcollection",auth.loginUser,authBlock.blockUser,userControll.mcollection);
+user_route.get("/wcollection",auth.loginUser,authBlock.blockUser,productController.wcollection);
+user_route.get("/mcollection",auth.loginUser,authBlock.blockUser,productController.mcollection);
 user_route.get("/products",auth.loginUser,authBlock.blockUser,productController.loadProducts);
 user_route.get("/changePage",auth.loginUser,authBlock.blockUser,productController.changePage);
 user_route.get("/detailes",auth.loginUser,authBlock.blockUser,userControll.productsDetailes);

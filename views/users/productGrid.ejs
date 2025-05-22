@@ -35,7 +35,7 @@
     
 </head>
 <body>
-    
+     <div id="product-grid" class="row" >
                 <%
                 if(productData.length > 0){                  
                         for(let i=0;i<productData.length;i++){
@@ -173,9 +173,62 @@
                     }
                 }
                   
+                }else{
+                    %>
+                    <div class="col-12 items-center">
+                        <p class="text-center items-center underline">No Products Available</p>
+                    </div>
+                    <%
                 }
 
-                %> 
-      
+                %>     
+            </div>  
+            <nav class="portfolio-nav">
+                <ul class="nav-filter portfolio-filter justify-content-center">
+                    <div class="pagination-area mt-5 mb-50">
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination justify-content-start">
+                            <li class="page-item" onclick="changePage('<%=totalPage%>','decrement')">
+                                <a class="page-link "><i class="bi bi-arrow-left-short "  ></i></a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" id="currentPage" ><%=currentPage%></a></li>
+                            <li class="page-item"><a class="page-link dot">...</a></li>
+                            <li class="page-item"><a class="page-link" ><%=totalPage%></a></li>
+                            <li class="page-item"  onclick="changePage('<%=totalPage%>','increment')">
+                                <a class="page-link cursor-pointer"><i class="bi bi-arrow-right-short cursor-pointer"></i></a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                </ul>
+            </nav> 
+
+              <script>
+       function changePage(totel,status) {
+            const sort = document.getElementById("size").value
+            
+            const filter = document.getElementById("filter")?document.getElementById("filter").value:document.getElementById("header").innerText 
+            let page = document.getElementById("currentPage").innerText*1
+            console.log(sort,"sort",filter,"filter",page,"page");
+            
+          
+           if(status == "increment" && page<totel){
+             page++
+            }else if(status == "decrement" && page>1){
+               page--
+           }else{
+            return;
+           }
+           document.getElementById("currentPage").innerText=`${page}`;
+             fetch(`/sort?sort=${sort}&&filter=${filter}&&page=${page}`,{method:"GET"}).then((res)=>res.text())
+            .then((res)=>{
+                document.getElementById("main").innerHTML=res
+            })
+        //    fetch(`/changePage?page=${page}&&sort=${sort}`).then((res)=>res.json())
+        //    .then((res)=>{
+        //     console.log(res);
+        //    })
+       }    
+    </script>
 </body>
 </html>

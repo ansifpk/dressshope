@@ -194,24 +194,26 @@
                     <a href="/admin/addCuppen" class="btn btn-primary btn-sm rounded">Create new</a>
                 </div>
             </div>
-            <%
+            <div class="row gap-3">
+                <%
             if(data.length>0){
                 for(i=0;i<data.length;i++){
                     %>
-                   
-                    <div id="gone<%=i%>" class="card " style="width: 18rem; background-image: url('/admin/assets/productImages/<%=data[i].image%>'); background-size: cover; background-position: center; background-repeat: no-repeat; padding: 20px;">
+                    <div id="gone<%=i%>" class="card col-4" style="width: 18rem; background-image: url('/admin/assets/productImages/<%=data[i].image%>'); background-size: cover; background-position: center; background-repeat: no-repeat; padding: 20px;">
                 <div class="card-body">
                   <h5 class="card-title text-center"><%=data[i].name%></h5>
                   <h6 class="card-subtitle mb-2 text-body-secondary text-center">Get Extra <%=data[i].offer%>%</h6>
                   <p class="card-text">Coupen Code:<%=data[i].coupenId%></p>
                   <p  class="card-link">on minimum Rs:<%=data[i].minLimite%></p>
-                  <p class="card-link text-end">Valid till:<%=data[i].expiryDate%></p>
+                  <%const date = new Date()%>
+                  <p  class="card-link">status : <%=data[i].expiryDate>=date?"Active":"expired"%></p>
+                  <p class="card-link text-end">Valid till: <%= new Date(data[i].expiryDate).toLocaleDateString()%> </p>
                  
                 </div>
                 <a href="/admin/editCoupen?id=<%=data[i]._id%>">Edit</a>
                 
                 <a class=" text-danger " onclick="remove('<%=data[i]._id%>','<%=i%>')">delete</a>
-              </div>
+                    </div>
                     <%
                 }
             
@@ -221,8 +223,8 @@
                 <%
             }
             %>
-           
-            
+            </div>
+             
         </section> <!-- content-main end// -->
         <footer class="main-footer font-xs">
             <div class="row pb-30 pt-15">

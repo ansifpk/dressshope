@@ -97,12 +97,12 @@
                             <ul class="menu sf-arrows">
                                
                               
-                                <li class="megamenu-container active">
+                                <li >
                                     <a href="/home" class="sf-with-ul">Home</a>
 
                                     
                                 </li>
-                                <li>
+                                <li class="megamenu-container active">
                                     <a href="/products" class="sf-with-ul">Product</a>
 
                                     
@@ -133,57 +133,40 @@
                     </div><!-- End .header-left -->
 
                     <div class="header-right">
-                        <form class="details-filter-row details-row-size">
-                            
+                        <div class="details-filter-row details-row-size">
                             <div class="select-custom">
                                 <select name="sort" id="size" onchange="filteringAndSort()" class="form-control">
-                                     <option >Defult Sort</option>
+                                    <option >Defult Sort</option>
                                     <option >Sort by Price: low to high</option>
                                     <option >Sort by Price: high to low</option>
                                     <option >Sort by Name : A-Z</option>
                                     <option>Sort by Name : Z-A</option>
                                 </select>
-                            </div><!-- End .select-custom -->
-                            <!-- <div class="input-group-append">  
-                                <button class="btn btn-primary mt-1" type="submit"><span>Sort</span></button>
-                            </div> -->
-                        </form><!-- End .details-filter-row -->
-                        
+                            </div>
+                        </div> 
+                        <div class="details-filter-row details-row-size">
+                            <div class="select-custom">
+                                <select name="filter" id="filter" onchange="filteringAndSort()" class="form-control">
+                                    <option disabled >Filter</option>
+                                    <option value="All" selected>All</option>
+                                   <%
+                                   for(let i=0;i<categories.length;i++){
+                                    %>
+                                    <option value="<%=categories[i].name%>"><%=categories[i].name%></option>
+                                    <%
+                                   }
+                                   %>
+                                </select>
+                            </div>
+                        </div> 
                     </div>
                 </div><!-- End .container -->
             </div><!-- End .header-bottom -->
         </header><!-- End .header -->
 
-        <main class="main">
-            <div id="product-grid " class="row" >
-               <%- include('../users/productGrid', { productData, offerData, wishlistData, cartData }) %>
-            </div>    
-            
-            <div class="mb-6"></div> 
-
-            <nav class="portfolio-nav">
-                <ul class="nav-filter portfolio-filter justify-content-center">
-                    <div class="pagination-area mt-15 mb-50">
-                    <nav aria-label="Page navigation example">
-                        <ul class="pagination justify-content-start">
-                            <li class="page-item">
-                                <a class="page-link "><i class="bi bi-arrow-left-short "  onclick="changePage('<%=totalPage%>','decrement')"></i></a>
-                            </li>
-                            <li class="page-item active"><a class="page-link" id="currentPage" >1</a></li>
-                            <li class="page-item"><a class="page-link dot">...</a></li>
-                            <li class="page-item"><a class="page-link" ><%=totalPage%></a></li>
-                            <li class="page-item">
-                                <a class="page-link cursor-pointer"><i class="bi bi-arrow-right-short cursor-pointer" onclick="changePage('<%=totalPage%>','increment')"></i></a>
-                            </li>
-                        </ul>
-                    </nav>
-                </div>
-                </ul>
-            </nav><!-- End .portfolio-nav -->
-
-          
-
-           
+        <main id="main" class="main">
+                   <%- include('../users/productGrid', { productData, offerData, wishlistData, cartData,totalPage }) %>        
+              
         </main><!-- End .main -->
 
         <footer class="footer">
@@ -360,30 +343,13 @@
         }  
     </script>
     <script>
-       function changePage(totel,status) {
-           let page = document.getElementById("currentPage").innerText*1
-           if(status == "increment" && page<totel){
-             page++
-            }else if(status == "decrement" && page>1){
-               page--
-           }else{
-            return;
-           }
-           document.getElementById("currentPage").innerText=`${page}`;
-           fetch(`/changePage?page=${page}`).then((res)=>res.json())
-           .then((res)=>{
-            console.log(res);
-            
-           })
-       }    
-    </script>
-
-    <script>
        function filteringAndSort(){
          const sort = document.getElementById("size").value
-         fetch(`/sort?sort=${sort}`,{method:"GET"}).then((res)=>res.text())
+         const filter = document.getElementById("filter").value
+         const page = document.getElementById("currentPage").innerText
+         fetch(`/sort?sort=${sort}&&filter=${filter}&&page=${page}`,{method:"GET"}).then((res)=>res.text())
          .then((res)=>{
-            document.getElementById("product-grid ").innerHTML=res
+            document.getElementById("main").innerHTML=res
          })
        }
     </script>

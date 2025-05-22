@@ -1,4 +1,3 @@
-const mongoose = require('mongoose')
 const ProductDb = require("../model/productModel");
 const CategoryDb = require("../model/categoryModel");
 const CartDB = require("../model/cartModel");
@@ -254,63 +253,97 @@ const loadProducts = async(req,res)=>{
         const {cartData,wishlistData,offerData,cartTotal} = await getStoreDataForUser(req,res);
         const limit = 8
         const totalProducts = await ProductDb.find({is_listed:true}).countDocuments();
+        const categories = await CategoryDb.find({is_listed:true});
         const productData = await ProductDb.find({is_listed:true}).limit(limit).populate('categoryID')
         const  rate = offerData.offerRate/100;
-  
-   
-      
-       console.log(totalProducts)
         const totalPage = Math.ceil(totalProducts/limit);
-
-
-    //     var search='';
-    //     if(req.query.search){
-    //         search=req.query.search
-    //     }
-    //     let sort;
-    //     if (req.query.sort === "Defult Sort") {
-    //         const productData = await ProductDb.find({is_listed:true}).populate('categoryID')
-    //         res.render('products',{productData,wishlistData,offerData,rate,cartData,cartTotal});
-    //     } else if (req.query.sort === "Sort by Price: low to high") {
-    //         sort = { Price: 1 };
-    //         const productData = await ProductDb.find({is_listed:true}).populate('categoryID').lean().sort(sort).exec()
-    //         productData.sort((a,b)=>a.Price-b.Price)
-    //         res.render('products',{productData:productData,wishlistData,offerData,rate,cartData,cartTotal});
-    //     } else if (req.query.sort === "Sort by Price: high to low") {
-           
-    //         sort = { Price: -1 };
-    //         const productData = await ProductDb.find({is_listed:true}).populate('categoryID').lean().sort(sort).exec()
-    //         productData.sort((a,b)=>b.Price-a.Price)
-    //         res.render('products',{productData:productData,wishlistData,offerData,rate,cartData,cartTotal});
-    //    } else if (req.query.sort === "Sort by Name : A-Z") {
-       
-    //        sort = { name: 1 };
-    //        const productData = await ProductDb.find({is_listed:true}).populate('categoryID').lean().sort(sort)
-    //        res.render('products',{productData,wishlistData,offerData,rate,cartData,cartTotal});
-    //    } else if (req.query.sort === "Sort by Name : Z-A") {
-        
-    //        sort = { name: -1 };
-    //        const productData = await ProductDb.find({is_listed:true}).populate('categoryID').lean().sort(sort)
-    //        res.render('products',{productData,wishlistData,offerData,rate,cartData,cartTotal});
-    //    } else {
-      
-    //     const productData = await ProductDb.find({is_listed:true}).populate('categoryID')
- 
-        
-        res.render('products',{productData,wishlistData,offerData,rate,cartData,cartTotal,totalPage});
-    //     }
+        res.render('products',{productData,wishlistData,offerData,rate,cartData,cartTotal,totalPage, currentPage:1,categories});
     } catch (error) {
         console.log(error.message);
     }
 };
 
+const mcollection = async(req,res)=>{
+    try {
+        const {cartData,wishlistData,offerData,cartTotal} = await getStoreDataForUser(req,res);
+        const limit = 8
+      
+        let productData = await ProductDb.find({is_listed:true}).populate('categoryID')
+        productData = productData.filter((val)=>val.categoryID.is_listed == true && val.categoryID.name == "MEN" );
+        const totalPage = productData.length
+        productData = productData.slice(0,8)
+
+        res.render("mcollection", {
+        productData: productData,
+        cartData,
+        wishlistData,
+        offerData,
+        cartTotal,
+        currentPage:1,
+        totalPage:Math.ceil(totalPage/limit)
+      });
+    } catch (error) {
+        console.error(error.message)
+    }
+}
+const wcollection = async(req,res)=>{
+try {
+       const {cartData,wishlistData,offerData,cartTotal} = await getStoreDataForUser(req,res);
+        const limit = 8
+      
+        let productData = await ProductDb.find({is_listed:true}).populate('categoryID')
+        productData = productData.filter((val)=>val.categoryID.is_listed == true && val.categoryID.name == "WOMEN" );
+        const totalPage = productData.length
+        productData = productData.slice(0,8);
+        
+        res.render("wcollection", {
+        productData: productData,
+        cartData,
+        wishlistData,
+        offerData,
+        cartTotal,
+        currentPage:1,
+        totalPage:Math.ceil(totalPage/limit)
+      });
+    } catch (error) {
+        console.error(error.message)
+    }
+}
 const changePage = async(req,res)=>{
     try {
-        const {page} = req.query;
+        const {page,sort,filter} = req.query;
         const limit = 8;
-         const {cartData,wishlistData,offerData,cartTotal} = await getStoreDataForUser(req,res);
-        const products =  await ProductDb.find({is_listed:true}).skip((page-1)*limit).limit(page*limit).populate('categoryID')
-        res.json({products,wishlistData,offerData,cartData,cartTotal})
+        const query = {};
+
+   switch (sort) {
+      case "Sort by Price: high to low":
+        query.Price=-1
+        break;
+        case "Sort by Price: low to high":
+        query.Price=1
+        break;
+      case "Sort by Name : Z-A":
+        query.name=-1
+        break;
+      case "Sort by Name : A-Z":
+        query.name=1
+        break;
+    
+      default:
+         query.name=1
+        break;
+    }
+        const {cartData,wishlistData,offerData} = await getStoreDataForUser(req,res);
+        const products =  await ProductDb.find({is_listed:true}).skip((page-1)*limit).limit(page*limit).sort(query).populate('categoryID')
+        const data =  products.filter((val)=>{
+            if( filter == "All"){
+                return val.categoryID.is_listed == true
+            }else{
+                return val.categoryID.is_listed == true && val.categoryID.name == filter
+            }
+        });
+        res.render('productGrid', { productData:data, offerData, wishlistData, cartData });
+        
     } catch (error) {
          console.error(error.message);
     }
@@ -327,4 +360,6 @@ module.exports = {
     //user side 
     changePage,
     loadProducts,
+    mcollection,
+    wcollection,
 }

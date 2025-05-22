@@ -181,23 +181,24 @@
                                                                 <h5 class="card-title text-center text-black"><%=coupens[i].name%></h5>
                                                                 <h6 class="card-subtitle mb-2 text-body-secondary text-danger text-black">Get Extra <%=coupens[i].offer%>%</h6>
                                                                 <%               
+                                                                const date = new Date()
                                                                 const ab = coupens[i].usedUsers.find( c =>c === user);
                                                                 if(ab){
                                                                     %>
                                                                     <p  class="card-text text-danger">Coupon Code: <span><%=coupens[i].coupenId%></span><span><button class="btn btn-primary disabled"   >copy</button></span></p>
-                                                                    <p class="card-text text-danger">Status: Used</p>
+                                                                    <p class="card-text text-gray">Status: Used</p>
                                                                     <%
                                                                 }else{
                                                                     %>
                                                                     <p  id="coupencode<%=i%>" class="card-text text-danger">Coupon Code: <span><%=coupens[i].coupenId%></span><span><button class="btn btn-primary"  onclick="copyCoupon('<%=i%>')">copy</button></span></p>
-                                                                    <p class="card-text text-success">Status: Active</p>
+                                                                    <p class="card-text <%= coupens[i].expiryDate>=date?"text-success":"text-danger" %>">Status: <%= coupens[i].expiryDate>=date?"Active":"expired" %></p>
                                                                     <%
                                                                 }
                                                                %>
                                                                
                                                                
                                                                 <p class="card-text text-danger">On minimum Rs: <%=coupens[i].minLimite%></p>
-                                                                <p class="card-text text-danger">Valid till: <%=coupens[i].expiryDate%></p>
+                                                                <p class="card-text text-danger">Valid till: <%=new Date(coupens[i].expiryDate).toLocaleDateString() %></p>
                                                             </div>
                                                         </div>
                                                     </div>
