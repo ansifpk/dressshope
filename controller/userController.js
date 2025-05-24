@@ -152,7 +152,7 @@ const veryfyForgetPassword = async (req, res) => {
           { email: email },
           { $set: { token: randomString } }
         );
-        sendResetPasswordMail(userData.name, userData.email, randomString);
+        await sendResetPasswordMail(userData.name, userData.email, randomString);
         res.render("forget", {
           message: "Reset Password Link is Sent to Your Mail",
         });
@@ -173,8 +173,8 @@ const sendResetPasswordMail = async (name, email, token) => {
       service: "gmail",
 
       auth: {
-        user: "pkansif39@gmail.com",
-        pass: "tvtq zgcc skhn rliu",
+        user: process.env.MY_EMAIL,
+        pass: process.env.MY_PASSWORD,
       },
     });
 
