@@ -63,9 +63,11 @@ user_route.get("/sort",auth.loginUser,authBlock.blockUser,userControll.sort);
 
 // ########################password##############################
 
-user_route.get("/forget",auth.loginUser,authBlock.blockUser,userControll.loadforgetPassword);
+user_route.get("/changePassword",auth.loginUser,authBlock.blockUser,userControll.loadchangePassword);
+user_route.post("/changePassword",auth.loginUser,authBlock.blockUser,userControll.veryfyChangePassword);
+user_route.get("/forget",userControll.loadforgetPassword);
 user_route.post("/forget",userControll.veryfyForgetPassword);
-user_route.get("/forgetpassword",authBlock.blockUser,userControll.loadnewPassword);
+user_route.get("/forgetpassword",userControll.loadnewPassword);
 user_route.post("/forgetpassword",userControll.veryfynewPassword);
 
 user_route.get('/logout',auth.loginUser,authBlock.blockUser,userControll.userLogout);

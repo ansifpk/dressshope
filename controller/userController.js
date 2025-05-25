@@ -118,6 +118,46 @@ const loadforgetPassword = async (req, res) => {
     console.log(error.message);
   }
 };
+const loadchangePassword = async (req, res) => {
+  try {
+     const {cartData,wishlistData,cartTotal} = await getStoreDataForUser(req,res);
+
+     res.render("changePassword",{cartData,wishlistData,cartTotal} );
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+const veryfyChangePassword = async (req, res) => {
+  try {
+      const user = await userModel.findById({_id:req.session.user_id});
+      console.log(req.body,user,req.session.user_id)
+      let checkCurrentPassword = await bcrypt.compare(req.body.oldPassword,user.password);
+
+      if(!checkCurrentPassword){
+       return res.json({success:false,message:"Current Password is not Matching!."})
+      }
+      if(req.body.newPassword.length < 5  ){
+       return res.json({success:false,message:"Enter a strong Password!."})
+      }
+      if(req.body.oldPassword == req.body.newPassword){
+       return res.json({success:false,message:"You Cannot set the current password to your new Password!."})
+      }
+      if(req.body.oldPassword !== req.body.conPassword){
+       return res.json({success:false,message:"Confirm Password is Not Matching!."})
+      }
+
+    const securepassword = await securePassword(req.body.newPassword);
+    const userData = await userModel.findByIdAndUpdate(
+          { _id: req.session.user_id },
+          { $set: { password: securepassword, token: "" } }
+    );
+    await userData.save();
+    return res.json({success:true,message:"Successfully Changed The Password!"})
+      
+  } catch (error) {
+    console.log(error.message);
+  }
+};
 
 const getStoreDataForUser = async(req,res)=>{
     try {
@@ -145,22 +185,25 @@ const veryfyForgetPassword = async (req, res) => {
   try {
     const email = req.body.email;
     const userData = await userModel.findOne({ email: email });
+
     if (userData) {
       if (userData.is_verified == true) {
+        if(userData.is_blocked == false){
         const randomString = randomstring.generate();
         await userModel.updateOne(
           { email: email },
           { $set: { token: randomString } }
         );
         await sendResetPasswordMail(userData.name, userData.email, randomString);
-        res.render("forget", {
-          message: "Reset Password Link is Sent to Your Mail",
-        });
+        return res.json({success:true, message: "Reset Password Link is Sent to Your Mail"})
+        }else{
+         return res.json({success:false,message:"Access Deniedd!."})
+        }
       } else {
-        res.render("forget", { message: "Please Verify Your Email" });
+       return res.json({success:false,message:"Please Verify Your Email"})
       }
     } else {
-      res.render("forget", { message: "User Email Not Found" });
+      res.json({success:false,message:"User Email Not Found"})
     }
   } catch (error) {
     console.log(error.message);
@@ -183,7 +226,11 @@ const sendResetPasswordMail = async (name, email, token) => {
       from: process.env.MY_EMAIL,
       to: process.env.MY_EMAIL,
       subject: "Reset Your Password",
-      html: `Hi ${name} Pease ClickHere To :<a href="${process.env.BASE_URL}/forgetPassword?token=${token}">Forget</a> your password`,
+      html: `
+        <p>Hi ${name},</p>
+        <p>Please click the link below to reset your password:</p>
+        <a href="${process.env.BASE_URL}/forgetPassword?token=${token}">Reset Password</a>
+      `,
     };
     await transporter.sendMail(mailOptions);
   } catch (error) {
@@ -207,21 +254,27 @@ const loadnewPassword = async (req, res) => {
 
 const veryfynewPassword = async (req, res) => {
   try {
+
+    const user = await userModel.findById({_id:req.body.user_id});
+    let checkCurrentPassword = await bcrypt.compare(req.body.password,user.password);
+    if(checkCurrentPassword){
+       res.render("newPassword", { message: "You cannot set the current password Again!." });
+    }
+    if(req.body.password.length < 5){
+      res.render("newPassword", { message: "Please Enter a Strong Password!." });
+    }
+    if(req.body.password !== req.body.repassword){
+      res.render("newPassword", { message: "confirm password not match" });
+    }
+  
     const securepassword = await securePassword(req.body.password);
-    if (req.body.password.length > 4) {
-      if (req.body.password == req.body.repassword) {
-        const userData = await userModel.findByIdAndUpdate(
+    const userData = await userModel.findByIdAndUpdate(
           { _id: req.body.user_id },
           { $set: { password: securepassword, token: "" } }
-        );
-        await userData.save();
-        res.redirect("/");
-      } else {
-        res.render("newPassword", { message: "confirm password not match" });
-      }
-    } else {
-      res.render("newPassword", { message: "Please Enter a Strong Password" });
-    }
+    );
+    await userData.save();
+    res.redirect("/");
+
   } catch (error) {
     console.log(error.message);
   }
@@ -2004,9 +2057,11 @@ module.exports = {
   insertUser,
   login,
   loadforgetPassword,
+  loadchangePassword,
   veryfyForgetPassword,
   loadnewPassword,
   veryfynewPassword,
+  veryfyChangePassword,
   veryfyLogin,
 
   //#### products ######

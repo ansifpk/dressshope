@@ -124,7 +124,7 @@
 	            			<ul class="nav nav-pills nav-fill" role="tablist">
 							   
 							    <li class="nav-item">
-							        <h3 class="nav-link active" id="register-tab-2" data-toggle="tab"  aria-controls="register-2" aria-selected="true">Change Password</h3>
+							        <h3 class="nav-link active" id="register-tab-2" data-toggle="tab"  aria-controls="register-2" aria-selected="true">Forget Password</h3>
 							    </li>
                                 
 							</ul>
@@ -149,7 +149,7 @@
 
                                         <div class="form-footer">
                                             
-                                            <button type="submit" class="btn btn-outline-primary-2">
+                                            <button onclick="handleSubmit()" type="button" class="btn btn-outline-primary-2">
 			                					<span>Send Mail</span>
 			            						<i class="icon-long-arrow-right"></i>
 			                				</button>
@@ -304,5 +304,29 @@
             </div><!-- End .modal-content -->
         </div><!-- End .modal-dialog -->
     </div><!-- End .modal -->
+<script>
+    function handleSubmit() {
+         const email = document.getElementById("singin-email").value
+
+         fetch("/forget",{method:"POST",body:JSON.stringify({email}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
+         .then((res)=>{
+           if(res.success){
+            document.getElementById("singin-email").value = ""
+             Swal.fire({
+                title: res.message,
+                icon: "success",
+                draggable: true
+            });
+           }else{
+            Swal.fire({
+                title:res.message,
+                icon: "warning",
+                draggable: true
+            });
+           }
+         });
+    }
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <% include("../layout/footer.ejs") %>
