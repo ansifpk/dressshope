@@ -563,7 +563,7 @@ const cancelUserOrder = async (req,res)=>{
                         walletHistery:[`Credit : ${data.products[i].productId.name} refunded amount of Rs.${data.products[i].productId.Price*data.products[i].quandity}.00`]
                     });
 
-                    data.save()
+                   await data.save()
                     //    await WalletDB.findByIdAndUpdate({_id:req.session.user_id},{$set:{$inc:{Balance:}}})
                 }
             }
