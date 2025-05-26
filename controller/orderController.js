@@ -557,9 +557,17 @@ const cancelUserOrder = async (req,res)=>{
          for (let i = 0; i < data.products.length; i++) {
               if (data.products[i].productStatus === "pending") {
                     totalPriceOfPendingProducts += data.products[i].totalPrice;
+                    const data = new WalletDB({
+                        userId:req.session.user_id,
+                        Balance:amount,
+                        walletHistery:[`Credit : ${data.products[i].productId.name} refunded amount of Rs.${data.products[i].productId.Price*data.products[i].quandity}.00`]
+                    });
+
+                    data.save()
+                    //    await WalletDB.findByIdAndUpdate({_id:req.session.user_id},{$set:{$inc:{Balance:}}})
                 }
             }
-
+         console.log('totalPriceOfPendingProducts',totalPriceOfPendingProducts)
          data.total=totalPriceOfPendingProducts
          await data.save();
            
