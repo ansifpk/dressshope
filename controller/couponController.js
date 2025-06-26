@@ -1,20 +1,24 @@
 const mongoose = require('mongoose')
 const CoupenDB = require("../model/cuppenModel");
+const CartDB = require("../model/cartModel");
+const getStoreDataForUser = require('../helperfunctions/helper');
+const cloudineryHelper = require('../helperfunctions/cloudinry');
 
 
 
-const coupens = async (req, res) => {
+const coupons = async (req, res) => {
     try {
-        const data = await CoupenDB.find({});
-        console.log(new Date(data[3].expiryDate).toLocaleDateString())
-        res.render('coupens', { data: data });
+        const count = await CoupenDB.find({}).countDocuments();
+        const limit = 3;
+        const data = await CoupenDB.find({}).sort({createdAt:-1}).limit(limit);
+        res.render('coupons', { data: data , totalPage:Math.ceil(count/limit)});
     } catch (error) {
         console.log(error.message);
     }
 }
 
 
-const loadaddCuppen = async (req, res) => {
+const loadaddCoupons = async (req, res) => {
     try {
         res.render('addCuppen')
     } catch (error) {
@@ -23,12 +27,14 @@ const loadaddCuppen = async (req, res) => {
 }
 const applyCoupon = async (req, res) => {
     try {
-        const {couponCode,amount} = req.body;
-        const checkCoupon = await CoupenDB.findOne({coupenId:couponCode})
+        const {couponCode} = req.body;
+        const checkCoupon = await CoupenDB.findOne({couponCode:couponCode});
         if(!checkCoupon){
-            return res.json({success:false,message:"Invalid Coupon Code!."})
+            return res.json({success:false,message:"Invalid Coupon Code!."});
         }
-        // HKyYAfbE Xx2AFiXu eMMncJ00
+        const {cartTotal} = await getStoreDataForUser(req,res);
+        console.log(checkCoupon,"totle",)
+        // HKyYAfbE Xx2AFiXu eMMncJ00 
         const today = new Date();
       
         if(new Date(checkCoupon.expiryDate).getFullYear()==today.getFullYear()&&new Date(checkCoupon.expiryDate).getMonth()==today.getMonth()&&new Date(checkCoupon.expiryDate).getDate()<today.getDate()){
@@ -37,13 +43,14 @@ const applyCoupon = async (req, res) => {
 
         if(new Date(checkCoupon.expiryDate).getFullYear()>=today.getFullYear()&&new Date(checkCoupon.expiryDate).getMonth()>=today.getMonth()){
             
-            if(checkCoupon.minLimite>amount){
+            if(checkCoupon.minLimite>cartTotal){
                 return res.json({success:false,message:`You need to purchase more than ${checkCoupon.minLimite} to use this coupon!.`})
             }
             if(checkCoupon.usedUsers.includes(req.session.user_id)){
                 return res.json({success:false,message:`Coupon Already used!.`})
             }
-            return res.json({success:true,coupon:checkCoupon,message:"Successfully Applied Coupon"})
+             const offerPrice = Math.floor(cartTotal*40/100);
+             return res.json({success:true,offerPrice,total:cartTotal-offerPrice,couponId:checkCoupon._id,message:"Successfully Applied Coupon"})
         }else{
             return res.json({success:false,message:"Coupon Expired!."})
         }
@@ -58,53 +65,38 @@ const applyCoupon = async (req, res) => {
 
 const addCuppen = async (req, res) => {
     try {
-        const offerPrice = req.body.offerPrice * 1;
+
+        const {title,coupenCode,date,min} = req.body;
+        let offerPrice = req.body.offerPrice*1
         const expiryDate = new Date(req.body.date);
         const today = new Date();
 
-        if (offerPrice >= 20 & offerPrice <= 70) { 
-            if (expiryDate.getFullYear() >= today.getFullYear() & expiryDate.getMonth() >= today.getMonth()) {
-                    if(expiryDate.getFullYear() == today.getFullYear() & expiryDate.getMonth() == today.getMonth()){
-                       if(expiryDate.getDate() >= today.getDate() & expiryDate.getDate()<=31 ){
-                        const data = new CoupenDB({
-                            name: req.body.name,
+        if(offerPrice < 5 && offerPrice > 20){
+           return res.json({success:false,message: " Offer Rate Must Be In Between 5 And 20 "});
+        }
+
+        if(today>=expiryDate){
+          return res.json({success:false,message: " Invalid Date "});
+        }
+        
+         
+        const {secure_url,public_id} = await cloudineryHelper(req.file.path,"ecommerceCouponImages");
+
+        const data = new CoupenDB({
+                            name: title,
                             expiryDate: expiryDate,
                             offer: offerPrice,
                             status:"active",
-                            minLimite: req.body.max,
-                            image: req.file.filename,
-                            coupenId: req.body.coupenId,
+                            minLimite: min,
+                            image: {
+                                secure_url,
+                                public_id
+                            },
+                            couponCode:coupenCode,
                         });
-                        await data.save();
-                        res.redirect('/admin/coupens')
-
-                       }else{
-                        res.render('addCuppen', { message: "Invalid Date month" })
-                       }
-                       
-                    }else{
-                        const data = new CoupenDB({
-                                name: req.body.name,
-                                expiryDate: expiryDate,
-                                offer: offerPrice,
-                                status:"active",
-                                minLimite: req.body.max,
-                                image: req.file.filename,
-                                coupenId: req.body.coupenId,
-                            });
-                            await data.save();
-                            res.redirect('/admin/coupens')
-                    }
-                          
-                
-            } else {
-                res.render('addCuppen', { message: "Invalid Date year" })
-
-            }
-        } else {
-            res.render('addCuppen', { message: " Offer Rate Must Be More Than 20 And Below 70 " })
-        }
-
+             await data.save();
+           return res.json({success:true,message: " Coupon Created Successfully!. "});
+         
     } catch (error) {
         console.log(error.message);
     }
@@ -122,95 +114,41 @@ const loadeditCuppen = async (req, res) => {
     
     const editCuppen = async (req, res) => {
         try {
-            const data = await CoupenDB.findById({ _id: req.query.id });
-            const alreadyImage = data.image;
+
+            const {couponId} = req.query;
+            const {title,couponCode,min,date} = req.body;
             const today = new Date();
-            const offerPrice = req.body.offerPrice;
-            const expiryDate = new Date(req.body.validity);
-            if (req.file) {
-                if (offerPrice >= 20 & offerPrice <= 70) {
-                    if (expiryDate.getFullYear() >= today.getFullYear() & expiryDate.getMonth() >= today.getMonth()) {
-                        if(expiryDate.getFullYear() == today.getFullYear() & expiryDate.getMonth() == today.getMonth()){
-                           if(expiryDate.getDate() >= today.getDate() & expiryDate.getDate()<=31 ){
-                            const data = await CoupenDB.findByIdAndUpdate({ _id: req.query.id }, {
-                            $set: {
-                                name: req.body.name,
-                                expiryDate: req.body.validity,
-                                offer: offerPrice,
-                                minLimite: req.body.min,
-                                image: req.file.filename,
-                                coupenId: req.body.coupenId,
-                            }
-                           });
-                           res.redirect('/admin/coupens');
-                        
-                        }else{
-                            res.render('editCoupens', { message: "Invalid Date", data: data })
-                           }
-                        }else{
-                            
-                        const data = await CoupenDB.findByIdAndUpdate({ _id: req.query.id }, {
-                            $set: {
-                                name: req.body.name,
-                                expiryDate: req.body.validity,
-                                offer: offerPrice,
-                                minLimite: req.body.min,
-                                image: req.file.filename,
-                                coupenId: req.body.coupenId,
-                            }
-                        });
-                        res.redirect('/admin/coupens');
-                        }
-                    } else {
-                        res.render('editCoupens', { message: "Invalid Date", data: data })
-    
-                    }
-                } else {
-                    res.render('editCoupens', { message: " Offer Rate Must Be More Than 20 And Below 70 ", data: data })
-                }
-    
-            } else {
-                if (offerPrice >= 20 & offerPrice <= 70) {
-                    if (expiryDate.getFullYear() >= today.getFullYear() & expiryDate.getMonth() >= today.getMonth()) {
-                        if(expiryDate.getFullYear() == today.getFullYear() & expiryDate.getMonth() == today.getMonth()){
-                           if(expiryDate.getDate() >= today.getDate() & expiryDate.getDate()<=31 ){
-                            const data = await CoupenDB.findByIdAndUpdate({ _id: req.query.id }, {
-                            $set: {
-                                name: req.body.name,
-                                expiryDate: req.body.validity,
-                                offer: offerPrice,
-                                minLimite: req.body.min,
-                                image: alreadyImage,
-                                coupenId: req.body.coupenId,
-                            }
-                           });
-                           res.redirect('/admin/coupens');
-                        
-                        }else{
-                            res.render('editCoupens', { message: "Invalid Date", data: data })
-                           }
-                        }else{
-                            
-                        const data = await CoupenDB.findByIdAndUpdate({ _id: req.query.id }, {
-                            $set: {
-                                name: req.body.name,
-                                expiryDate: req.body.validity,
-                                offer: offerPrice,
-                                minLimite: req.body.min,
-                                image: alreadyImage,
-                                coupenId: req.body.coupenId,
-                            }
-                        });
-                        res.redirect('/admin/coupens');
-                        }
-                    } else {
-                        res.render('editCoupens', { message: "Invalid Date", data: data })
-    
-                    }
-                } else {
-                    res.render('editCoupens', { message: " Offer Rate Must Be More Than 20 And Below 70 ", data: data })
-                }
+            const offerPrice = req.body.offerPrice*1
+            const expiryDate = new Date(date);
+
+             const coupon = await CoupenDB.findById({ _id: couponId});
+
+             if(!coupon){
+                return res.json({success:false,message: " Coupon Not Found!. "});
+             }
+
+              if(offerPrice < 5 && offerPrice > 20){
+               return res.json({success:false,message: " Offer Rate Must Be In Between 5 And 20 "});
+             }
+
+            if(today>=expiryDate){
+              return res.json({success:false,message: " Invalid Date "});
             }
+             const {secure_url,public_id} = await cloudineryHelper(req.file.path,"ecommerceCouponImages");
+                          await CoupenDB.findByIdAndUpdate({ _id: couponId }, {
+                            $set: {
+                                name: title,
+                                expiryDate: date,
+                                offer: offerPrice,
+                                minLimite: min,
+                                image:  {
+                                    secure_url,
+                                    public_id
+                                },
+                                couponCode: couponCode,
+                            }
+                           });
+            res.json({success:true,message: " Successfully Updated The Coupon "});
     
         } catch (error) {
             console.log(error.message);
@@ -221,19 +159,125 @@ const loadeditCuppen = async (req, res) => {
 const deleteCoupen = async (req, res) => {
     try {
 
-        const { id } = req.query;
-        await CoupenDB.findByIdAndDelete({ _id: id });
+        const { couponId } = req.body;
+        const coupon = await CoupenDB.findByIdAndDelete({ _id: couponId });
+        if(!coupon){
+            res.json({success:false,message:"Coupon Not Found!."});
+        }
+        
+        res.json({success:true,message:"Coupon Deleted Successfully!."});
+
+        
 
     } catch (error) {
         console.log(error.message);
     }
 }
+
+const searchCoupon = async (req, res) => {
+    try {
+
+               const { search } = req.query;
+               let limit = 3;
+               const count = await CoupenDB.find({ name: { $regex: ".*" + search + ".*", $options: "i" }}).countDocuments()
+               const coupons = await CoupenDB.find({ name: { $regex: ".*" + search + ".*", $options: "i" }}).sort({createdAt:-1}).limit(limit)
+              
+               return res.json({coupons,totelPage:Math.ceil(count/limit)});
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
+const filterAndsortCoupon = async (req, res) => {
+    try {
+       
+                    const { filter,sort,search} = req.query;
+                    let coupons
+                    let totelPage = 0;
+                    const limit = 3;
+                    const query = {};
+                    const date = new Date();
+               
+                   switch (sort) {
+                       case "Name Z - A":
+                       query.name = -1;
+                       break;
+                       case "Name A - Z":
+                       query.name = 1;
+                       break;
+                       case "Old":
+                       query.createdAt = 1;
+                       break;
+                       default:
+                       query.createdAt = -1;
+                       break;
+                   }
+               
+               
+                    if(filter == "Active"){
+                       coupons = await CoupenDB.find({$and:[{expiryDate:{$gte:date}},{ name: { $regex: ".*" + search + ".*", $options: "i" }}]}).sort(query).limit(limit)
+                    }else if(filter == 'Expired'){
+                       coupons = await CoupenDB.find({$and:[{expiryDate:{$lt:date}},{ name: { $regex: ".*" + search + ".*", $options: "i" }}]}).sort(query).limit(limit)
+                    }else{
+                       coupons = await CoupenDB.find({name: { $regex: ".*" + search + ".*", $options: "i" }}).sort(query).limit(limit)
+                    }
+               
+                    totelPage = Math.ceil(coupons.length/limit);
+                    
+                    res.json({coupons,totelPage:totelPage})
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
+const couponPagination = async (req, res) => {
+    try {
+       
+                    const { filter,sort,search,page} = req.query;
+                    let coupons
+                    const limit = 3;
+                    const query = {};
+                    const date = new Date();
+               
+                   switch (sort) {
+                       case "Name Z - A":
+                       query.name = -1;
+                       break;
+                       case "Name A - Z":
+                       query.name = 1;
+                       break;
+                       case "Old":
+                       query.createdAt = 1;
+                       break;
+                       default:
+                       query.createdAt = -1;
+                       break;
+                   }
+               
+               
+                    if(filter == "Active"){
+                       coupons = await CoupenDB.find({$and:[{expiryDate:{$gte:date}},{ name: { $regex: ".*" + search + ".*", $options: "i" }}]}).sort(query).skip((page-1)*limit).limit(limit*page)
+                    }else if(filter == 'Expired'){
+                       coupons = await CoupenDB.find({$and:[{expiryDate:{$lt:date}},{ name: { $regex: ".*" + search + ".*", $options: "i" }}]}).sort(query).skip((page-1)*limit).limit(limit*page)
+                    }else{
+                       coupons = await CoupenDB.find({name: { $regex: ".*" + search + ".*", $options: "i" }}).sort(query).skip((page-1)*limit).limit(limit*page)
+                    }
+    
+                    res.json({coupons})
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
 module.exports = {
-    coupens,
+    coupons,
     addCuppen,
-    loadaddCuppen,
+    loadaddCoupons,
     loadeditCuppen,
     editCuppen,
     deleteCoupen,
-    applyCoupon
+    applyCoupon,
+    searchCoupon,
+    filterAndsortCoupon,
+    couponPagination
 }

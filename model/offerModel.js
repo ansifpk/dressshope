@@ -4,7 +4,7 @@ const offerModel = mongoose.Schema({
     name:{ type:String,require:true },
     iteam:{type:String,require:true},
     offerRate:{type:String,require:true},
-    validity:{type:String,require:true}
+    validity:{type:Date,require:true}
 
 });
 

@@ -172,12 +172,24 @@
 	                		<div class="col-md-8 col-lg-9">
                                 <div class="tab-content">
                                     <div class="tab-pane fade show active" id="tab-dashboard">
-                                        <% if(coupens){ %>
-                                            <div class="row">
+                                        <div class="d-flex justify-content-between">
+                                            <h2>coupons</h2>
+                                            <div class="select-custom">
+                                                <select name="sort" id="sort" onchange="filtering()" class="form-control">
+                                                    <option value="" selected disabled>Filter Coupons</option>
+                                                    <option value="All" >All</option>
+                                                    <option value="Active" >Active</option>
+                                                    <option value="Used">Used</option>
+                                                    <option value="Expired">Expired</option>
+                                                </select>
+                                            </div><!-- End .select-custom -->   
+                                        </div>
+                                        <% if(coupens.length > 0){ %>
+                                            <div id="table" class="row">
                                                 <% for(var i=0; i<coupens.length; i++){ %>
                                                     <div class="col-md-6 mb-6 col-lg-6">
                                                         <div class="card h-100">
-                                                            <div class="card-body" style="background-image: url('/admin/assets/productImages/<%=coupens[i].image%>'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+                                                            <div class="card-body" style="background-image: url('<%=coupens[i].image.secure_url%>'); background-size: cover; background-position: center; background-repeat: no-repeat;">
                                                                 <h5 class="card-title text-center text-black"><%=coupens[i].name%></h5>
                                                                 <h6 class="card-subtitle mb-2 text-body-secondary text-danger text-black">Get Extra <%=coupens[i].offer%>%</h6>
                                                                 <%               
@@ -185,12 +197,12 @@
                                                                 const ab = coupens[i].usedUsers.find( c =>c === user);
                                                                 if(ab){
                                                                     %>
-                                                                    <p  class="card-text text-danger">Coupon Code: <span><%=coupens[i].coupenId%></span><span><button class="btn btn-primary disabled"   >copy</button></span></p>
+                                                                    <p  class="card-text text-danger">Coupon Code: <span><%=coupens[i].couponCode%></span><span><button class="btn btn-primary disabled"   >copy</button></span></p>
                                                                     <p class="card-text text-gray">Status: Used</p>
                                                                     <%
                                                                 }else{
                                                                     %>
-                                                                    <p  id="coupencode<%=i%>" class="card-text text-danger">Coupon Code: <span><%=coupens[i].coupenId%></span><span><button class="btn btn-primary"  onclick="copyCoupon('<%=i%>')">copy</button></span></p>
+                                                                    <p  id="coupencode<%=i%>" class="card-text text-danger">Coupon Code: <span><%=coupens[i].couponCode%></span><span><button class="btn btn-primary"  onclick="copyCoupon('<%=i%>')">copy</button></span></p>
                                                                     <p class="card-text <%= coupens[i].expiryDate>=date?"text-success":"text-danger" %>">Status: <%= coupens[i].expiryDate>=date?"Active":"expired" %></p>
                                                                     <%
                                                                 }
@@ -204,15 +216,39 @@
                                                     </div>
                                                 <% } %>
                                             </div>
-                                        <% } %>
-                                    </div><!-- .End .tab-pane -->
+                                        <% 
+                                        }else{
+                                            %>
+                                             <div>No Coupons </div>
+                                            <%
+                                        } %>
+                                    </div>
                                 </div>
                             </div>
-                            
-	                	</div><!-- End .row -->
-	                </div><!-- End .container -->
-                </div><!-- End .dashboard -->
+	                	</div>
+	                </div>
+                </div>
             </div>
+             <nav class="portfolio-nav">
+                <ul class="nav-filter portfolio-filter justify-content-center">
+                    <div class="pagination-area mt-5 mb-50">
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination justify-content-start">
+                            <li class="page-item" onclick="changePage('decrement')">
+                                <a class="page-link cursor-pointer"><</a>
+                            </li>
+                       
+                            <li class="page-item active"><a class="page-link" id="currentPage" >1</a></li>
+                            <li class="page-item"><a class="page-link dot">...</a></li>
+                            <li class="page-item"><a class="page-link" id="totalPage" ><%=totalPage%></a></li>
+                            <li class="page-item"  onclick="changePage('increment')">
+                                <a class="page-link cursor-pointer">></a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                </ul>
+            </nav> 
         </main>
       </div>
 
@@ -344,10 +380,8 @@ function copyCoupon(num) {
   document.body.removeChild(tempInput);
  
   Swal.fire({
-  
-  text: "Coupon code copied: " + couponElement.textContent,
-  
-});
+   text: "Coupon code copied: " + couponElement.textContent,
+  });
   
 }
 
@@ -379,6 +413,113 @@ function copyCoupon(num) {
   }
 });
            
+        }
+    </script>
+
+     <script>
+       
+        function changePage(status) {
+            let currentPage = document.getElementById("currentPage").innerText*1
+            const totalPage = document.getElementById("totalPage").innerText*1
+            
+           if(status == "increment" && currentPage<totalPage){
+             currentPage++
+            }else if(status == "decrement" && currentPage>1){
+               currentPage--
+           }else{
+            return;
+           }
+           document.getElementById("currentPage").innerText=`${currentPage}`;
+             fetch(`/paginationCoupon?page=${currentPage}`,{method:"GET"}).then((res)=>res.json())
+            .then((res)=>{
+             
+                 if(res.coupens.length == 0){
+                      document.getElementById("table").innerHTML= `
+                        <div>
+                            No Coupens
+                        </div>
+                      `
+                 }else{
+                     const date = new Date()
+                     document.getElementById("table").innerHTML=  res.coupens.map((coupen,i)=>{
+                     const ab = coupen.usedUsers.find( c =>c === res.user);
+                   
+                     
+               return `
+                    <div class="col-md-6 mb-6 col-lg-6">
+                        <div class="card h-100">
+                            <div class="card-body" style="background-image: url('${coupen.image.secure_url}'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+                                <h5 class="card-title text-center text-black">${coupen.name}</h5>
+                                <h6 class="card-subtitle mb-2 text-body-secondary text-danger text-black">Get Extra ${coupen.offer}%</h6>
+                                ${ab?
+                                `<p  class="card-text text-danger">Coupon Code: <span>${coupen.couponCode}</span><span><button class="btn btn-primary disabled"   >copy</button></span></p>
+                                <p class="card-text text-gray">Status: Used</p>`
+                                :
+                                `<p  id="coupencode${i}" class="card-text text-danger">Coupon Code: <span>${coupen.couponCode}</span><span><button class="btn btn-primary"  onclick="copyCoupon('${i}')">copy</button></span></p>
+                                 <p class="card-text ${new Date(coupen.expiryDate)>=date?"text-success":"text-danger"}">Status: ${new Date(coupen.expiryDate)>=date?"Active":"expired"}</p>
+                                `
+                                }
+                                <p class="card-text text-danger">On minimum Rs: ${coupen.minLimite}</p>
+                                <p class="card-text text-danger">Valid till: ${new Date(coupen.expiryDate).toLocaleDateString()}</p>
+                                </div>
+                                </div>
+                               </div>
+                `
+                }).join("")
+            }     
+          })
+       }    
+    
+    </script>
+    <script>
+        function filtering() {
+            const filter = document.getElementById("sort").value
+            let currentPage = document.getElementById("currentPage")
+            let totalPage = document.getElementById("totalPage")
+             
+             
+             fetch(`/filterCoupon?filter=${filter}`,{method:"GET"}).then((res)=>res.json())
+             .then((res)=>{
+                
+                if(res.coupens.length == 0){
+                    currentPage.innerText = 0
+                    totalPage.innerText = res.totalPage
+                      document.getElementById("table").innerHTML= `
+                        <div>
+                            No Coupens
+                        </div>
+                      `
+                 }else{
+                     
+                     const date = new Date()
+                     currentPage.innerText = 1
+                     totalPage.innerText = res.totalPage
+                     document.getElementById("table").innerHTML=  res.coupens.map((coupen,i)=>{
+                     const ab = coupen.usedUsers.find( c =>c === res.user);
+                         
+               return `
+                    <div class="col-md-6 mb-6 col-lg-6">
+                        <div class="card h-100">
+                            <div class="card-body" style="background-image: url('${coupen.image.secure_url}'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+                                <h5 class="card-title text-center text-black">${coupen.name}</h5>
+                                <h6 class="card-subtitle mb-2 text-body-secondary text-danger text-black">Get Extra ${coupen.offer}%</h6>
+                                ${ab?
+                                `<p  class="card-text text-danger">Coupon Code: <span>${coupen.couponCode}</span><span><button class="btn btn-primary disabled"   >copy</button></span></p>
+                                <p class="card-text text-gray">Status: Used</p>`
+                                :
+                                `<p  id="coupencode${i}" class="card-text text-danger">Coupon Code: <span>${coupen.couponCode}</span><span><button class="btn btn-primary"  onclick="copyCoupon('${i}')">copy</button></span></p>
+                                 <p class="card-text ${new Date(coupen.expiryDate)>=date?"text-success":"text-danger"}">Status: ${new Date(coupen.expiryDate)>=date?"Active":"expired"}</p>
+                                `
+                                }
+                                <p class="card-text text-danger">On minimum Rs: ${coupen.minLimite}</p>
+                                <p class="card-text text-danger">Valid till: ${new Date(coupen.expiryDate).toLocaleDateString()}</p>
+                                </div>
+                                </div>
+                               </div>
+                `
+                }).join("")
+            }     
+             })
         }
     </script>
     <script src="assets/js/jquery.min.js"></script>

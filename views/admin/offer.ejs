@@ -86,17 +86,17 @@
                     </div>
                 </li>
                 <li class="menu-item has-submenu">
-                    <a class="menu-link" href="/admin/coupens">
+                    <a class="menu-link" href="/admin/coupons">
                         <i class="icon material-icons md-shopping_bag"></i>
-                        <span class="text">Coupens</span>
+                        <span class="text">Coupons</span>
                     </a>
                     <div class="submenu">
-                        <a href="/admin/coupens">Coupens List</a>
+                        <a href="/admin/coupons">Coupons List</a>
                        
                     </div>
                 </li>
                 <li class="menu-item has-submenu">
-                    <a class="menu-link" href="/admin/coupens">
+                    <a class="menu-link" href="">
                         <i class="icon material-icons md-shopping_bag"></i>
                         <span class="text">Offers</span>
                     </a>
@@ -201,7 +201,7 @@
                         <thead >
                             <tr >
                                
-                                <th scope="col">Name</th>
+                                <th scope="col">NAME</th>
                                 <th scope="col">ITEAM</th>
                                 <th scope="col" >OFFER RATE</th>
                                 <th scope="col" >VALIDITY</th>
@@ -266,14 +266,26 @@ if(offer.length > 0){
   confirmButtonText: "Yes, delete it!"
 }).then((result) => {
   if (result.isConfirmed) {
-    Swal.fire({
-      title: "Deleted!",
-      text: "Offer has been deleted.",
-      icon: "success"
-    });
-    fetch(`/admin/deleteOffer?offerId=${id}`);
+   
+    fetch(`/admin/offer?offerId=${id}`,{method:"DELETE"}).then((res)=>res.json())
+    .then((res)=>{
+       if(res.success){
+         Swal.fire({
+            title: "Deleted!",
+            text: "Offer has been deleted.",
+            icon: "success"
+            });
           const data =  document.getElementById(num);
           data.remove();
+       }else{
+        Swal.fire({
+            title: "Failed!",
+            text: res.message,
+            icon: "warning"
+            });
+       }
+    });
+        
   }
 });
          

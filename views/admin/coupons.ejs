@@ -1,0 +1,459 @@
+
+
+  
+<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Nest Dashboard</title>
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta property="og:title" content="">
+    <meta property="og:type" content="">
+    <meta property="og:url" content="">
+    <meta property="og:image" content="">
+    <!-- Favicon -->
+    <link rel="shortcut icon" type="image/x-icon" href="assets/imgs/theme/favicon.svg">
+    <!-- Template CSS -->
+    <link href="assets/css/main.css?v=1.1" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+    <div class="screen-overlay"></div>
+    <aside class="navbar-aside" id="offcanvas_aside">
+        <div class="aside-top">
+            <a href="index.html" class="brand-wrap">
+                <img src="assets/imgs/theme/logo.svg" class="logo" alt="Nest Dashboard" />
+            </a>
+            <div>
+                <button class="btn btn-icon btn-aside-minimize"><i class="text-muted material-icons md-menu_open"></i></button>
+            </div>
+        </div>
+        <nav>
+            <ul class="menu-aside">
+                <li   class="menu-item active"   >
+                    <a class="menu-link" href="/admin/dashboard">
+                        <i class="icon material-icons md-home"></i>
+                        <span class="text">Dashboard</span>
+                    </a>
+                    <div class="submenu">
+                        <a href="/admin/dashboard">View Dashboard</a>
+                       
+                    </div>
+                </li>
+                <li class="menu-item has-submenu">
+                    <a class="menu-link" href="/admin/products">
+                        <i class="icon material-icons md-shopping_bag"></i>
+                        <span class="text">Products</span>
+                    </a>
+                    <div class="submenu">
+                        <a href="/admin/viewProducts">Product List</a>
+                       
+                    </div>
+                </li>
+                <li class="menu-item has-submenu">
+                    <a class="menu-link" href="/admin/viewUser">
+                        <i class="icon material-icons md-person"></i>
+                        <span class="text">Users</span>
+                    </a>
+                    <div class="submenu">
+                        <a href="/admin/viewUser">Users list </a>
+                       
+                    </div>
+                </li>
+              
+              
+                <li class="menu-item has-submenu">
+                    <a class="menu-link" href="/admin/viewOrders">
+                        <i class="icon material-icons md-monetization_on"></i>
+                        <span class="text">View Orders</span>
+                    </a>
+                    <div class="submenu">
+                        <a href="/admin/ordersList">Orders</a>
+                        
+                    </div>
+                </li>
+                <li class="menu-item has-submenu">
+                    <a class="menu-link" href="#">
+                        <i class="icon material-icons md-person"></i>
+                        <span class="text">Category</span>
+                    </a>
+                    <div class="submenu">
+                        <a href="/admin/category">Category</a>
+                       
+                    </div>
+                </li>
+                <li class="menu-item has-submenu">
+                    <a class="menu-link" href="/admin/coupons">
+                        <i class="icon material-icons md-shopping_bag"></i>
+                        <span class="text">Coupons</span>
+                    </a>
+                    <div class="submenu">
+                        <a href="/admin/coupons">Coupons List</a>
+                       
+                    </div>
+                </li>
+                <li class="menu-item has-submenu">
+                    <a class="menu-link" href="">
+                        <i class="icon material-icons md-shopping_bag"></i>
+                        <span class="text">Offers</span>
+                    </a>
+                    <div class="submenu">
+                        <a href="/admin/offer">Offers List</a>
+                       
+                    </div>
+                </li>
+                <li class="menu-item has-submenu">
+                    <a class="menu-link" href="/admin/weaklyReport">
+                        <i class="icon material-icons md-post_add"></i>
+                        <span class="text">Report</span>
+                    </a>
+                    <div class="submenu">
+                        <a href="/admin/weaklyReport">weakly Report</a>
+                        <a href="/admin/monthlyReport">Monthly Report</a>
+                        <a href="/admin/yearlyReport">Yearly Report</a>
+                    </div>
+                </li>
+                <li class="menu-item">
+                    <a class="menu-link" href="/admin/logout">
+                        <i class="icon material-icons md-comment"></i>
+                        <span class="text">Logout</span>
+                    </a>
+                </li>
+               
+            </ul>
+            <br />
+            <br />
+        </nav>
+    </aside>
+    <main class="main-wrap">
+        <header class="main-header navbar">
+            <div class="col-search">
+               
+            </div>
+            <div class="col-nav">
+                <button class="btn btn-icon btn-mobile me-auto" data-trigger="#offcanvas_aside"> <i class="material-icons md-apps"></i> </button>
+                <ul class="nav">
+                    <li class="nav-item">
+                        <a class="nav-link btn-icon" href="#">
+                            <i class="material-icons md-notifications animation-shake"></i>
+                            <span class="badge rounded-pill">3</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn-icon darkmode" href="#"> <i class="material-icons md-nights_stay"></i> </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="requestfullscreen nav-link btn-icon"><i class="material-icons md-cast"></i></a>
+                    </li>
+                    <li class="dropdown nav-item">
+                        <a class="dropdown-toggle" data-bs-toggle="dropdown" href="#" id="dropdownLanguage" aria-expanded="false"><i class="material-icons md-public"></i></a>
+                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownLanguage">
+                            <a class="dropdown-item text-brand" href="#"><img src="assets/imgs/theme/flag-us.png" alt="English">English</a>
+                            <a class="dropdown-item" href="#"><img src="assets/imgs/theme/flag-fr.png" alt="Français">Français</a>
+                            <a class="dropdown-item" href="#"><img src="assets/imgs/theme/flag-jp.png" alt="Français">日本語</a>
+                            <a class="dropdown-item" href="#"><img src="assets/imgs/theme/flag-cn.png" alt="Français">中国人</a>
+                        </div>
+                    </li>
+                    <li class="dropdown nav-item">
+                        <a class="dropdown-toggle" data-bs-toggle="dropdown" href="#" id="dropdownAccount" aria-expanded="false"> <img class="img-xs rounded-circle" src="assets/imgs/people/avatar-2.png" alt="User"></a>
+                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownAccount">
+                            <a class="dropdown-item" href="#"><i class="material-icons md-perm_identity"></i>Edit Profile</a>
+                            <a class="dropdown-item" href="#"><i class="material-icons md-settings"></i>Account Settings</a>
+                            <a class="dropdown-item" href="#"><i class="material-icons md-account_balance_wallet"></i>Wallet</a>
+                            <a class="dropdown-item" href="#"><i class="material-icons md-receipt"></i>Billing</a>
+                            <a class="dropdown-item" href="#"><i class="material-icons md-help_outline"></i>Help center</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item text-danger" href="#"><i class="material-icons md-exit_to_app"></i>Logout</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </header>
+        <section class="content-main">
+            <div class="content-header">
+                <div>
+                    <h2 class="content-title card-title">coupons List</h2>
+                    
+                </div>
+                <div>
+                    <a href="/admin/addCoupon" class="btn btn-primary btn-sm rounded">Create new</a>
+                </div>
+            </div>
+             <header class="card-header">
+                        <div class="row gx-3">
+                            <div  class="col-lg-4 col-md-6 me-auto" >
+                                <div >
+                                    <input type="search" oninput="handlSearch(this)" id="search" placeholder="Search..." class="form-control" />
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-2 col-6 col-md-3">
+                                <select onchange="filterAndsortCategory()" id="filter" class="form-select">
+                                    <option selected disabled value="">Status</option>
+                                    <option value="">All</option>
+                                    <option value="Active">Active</option>
+                                    <option value="Expired">Expired</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-2 col-6 col-md-3">
+                                <select onchange="filterAndsortCategory()" id="sort" class="form-select">
+                                    <option value="" selected disabled>Sort</option>
+                                    <option value="All" >All</option>
+                                    <option value="New" >New</option>
+                                    <option value="Old" >Old</option>
+                                    <option value="Name A - Z" >Name A - Z</option>
+                                    <option value="Name Z - A" >Name Z - A</option>
+                                </select>
+                            </div>
+                        </div>
+                    </header>
+            <div id="table" class="row gap-3">
+                <%
+            if(data.length>0){
+                for(i=0;i<data.length;i++){
+                    %>
+                    <div id="gone<%=i%>" class="card col-4" style="width: 18rem; background-image: url('<%=data[i].image.secure_url%>'); background-size: cover; background-position: center; background-repeat: no-repeat; padding: 20px;">
+                <div class="card-body">
+                  <h5 class="card-title text-center"><%=data[i].name%></h5>
+                  <h6 class="card-subtitle mb-2 text-body-secondary text-center">Get Extra <%=data[i].offer%>%</h6>
+                  <p class="card-text">Coupon Code:<%=data[i].couponCode%></p>
+                  <p  class="card-link">on minimum Rs:<%=data[i].minLimite%></p>
+                  <%const date = new Date()%>
+                  <p  class="card-link <%=new Date(data[i].expiryDate)>=date?"text-success":"text-danger"%>">status : <%=data[i].expiryDate>=date?"Active":"expired"%></p>
+                  <p class="card-link text-end">Valid till: <%= new Date(data[i].expiryDate).toLocaleDateString()%> </p>
+                 
+                </div>
+                <a href="/admin/editCoupon?id=<%=data[i]._id%>">Edit</a>
+                
+                <a class=" text-danger " onclick="remove('<%=data[i]._id%>','<%=i%>')">delete</a>
+                    </div>
+                    <%
+                }
+            
+            }else{
+                %>
+                <h6>No Coupons</h6>
+                <%
+            }
+            %>
+            </div>
+             <div class="pagination-area mt-15 mb-50">
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination justify-content-start">
+                            <input type="hidden" id="totalPage" value="<%=totalPage%>">
+                             <li class="page-item "><a class="page-link" onclick="handlePage('decrement')" ><</a></li>
+                             <li  class="page-item active"><a id="page" class="page-link" >1</a></li>
+                             <li class="page-item "><a class="page-link" onclick="handlePage('increment')"  >></a></li>
+                        </ul>
+                    </nav>
+            </div>
+        </section> 
+        <footer class="main-footer font-xs">
+            <div class="row pb-30 pt-15">
+                <div class="col-sm-6">
+                    <script>
+                    document.write(new Date().getFullYear())
+                    </script> &copy; Nest - HTML Ecommerce Template .
+                </div>
+                <div class="col-sm-6">
+                    <div class="text-sm-end">
+                        All rights reserved
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </main>
+    <script>
+        function remove(id,num){
+            Swal.fire({
+                title: "Do You Want To Delete This coupon ?",
+                text: "You won't be able to revert this!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, delete it!"
+            }).then((result) => {
+            if (result.isConfirmed) {
+                
+                const ddd = document.getElementById(`gone${num}`)
+                fetch(`/admin/coupon`,{method:"DELETE",body:JSON.stringify({couponId:id})}).then((res)=>res.json())
+                .then((res)=>{
+                    console.log(res);
+                    if(res.success){
+                     Swal.fire({
+                        title: "Success!",
+                        text: res.message,
+                        icon: "success"
+                     });
+                     ddd.remove()
+                    }else{
+                     Swal.fire({
+                        title: "Failed!",
+                        text: res.message,
+                        icon: "warning"
+                     });
+                    }
+                    
+                    
+                })
+            }
+            });   
+        }
+    </script>
+     
+     <script>
+            function handlSearch(tag) {
+                
+                let totalPages = document.getElementById("totalPage");
+                fetch(`/admin/searchCoupon?search=${tag.value}`).then((res)=>res.json())
+                .then((res)=>{
+               
+                    
+                    document.getElementById("sort").value = ""
+                    totalPages.value = res.totelPage 
+                    if(res.coupons.length == 0){
+                        document.getElementById("page").innerText=0
+                        document.getElementById("table").innerHTML=
+                    `
+                                       <tr>
+                                            <td colspan="3">Coupons Not Found</td>
+                                        </tr>
+                    `
+                    }else{
+                         document.getElementById("page").innerText=1;
+                         const date = new Date()
+                         document.getElementById("table").innerHTML=
+                         res.coupons.map((coupon,i) => {
+                           return `
+                              <div id="gone${i}" class="card col-4" style="width: 18rem; background-image: url('${coupon.image.secure_url}'); background-size: cover; background-position: center; background-repeat: no-repeat; padding: 20px;">
+                                <div class="card-body">
+                                <h5 class="card-title text-center">${coupon.name}</h5>
+                                <h6 class="card-subtitle mb-2 text-body-secondary text-center">Get Extra ${coupon.offer}%</h6>
+                                <p class="card-text">Coupon Code: ${coupon.couponCode}</p>
+                                <p  class="card-link">on minimum Rs: ${coupon.minLimite}</p>
+                                <p class="card-link ${new Date(coupon.expiryDate) >= date ? "text-success" : "text-danger"}">status: ${new Date(coupon.expiryDate) >= date ? "Active" : "Expired"}</p>
+                                <p class="card-link text-end">Valid till:${new Date(coupon.expiryDate).toLocaleDateString()}</p>
+                               
+                                </div>
+                                <a href="/admin/editCoupon?id= ${coupon._id} ">Edit</a>
+                                
+                                <a class=" text-danger " onclick="remove('${coupon._id} ','${i}')">delete</a>
+                              </div>
+                           `
+                        }).join("");
+                       
+                    }
+     
+                })
+            }
+    </script>
+    
+     <script>
+            function filterAndsortCategory() {
+                 const sort = document.getElementById("sort").value
+                 const filter = document.getElementById("filter").value
+                 const search = document.getElementById("search").value
+                 let page = document.getElementById("page")
+                 let totalPage = document.getElementById("totalPage")
+              
+                 fetch(`/admin/filterAndsortCoupon?filter=${filter}&&search=${search}&&sort=${sort}`).then((res)=>res.json())
+                 .then((res)=>{
+                
+                     totalPage.value = res.totalPage;
+                     if(res.coupons.length == 0){
+                        document.getElementById("page").innerText=0;
+                        document.getElementById("table").innerHTML=
+                                       `
+                                        <tr>
+                                            <td colspan="3">Cupons Not Found</td>
+                                        </tr>
+                                       
+                                        `
+                     }else{
+                         document.getElementById("page").innerText=1;
+                          const date = new Date()
+                         document.getElementById("table").innerHTML=
+                          res.coupons.map((coupon,i) => {
+                           return `
+                              <div id="gone${i}" class="card col-4" style="width: 18rem; background-image: url('${coupon.image.secure_url}'); background-size: cover; background-position: center; background-repeat: no-repeat; padding: 20px;">
+                                <div class="card-body">
+                                <h5 class="card-title text-center">${coupon.name}</h5>
+                                <h6 class="card-subtitle mb-2 text-body-secondary text-center">Get Extra ${coupon.offer}%</h6>
+                                <p class="card-text">Coupon Code: ${coupon.couponCode}</p>
+                                <p  class="card-link">on minimum Rs: ${coupon.minLimite}</p>
+                                <p class="card-link ${new Date(coupon.expiryDate) >= date ? "text-success" : "text-danger"}">status: ${new Date(coupon.expiryDate) >= date ? "Active" : "Expired"}</p>
+                                <p class="card-link text-end">Valid till:${new Date(coupon.expiryDate).toLocaleDateString()}</p>
+                 
+                                </div>
+                                <a href="/admin/editCoupon?id= ${coupon._id} ">Edit</a>
+                                
+                                <a class=" text-danger " onclick="remove('${coupon._id} ','${i}')">delete</a>
+                              </div>
+                           `
+                        }).join("");
+                     }
+                 })
+            }
+    </script>
+
+     <script>
+            function handlePage(action) {
+               
+                
+                const sort = document.getElementById("sort").value;
+                const filter = document.getElementById("filter").value;
+                const totalPages = document.getElementById("totalPage").value;
+                const search = document.getElementById("search").value;
+                let table = document.getElementById("table");
+                let page = document.getElementById("page");
+              
+                 if(action == "increment" && page.innerText*1<totalPages){
+                  page.innerText++
+                 }else if(action == "decrement" && page.innerText*1 >1){
+                  page.innerText--
+                 }else{
+                    return;
+                 }
+                 
+                fetch(`/admin/couponPagination?search=${search}&&page=${page.innerText}&&sort=${sort}&&filter${filter}`).then((res)=>res.json())
+                .then((res)=>{
+                   console.log(res);
+                    const date = new Date()
+                    table.innerHTML=
+                        res.coupons.map((coupon,i) => {
+                           return `
+                            <div id="gone${i}" class="card col-4" style="width: 18rem; background-image: url('${coupon.image.secure_url}'); background-size: cover; background-position: center; background-repeat: no-repeat; padding: 20px;">
+                                <div class="card-body">
+                                <h5 class="card-title text-center">${coupon.name}</h5>
+                                <h6 class="card-subtitle mb-2 text-body-secondary text-center">Get Extra ${coupon.offer}%</h6>
+                                <p class="card-text">Coupon Code: ${coupon.couponCode}</p>
+                                <p  class="card-link">on minimum Rs: ${coupon.minLimite}</p>
+                                <p class="card-link ${new Date(coupon.expiryDate) >= date ? "text-success" : "text-danger"}">status: ${new Date(coupon.expiryDate) >= date ? "Active" : "Expired"}</p>
+                                <p class="card-link text-end">Valid till:${new Date(coupon.expiryDate).toLocaleDateString()}</p>
+                 
+                                </div>
+                                <a href="/admin/editCoupon?id= ${coupon._id} ">Edit</a>
+                                
+                                <a class=" text-danger " onclick="remove('${coupon._id} ','${i}')">delete</a>
+                              </div>
+                           `
+                        }).join("");
+                })
+            }
+    </script>
+
+    <script src="assets/js/vendors/jquery-3.6.0.min.js"></script>
+    <script src="assets/js/vendors/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/vendors/select2.min.js"></script>
+    <script src="assets/js/vendors/perfect-scrollbar.js"></script>
+    <script src="assets/js/vendors/jquery.fullscreen.min.js"></script>
+    <!-- Main Script -->
+    <script src="assets/js/main.js?v=1.1" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</body>
+
+</html>

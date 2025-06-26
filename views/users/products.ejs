@@ -37,13 +37,13 @@
                     <div class="header-left ">
                          <div class="header-search header-search-extended header-search-visible d-none d-lg-block">
                             <a class="search-toggle" role="button"><i class="icon-search"></i></a>
-                            <form >
+                            <div >
                                 <div class="header-search-wrapper search-wrapper-wide">
                                     <label for="q" class="sr-only">Search</label>
-                                    <button class="btn btn-primary" type="submit"><i class="icon-search"></i></button>
-                                    <input type="search" class="form-control" name="search" id="q" placeholder="Search product ..." required>
+                                    <button class="btn btn-primary" type="button"><i class="icon-search"></i></button>
+                                    <input type="search" class="form-control" oninput="search(this)" id="search" placeholder="Search product ..." required>
                                 </div>
-                            </form>
+                            </div>
                         </div>
                     </div>
                     <div class="header-center">
@@ -126,36 +126,35 @@
                                 
                             </ul><!-- End .menu -->
                         </nav><!-- End .main-nav -->
-                        <button class="mobile-menu-toggler">
-                            <span class="sr-only">Toggle mobile menu</span>
-                            <i class="icon-bars"></i>
-                        </button>
+                       
                     </div><!-- End .header-left -->
 
                     <div class="header-right">
                         <div class="details-filter-row details-row-size">
                             <div class="select-custom">
                                 <select name="sort" id="size" onchange="filteringAndSort()" class="form-control">
-                                    <option >Defult Sort</option>
-                                    <option >Sort by Price: low to high</option>
-                                    <option >Sort by Price: high to low</option>
-                                    <option >Sort by Name : A-Z</option>
-                                    <option>Sort by Name : Z-A</option>
+                                    <option value="" selected disabled>Sort Product</option>
+                                    <option value="All" >All</option>
+                                    <option value="New" >New</option>
+                                    <option value="Old" >Old</option>
+                                    <option value="Sort by Price: low to high" >Sort by Price: low to high</option>
+                                    <option value="Sort by Price: high to low" >Sort by Price: high to low</option>
+                                    <option value="Sort by Name : A-Z" >Sort by Name : A-Z</option>
+                                    <option value="Sort by Name : Z-A" >Sort by Name : Z-A</option>
                                 </select>
                             </div>
                         </div> 
                         <div class="details-filter-row details-row-size">
                             <div class="select-custom">
                                 <select name="filter" id="filter" onchange="filteringAndSort()" class="form-control">
-                                    <option disabled >Filter</option>
+                                    <option disabled selected >Filter</option>
                                     <option value="All" selected>All</option>
-                                   <%
-                                   for(let i=0;i<categories.length;i++){
-                                    %>
-                                    <option value="<%=categories[i].name%>"><%=categories[i].name%></option>
-                                    <%
-                                   }
-                                   %>
+                                    <option value="Out Of Stock" >Out Of Stock</option>
+                                    <option value="In Stock" >In Stock</option>
+                                    
+                                   <% categories.forEach(category => { %>
+                                        <option value="<%= category.name %>"><%= category.name %></option>
+                                    <% }) %>
                                 </select>
                             </div>
                         </div> 
@@ -165,9 +164,172 @@
         </header><!-- End .header -->
 
         <main id="main" class="main">
-                   <%- include('../users/productGrid', { productData, offerData, wishlistData, cartData,totalPage }) %>        
-              
-        </main><!-- End .main -->
+               <div id="product-grid" class="row" >
+                <%
+                if(productData?.length > 0){                  
+                        for(let i=0;i<productData.length;i++){
+                          
+                             if(productData[i].categoryID.is_listed===true){
+                                %>
+                    <div class="col-6 col-md-4 col-lg-3">
+                       <div class="product product-3">
+                        <figure class="product-media">
+                            <span class="product-label">
+                              <%= productData[i].stock > 0 ? "Sale" : "Out of Stock" %>
+                            </span>
+                            <a href="/detailes?id=<%=productData[i]._id%>">
+                                <img src="<%=productData[i].image[0].secure_url%>" alt="Product image" class="product-image">
+                            </a>
+   
+                            <%if(offerData){
+                                    const productName = productData[i].name;
+                                    const productCategory = productData[i].categoryID.name;
+                                    const productOffer = offerData?.find(offer => offer.iteam === productName);
+                                    const categoryOffer = offerData?.find(offer => offer.iteam === productCategory);  
+                                  
+                                    if(productOffer){%>
+                                        <div class="product-countdown-container">
+                                               <span class="product-contdown-title">offer ends in:</span>
+                                               <div class="product-contdown-title text-danger" data-compact="true"><%=new Date(productOffer?.validity).toLocaleDateString()%></div>
+                                       </div><
+                                    <%}else if(categoryOffer){
+                                        %>
+                                        <div class="product-countdown-container">
+                                        <span class="product-contdown-title">offer ends in:</span>
+                                        <div class="product-contdown-title text-danger"  data-compact="true"><%=new Date(categoryOffer?.validity).toLocaleDateString()%></div>
+                                       </div>
+                                        <%
+                                    }
+                                    else{%>
+                                        
+                                    <%}
+                                }
+                                %>
+                            <div class="product-action-vertical">
+                                <%
+                                    if(wishlistData?.products?.some((pro)=>pro.productId==productData[i]._id.toString())){
+                                        %>
+                                        <a id="wishlist<%=i%>" onclick="handlewishlist('<%=productData[i]._id%>','<%=i%>')" class="btn-product-icon btn-wishlist bg-danger btn-expandable"><span id="text<%=i%>">remove from wishlist</span></a>
+                                        <%
+                                    }else{
+                                        %>
+                                        <a id="wishlist<%=i%>" onclick="handlewishlist('<%=productData[i]._id%>','<%=i%>')" class="btn-product-icon btn-wishlist btn-expandable"><span id="text<%=i%>">add to wishlist</span></a>
+                                        <%
+                                    } %>
+                            </div>
+                        </figure>
+
+                        <div class="product-body">
+                            <%
+                            if(productData[i].stock>0){
+                                %>
+                                <%
+                                
+     
+                                if(cartData?.products?.some((pro)=>pro.productId._id==productData[i]._id.toString())){
+                                    %>
+                                    <div class="product-action">
+                                      <a id="cartBtn" class="btn-product btn-cart"  onclick="handleCart('<%=productData[i]._id%>')"><span id="cart<%=productData[i]._id%>">remove from cart </span></a>
+                                    </div>
+                                    <%
+                                }else{
+                                    %>
+                                    <div class="product-action">
+                                      <a  class="btn-product btn-cart"  onclick="handleCart('<%=productData[i]._id%>')"><span id="cart<%=productData[i]._id%>">add to cart </span></a>
+                                    </div>
+                                    <%
+                                }
+                              
+                                %>
+                                <%
+                            }else{
+                                %>
+                                <div class="product-action">
+                                <a  class="btn-product btn-cart" ><span>Out of stock</span></a>
+                               
+                            </div><!-- End .product-action -->
+                                <%
+                            }
+                            %>
+                           
+                            <div class="product-cat">
+                                <a href=""><%=productData[i].categoryID.name%></a>
+                            </div><!-- End .product-cat -->
+                            <h3 class="product-title"><a href="/detailes"><%=productData[i].name%></a></h3><!-- End .product-title -->
+                            <div class="product-price">
+                                <%if(offerData){
+                                    const productName = productData[i].name;
+                                    const productCategory = productData[i].categoryID.name;
+                                    const productOffer = offerData.find(offer => offer.iteam === productName);
+                                    const categoryOffer = offerData.find(offer => offer.iteam === productCategory);  
+
+                                    if(productOffer){%>
+                                       
+                                        <span class="new-price">Rs.<%=productData[i].Price-Math.round(productData[i].Price*productOffer.offerRate/100)%>.00</span>
+                                        <span class="old-price">Rs.<%=productData[i].Price%>.00</span>
+                                    <%}else if(categoryOffer){
+                                        %>
+                                        <span class="new-price">Rs.<%=productData[i].Price-Math.round(productData[i].Price*categoryOffer.offerRate/100)%>.00</span>
+                                        <span class="old-price">Rs.<%=productData[i].Price%>.00</span>
+                                        <%
+                                    }
+                                    else{%>
+                                        <span class="new-price">Rs.<%=productData[i].Price%>.00</span>
+                                    <%}
+                                }else{%> 
+                                        <span class="new-price">Rs.<%=productData[i].Price%>.00</span><%
+                                }%>
+                               
+                            </div><!-- End .product-price -->
+                        </div><!-- End .product-body -->
+
+                        <div class="product-footer">
+                            <div class="ratings-container">
+                                <div class="ratings">
+                                    <div class="ratings-val" style="width: 40%;"></div><!-- End .ratings-val -->
+                                </div><!-- End .ratings -->
+                                <span class="ratings-text">( 4 Reviews )</span>
+                            </div><!-- End .rating-container -->
+                        </div><!-- End .product-footer -->
+                    </div><!-- End .product -->
+                </div>
+
+                    <%
+                            }          
+                    
+                }
+                  
+                }else{
+                    %>
+                    <div class="col-12 items-center">
+                        <p class="text-center items-center underline">No Products Available</p>
+                    </div>
+                    <%
+                }
+
+                %>     
+            </div>  
+            <nav class="portfolio-nav">
+                <ul class="nav-filter portfolio-filter justify-content-center">
+                    <div class="pagination-area mt-5 mb-50">
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination justify-content-start">
+                            <li class="page-item" onclick="changePage('decrement')">
+                                <a class="page-link cursor-pointer"><i class="bi bi-arrow-left-short cursor-pointer"  ></i></a>
+                            </li>
+                       
+                            <li class="page-item active"><a class="page-link" id="currentPage" >1</a></li>
+                            <li class="page-item"><a class="page-link dot">...</a></li>
+                            <li class="page-item"><a class="page-link" id="totalPage" ><%=totalPage%></a></li>
+                            <li class="page-item"  onclick="changePage('increment')">
+                                <a class="page-link cursor-pointer"><i class="bi bi-arrow-right-short cursor-pointer"></i></a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                </ul>
+            </nav> 
+        </main>
 
         <footer class="footer">
             <div class="footer-middle">
@@ -290,9 +452,22 @@
 
        async function handleCart(productId){
 
-           const response = await fetch(`/cart?productId=${productId}`,{method:"PATCH",body:JSON.stringify({quantity:1}),headers:{"Content-Type": "application/json"}});
-           const res = await response.json();
-           if(res.success){
+           const response = await fetch(`/cart?productId=${productId}`,{method:"PATCH",body:JSON.stringify({quantity:1}),headers:{"Content-Type": "application/json"}}).then((res)=>{
+              if(res.status == 401){
+
+                Swal.fire({
+                title:"Please Login!.",
+                icon: "warning",
+                draggable: true
+                });
+                window.location.href = "/"
+                return;
+              }else{
+                return res.json();
+              }
+           })
+           .then((res)=>{
+            if(res.success){
              if(res.added){
                 Swal.fire("Product added to your Cart!");
                 document.getElementById(`cart${productId}`).innerText="remove from cart";
@@ -304,21 +479,32 @@
                 document.getElementById('cart-count').innerText=`${res.count}`;
                 document.getElementById('cart-txt').innerText=`Rs.${res.totel}.00`;
              }
+
            }else{
             Swal.fire(res.message);
            }
+           });
         }
 
 
 
 
         function handlewishlist(productId,num){
-            fetch(`/wishlist?productId=${productId}`,{method:"PATCH",headers:{"Content-Type":"application/json"}}).then(res=>res.json())
-            .then(data=>{
-                
+            fetch(`/wishlist?productId=${productId}`,{method:"PATCH",headers:{"Content-Type":"application/json"}}).then((res)=>{
+                 if(res.status == 401){
+                Swal.fire({
+                title:"Please Login!.",
+                icon: "warning",
+                draggable: true
+                });
+                window.location.href = "/"
+                return;
+              }else{
+               return res.json();
+              }
+            }).then((data)=>{
                 if(data.added){
-                    console.log("added");
-                    
+                  
                     const wishlist = document.getElementById(`wishlist${num}`);
                     const text = document.getElementById(`text${num}`);
                     wishlist.style.backgroundColor="red";
@@ -328,7 +514,6 @@
 
                 }else if(data.removed){
                     const wishlist2 = document.getElementById(`wishlist${num}`);
-                    console.log("removed",wishlist2);
                     const text2 = document.getElementById(`text${num}`);
                     wishlist2.style.backgroundColor="white"
                     text2.innerText="add to wishlist";
@@ -339,6 +524,7 @@
                     Swal.fire(data.message);
                     
                 }  
+                
             });
         }  
     </script>
@@ -346,13 +532,241 @@
        function filteringAndSort(){
          const sort = document.getElementById("size").value
          const filter = document.getElementById("filter").value
-         const page = document.getElementById("currentPage").innerText
-         fetch(`/sort?sort=${sort}&&filter=${filter}&&page=${page}`,{method:"GET"}).then((res)=>res.text())
+         const currentPage = document.getElementById("currentPage")
+         const totalPage = document.getElementById("totalPage")
+         fetch(`/sort?sort=${sort}&&filter=${filter}&&search=${search}`,{method:"GET"}).then((res)=>res.json())
          .then((res)=>{
-            document.getElementById("main").innerHTML=res
+          
+          
+            totalPage.innerText = res.totalPage
+            currentPage.innerText = 1
+            document.getElementById("product-grid").innerHTML=  res.productData
+            .filter((product)=>product.categoryID.is_listed == true)
+            .map((product,i)=>{
+                
+                const productName = product.name
+                const productCategory = product.categoryID.name
+                const productOffer = res.offerData.find(offer => offer.iteam === productName);
+                const categoryOffer = res.offerData.find(offer => offer.iteam === productCategory);  
+               
+               return `
+                 <div class="col-6 col-md-4 col-lg-3">
+                       <div class="product product-3">
+                        <figure class="product-media">
+                            <span class="product-label">
+                             ${product.stock> 0 ? "Sale" : "Out of Stock" } 
+                            </span>
+                            <a href="/detailes?id=${product._id }">
+                                <img src="${product.image[0].secure_url}" alt="Product image" class="product-image">
+                            </a>
+                            
+                            ${res.offerData?
+                              productOffer?
+                               ` <div class="product-countdown-container">
+                                               <span class="product-contdown-title">offer ends in:</span>
+                                               <div class="product-contdown-title text-danger" data-until="2019, 10, 5" data-compact="true">${productOffer?.validity}</div><!-- End .product-countdown -->
+                                 </div>`
+                              :
+                              categoryOffer?
+                              `
+                               <div class="product-countdown-container">
+                                    <span class="product-contdown-title">offer ends in:</span>
+                                    <div class="product-contdown-title text-danger" data-until="2019, 10, 5" data-compact="true">${categoryOffer?.validity}</div><!-- End .product-countdown -->
+                               </div>
+                              `
+                              :""
+                            :
+                            ""
+                            }
+                           
+                            <div class="product-action-vertical">
+                                ${res.wishlistData?.products?.some((pro)=>pro.productId==product._id.toString())?
+                            `<a id="wishlist${i}" onclick="handlewishlist('${product._id}','${i}')" class="btn-product-icon btn-wishlist bg-danger btn-expandable"><span id="text${i}">remove from wishlist</span></a>`
+                            :
+                            `<a id="wishlist${i}" onclick="handlewishlist('${product._id},'${i}')" class="btn-product-icon btn-wishlist btn-expandable"><span id="text${i}">add to wishlist</span></a>`
+                            }     
+                            </div>
+                        </figure>
+
+                             <div class="product-body">
+                               ${product.stock>0?
+                                 res.cartData?.products?.some((pro)=>pro.productId._id==product._id.toString())?
+                                 `<div class="product-action">
+                                      <a id="cartBtn" class="btn-product btn-cart"  onclick="handleCart('${product._id}')"><span id="cart${product._id}">remove from cart </span></a>
+                                 </div>`
+                                 :
+                                 `<div class="product-action">
+                                      <a  class="btn-product btn-cart"  onclick="handleCart('${product._id}')"><span id="cart${product._id}">add to cart </span></a>
+                                  </div>`
+                                :
+                                `<div class="product-action">
+                                   <a  class="btn-product btn-cart" ><span>Out of stock</span></a>
+                                 </div>`
+                                }
+                           
+                            <div class="product-cat">
+                                <a href="">${product.categoryID.name}</a>
+                            </div>
+
+                            <h3 class="product-title"><a href="/detailes">${product.name}</a></h3><!-- End .product-title -->
+                            <div class="product-price">
+                                ${res.offerData?
+                                 productOffer?
+                                 `
+                                  <span class="new-price">Rs.${product.Price-Math.round(product.Price*productOffer.offerRate/100)}.00</span>
+                                  <span class="old-price">Rs.${product.Price}.00</span>`
+                                 :
+                                 categoryOffer?
+                                 `<span class="new-price">Rs.${product.Price-Math.round(product.Price*categoryOffer.offerRate/100)}.00</span>
+                                  <span class="old-price">Rs.${product.Price}.00</span>`
+                                 : 
+                                 `<span class="new-price">Rs.${product.Price}.00</span>`
+                                :
+                                ` <span class="new-price">Rs.${product.Price}.00</span>`
+                                }
+                               
+                            </div>
+                        </div>
+
+                        <div class="product-footer">
+                            <div class="ratings-container">
+                                <div class="ratings">
+                                    <div class="ratings-val" style="width: 40%;"></div><!-- End .ratings-val -->
+                                </div><!-- End .ratings -->
+                                <span class="ratings-text">( 4 Reviews )</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+               `
+            }).join("")
          })
        }
     </script>
+    <script>
+       function changePage(status) {
+            const sort = document.getElementById("size").value
+            const search = document.getElementById("search").value
+            const filter = document.getElementById("filter")?document.getElementById("filter").value:document.getElementById("header").innerText 
+            let currentPage = document.getElementById("currentPage").innerText*1
+            const totalPage = document.getElementById("totalPage").innerText*1
+          
+           if(status == "increment" && currentPage<totalPage){
+             currentPage++
+            }else if(status == "decrement" && currentPage>1){
+               currentPage--
+           }else{
+            return;
+           }
+           document.getElementById("currentPage").innerText=`${currentPage}`;
+             fetch(`/paginationProduct?sort=${sort}&&filter=${filter}&&page=${currentPage}&&search=${search}`,{method:"GET"}).then((res)=>res.json())
+            .then((res)=>{
+               
+                 document.getElementById("product-grid").innerHTML=  res.productData.map((product,i)=>{
+                
+                const productName = product.name
+                const productCategory = product.categoryID.name
+                const productOffer = res.offerData.find(offer => offer.iteam === productName);
+                const categoryOffer = res.offerData.find(offer => offer.iteam === productCategory);  
+               
+               return `
+                 <div class="col-6 col-md-4 col-lg-3">
+                       <div class="product product-3">
+                        <figure class="product-media">
+                            <span class="product-label">
+                             ${product.stock> 0 ? "Sale" : "Out of Stock" } 
+                            </span>
+                            <a href="/detailes?id=${product._id }">
+                                <img src="${product.image[0].secure_url}" alt="Product image" class="product-image">
+                            </a>
+                            
+                            ${res.offerData?
+                              productOffer?
+                               ` <div class="product-countdown-container">
+                                               <span class="product-contdown-title">offer ends in:</span>
+                                               <div class="product-contdown-title text-danger" data-until="2019, 10, 5" data-compact="true">${productOffer?.validity}</div><!-- End .product-countdown -->
+                                 </div>`
+                              :
+                              categoryOffer?
+                              `
+                               <div class="product-countdown-container">
+                                    <span class="product-contdown-title">offer ends in:</span>
+                                    <div class="product-contdown-title text-danger" data-until="2019, 10, 5" data-compact="true">${categoryOffer?.validity}</div><!-- End .product-countdown -->
+                               </div>
+                              `
+                              :""
+                            :
+                            ""
+                            }
+                           
+                            <div class="product-action-vertical">
+                                ${res.wishlistData?.products?.some((pro)=>pro.productId==product._id.toString())?
+                            `<a id="wishlist${i}" onclick="handlewishlist('${product._id}','${i}')" class="btn-product-icon btn-wishlist bg-danger btn-expandable"><span id="text${i}">remove from wishlist</span></a>`
+                            :
+                            `<a id="wishlist${i}" onclick="handlewishlist('${product._id},'${i}')" class="btn-product-icon btn-wishlist btn-expandable"><span id="text${i}">add to wishlist</span></a>`
+                            }     
+                            </div>
+                        </figure>
+
+                             <div class="product-body">
+                               ${product.stock>0?
+                                 res.cartData?.products?.some((pro)=>pro.productId._id==product._id.toString())?
+                                 `<div class="product-action">
+                                      <a id="cartBtn" class="btn-product btn-cart"  onclick="handleCart('${product._id}')"><span id="cart${product._id}">remove from cart </span></a>
+                                 </div>`
+                                 :
+                                 `<div class="product-action">
+                                      <a  class="btn-product btn-cart"  onclick="handleCart('${product._id}')"><span id="cart${product._id}">add to cart </span></a>
+                                  </div>`
+                                :
+                                `<div class="product-action">
+                                   <a  class="btn-product btn-cart" ><span>Out of stock</span></a>
+                                 </div>`
+                                }
+                           
+                            <div class="product-cat">
+                                <a href="">${product.categoryID.name}</a>
+                            </div>
+
+                            <h3 class="product-title"><a href="/detailes">${product.name}</a></h3><!-- End .product-title -->
+                            <div class="product-price">
+                                ${res.offerData?
+                                 productOffer?
+                                 `
+                                  <span class="new-price">Rs.${product.Price-Math.round(product.Price*productOffer.offerRate/100)}.00</span>
+                                  <span class="old-price">Rs.${product.Price}.00</span>`
+                                 :
+                                 categoryOffer?
+                                 `<span class="new-price">Rs.${product.Price-Math.round(product.Price*categoryOffer.offerRate/100)}.00</span>
+                                  <span class="old-price">Rs.${product.Price}.00</span>`
+                                 : 
+                                 `<span class="new-price">Rs.${product.Price}.00</span>`
+                                :
+                                ` <span class="new-price">Rs.${product.Price}.00</span>`
+                                }
+                               
+                            </div>
+                        </div>
+
+                        <div class="product-footer">
+                            <div class="ratings-container">
+                                <div class="ratings">
+                                    <div class="ratings-val" style="width: 40%;"></div><!-- End .ratings-val -->
+                                </div><!-- End .ratings -->
+                                <span class="ratings-text">( 4 Reviews )</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+               `
+            }).join("")
+         
+
+            })
+  
+       }    
+    </script>
+   
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/jquery.hoverIntent.min.js"></script>

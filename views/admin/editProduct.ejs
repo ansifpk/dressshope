@@ -84,17 +84,17 @@
                     </div>
                 </li>
                 <li class="menu-item has-submenu">
-                    <a class="menu-link" href="/admin/coupens">
+                    <a class="menu-link" href="/admin/coupons">
                         <i class="icon material-icons md-shopping_bag"></i>
-                        <span class="text">Coupens</span>
+                        <span class="text">Coupons</span>
                     </a>
                     <div class="submenu">
-                        <a href="/admin/coupens">Coupens List</a>
+                        <a href="/admin/coupons">Coupons List</a>
                        
                     </div>
                 </li>
                 <li class="menu-item has-submenu">
-                    <a class="menu-link" href="/admin/coupens">
+                    <a class="menu-link" href="">
                         <i class="icon material-icons md-shopping_bag"></i>
                         <span class="text">Offers</span>
                     </a>
@@ -194,36 +194,27 @@
                     <div class="card mb-4">
                         <div class="card-body">
                             <div class="row">
-                                <form  action="" method="post" enctype="multipart/form-data">
+                                <form   enctype="multipart/form-data">
                                     <div class="form-group">
-                                        <% 
-                                        if(typeof message!== "undefined"){
-                                           %>
-                                           <p style="color:white; background-color:red; text-align: center;"><%= message %> </p>
-                                           <%
-                                        }                               
-                                        %>
+                                        
                                      </div>   
-                                    <div class="col-md-3">
-                                        <h6>1. General info</h6>
-                                    </div>
                                     <div class="col-md-9">
                                         <div class="mb-4">
-                                            <label class="form-label">Product title</label>
-                                            <input type="text" value="<%=productData.name%>" name="name" class="form-control" required>
+                                            <label id="titleLabel" class="form-label">Product title</label>
+                                            <input type="text" id="title" value="<%=productData.name%>" name="name" class="form-control" required>
                                             <input id="id" type="hidden" value="<%=productData._id%>">
                                             </div>
                                         <div class="form-group">
-                                            <label>Category</label>
-                                            <select class="form-control" id="product-category" name="category">
+                                            <label id="categoryLabel">Category</label>
+                                            <select class="form-control" id="category" name="category">
                                                 <% for (let i = 0; i < category.length; i++) { %>
                                                     <option value="<%= category[i]._id %>"><%= category[i].name %></option>
                                                 <% } %>
                                             </select>
                                         </div>
                                         <div class="mb-4">
-                                            <label class="form-label">Description</label>
-                                            <input value="<%=productData.Description%>" class="form-control" name="Description" rows="4"></input>
+                                            <label id="descriptionLabel" class="form-label">Description</label>
+                                            <input id="description" value="<%=productData.Description%>" class="form-control" name="Description" rows="4"></input>
                                         </div>
                                     </div> <!-- col.// -->
                                 </div> <!-- row.// -->
@@ -234,8 +225,8 @@
                                     </div>
                                     <div class="col-md-9">
                                         <div class="mb-4">
-                                            <label class="form-label">Cost in Rs</label>
-                                            <input type="text" value="<%=productData.Price%>" name="Price" class="form-control" required>
+                                            <label id="priceLabel" class="form-label">Cost in Rs</label>
+                                            <input  id="price" type="text" value="<%=productData.Price%>" name="Price" class="form-control" required>
                                         </div>
                                     </div> <!-- col.// -->
                                 </div> <!-- row.// -->
@@ -246,8 +237,8 @@
                                     </div>
                                     <div class="col-md-9">
                                         <div class="mb-4">
-                                            <label class="form-label">Stock</label>
-                                            <input type="text" value="<%=productData.stock%>" name="stock" class="form-control" >
+                                            <label id="stockLabel" class="form-label">Stock</label>
+                                            <input id="stock" type="text" value="<%=productData.stock%>" name="stock" class="form-control" >
                                         </div>
                                     </div> <!-- col.// -->
                                 </div> <!-- row.// -->
@@ -260,29 +251,22 @@
                                       <a href="javascript:void(0);" class="fw-medium">Add media from URL</a>
                                     </div>
                                     <div class="card-body">
-                                     <div class="dz-message needsclick my-5">
-                                          <p class="fs-4 note needsclick my-2">Drag and drop your image here</p>
-                                          <small class="text-muted d-block fs-6 my-2">or</small>
-                                          <span class="note needsclick btn bg-label-primary d-inline" id="btnBrowse">Browse image</span>
-                                        </div>
-                                       
-                                      
                                              <div class="row">
                                             <% for (let i = 0; i < productData.image.length; i++) { %>
                                                 <div class="col-3 mb-3 d-flex flex-column align-items-center">
-                                                <label for="file-upload<%= i %>" class="form-label">Upload Image <%= i + 1 %></label>
+                                                <label id="fileUploadLabel<%=i%>" for="file-upload<%= i %>" class="form-label">Upload Image <%= i + 1 %></label>
                                                 <input 
                                                     name="file" 
                                                     id="file-upload<%= i %>" 
                                                     onchange="preview('<%= i %>')"  
                                                     type="file" 
                                                     required
-                                                    value="<%=productData.image[i]%>"
+                                        
                                                     accept="image/*"
                                                     class="form-control mb-2"  
                                                 />
                                                     <img 
-                                                        src="" 
+                                                        src="<%=productData.image[i].secure_url%>" 
                                                         alt="Preview" 
                                                         id="file-preview<%= i %>" 
                                                         style="width: 200px; height: 150px; border-radius: 10px; object-fit: cover; border: 1px solid #ccc;" 
@@ -298,7 +282,7 @@
                                  
                                     <div class="mb-4">
                                     
-                                    <button type="submit" class="btn btn-primary w-100" onclick="" >Edit Product</button>
+                                    <button type="button" id="button"  class="btn btn-primary w-100" onclick="handleEdit('<%=productData._id%>')" >Edit Product</button>
                                     
                                 </div>
                                 
@@ -330,9 +314,128 @@
         </footer>
     </main>
    
-        
+    <script>
+        function handleEdit(_id) {
+             
+            const title =  document.getElementById("title").value.trim();
+            const titleLabel =  document.getElementById("titleLabel");
+            const description =  document.getElementById("description").value.trim();
+            const descriptionLabel =  document.getElementById("descriptionLabel");
+            const price =  document.getElementById("price").value.trim();
+            const priceLabel =  document.getElementById("priceLabel");
+            const stock =  document.getElementById("stock").value.trim();
+            const stockLabel =  document.getElementById("stockLabel");
+            const category =  document.getElementById("category").value.trim();
+            const categoryLabel =  document.getElementById("categoryLabel");
+
+            const upload0 =  document.getElementById("file-upload0").files[0]
+            const upload1 =  document.getElementById("file-upload1").files[0]
+           
+           
+            const upload2 =  document.getElementById("file-upload2").files[0]
+            const upload3 =  document.getElementById("file-upload3").files[0]
+            const fileUploadLabel0 =  document.getElementById("fileUploadLabel0")
+            const fileUploadLabel1 =  document.getElementById("fileUploadLabel1")
+            const fileUploadLabel2 =  document.getElementById("fileUploadLabel2")
+            const fileUploadLabel3 =  document.getElementById("fileUploadLabel3")
+
+            const button =  document.getElementById("button")
+            
+            let error = false;
+
+            if(title.length == 0){
+             titleLabel.style.color="red"
+             error = true;
+            }else{
+             titleLabel.style.color=""
+            }
+            if(description.length == 0){
+             descriptionLabel.style.color="red"
+             error = true;
+            }else{
+             descriptionLabel.style.color=""
+            }
+            if(price.length == 0){
+             priceLabel.style.color="red"
+             error = true;
+            }else{
+             priceLabel.style.color=""
+            }
+            if(stock.length == 0){
+             stockLabel.style.color="red"
+             error = true;
+            }else{
+             stockLabel.style.color=""
+            }
+
+            if(category.length == 0){
+             categoryLabel.style.color="red"
+             error = true;
+            }else{
+             categoryLabel.style.color=""
+            }
+
+
+
+            if(error){
+                Swal.fire({
+                    title:"Error!.",
+                    text: "Please Provide All Informations!.",
+                    icon: "warning",
+                });
+            return;
+            }
+           
+            
+            const formData = new FormData();
+            formData.append("title",title)
+            formData.append("description",description)
+            formData.append("category",category)
+            formData.append("stock",stock)
+            formData.append("price",price)
+            for (let i = 0; i < 4; i++) {
+                
+                formData.append(`file-upload${i}`,document.getElementById(`file-upload${i}`).files[0])
+            }
+           
+      
+            button.disabled =true
+            button.innerHTML =button.innerHTML = `
+                    <div class="spinner-border spinner-border-sm me-2" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    Loading...
+                    `;
+
+            fetch(`/admin/editProducts?_id=${_id}`,{method:"PATCH",body:formData,"Content-Type":"multipart/form-data"}).then((res)=>res.json())
+            .then((res)=>{
+             
+                if(res.success){
+
+                    Swal.fire({
+                        title:"Success!.",
+                        text:res.message,
+                        icon: "success",
+                    });
+                   button.disabled =true
+                
+                   window.location.href="/admin/viewProducts"
+                }else{
+                    button.disabled =false
+                     button.innerText="Edit Product"
+                    Swal.fire({
+                        title:"Error!.",
+                        text:res.message,
+                        icon: "warning",
+                    });
+                }
+            })
+
+        }
+    </script>
     <script src="assets/js/vendors/jquery-3.6.0.min.js"></script>
     <script src="assets/js/vendors/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="assets/js/vendors/select2.min.js"></script>
     <script src="assets/js/vendors/perfect-scrollbar.js"></script>
     <script>

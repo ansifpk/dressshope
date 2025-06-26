@@ -132,9 +132,9 @@
                         <a href="/wishlist" class="wishlist-link">
                             <i class="icon-heart-o"></i>
                             <%if(wishlistData){%>
-                                <span class="wishlist-count"><%=wishlistData?.products?.length%></span>
+                                <span class="wishlist-count" id="wishlist"><%=wishlistData?.products?.length%></span>
                             <%}else{%>
-                                <span class="wishlist-count">0</span>
+                                <span class="wishlist-count" id="wishlist">0</span>
                             <%}%>   
                         </a>
                         
@@ -194,7 +194,7 @@
                                     
                                     <figure class="product-main-image">
                                         <span class="product-label label-sale">Sale</span>
-                                        <img id="product-zoom" src="/admin/assets/productImages/<%=productData.image[0]%>"  data-zoom-image="/admin/assets/productImages/<%=productData.image[0]%>" alt="product image">
+                                        <img id="product-zoom" src="<%=productData.image[0].secure_url%>"  data-zoom-image="<%=productData.image[0].secure_url%>" alt="product image">
 
                                         <a href="#" id="btn-product-gallery" class="btn-product-gallery">
                                             <i class="icon-arrows"></i>
@@ -206,8 +206,8 @@
                                     <div id="product-zoom-gallery" class="row">
                                           <% productData.image.forEach(function(image, index) { %>
                                             <div class="col-md-3">
-                                              <a class="d-block mb-4 h-100" href="#" data-image="/admin/assets/productImages/<%= image %>" data-zoom-image="/admin/assets/productImages/<%= image %>">
-                                                <img class="img-fluid img-thumbnail" src="/admin/assets/productImages/<%= image %>" alt="product cross">
+                                              <a class="d-block mb-4 h-100" href="#" data-image="<%= image.secure_url %>" data-zoom-image="<%= image.secure_url %>">
+                                                <img class="img-fluid img-thumbnail" src="<%= image.secure_url %>" alt="product cross">
                                               </a>
                                             </div>
                                           <% }) %>
@@ -273,21 +273,7 @@
                                         <p><%=productData.Description%> </p>
                                     </div><!-- End .product-content -->
 
-                                    <div class="details-filter-row details-row-size">
-                                        <label>Color:</label>
-
-                                        <div class="product-nav product-nav-thumbs">
-                                            <a href="#" class="active">
-                                                <img src="assets/images/products/single/masonry/1-thumb.jpg" alt="product desc">
-                                            </a>
-                                            <a href="#">
-                                                <img src="assets/images/products/single/masonry/2-thumb.jpg" alt="product desc">
-                                            </a>
-                                            <a href="#">
-                                                <img src="assets/images/products/single/masonry/3-thumb.jpg" alt="product desc">
-                                            </a>
-                                        </div><!-- End .product-nav -->
-                                    </div><!-- End .details-filter-row -->
+                                    
 
                                     <div class="details-filter-row details-row-size">
                                         <label for="size">Size:</label>
@@ -304,7 +290,7 @@
                                         <a href="#" class="size-guide"><i class="icon-th-list"></i>size guide</a>
                                     </div><!-- End .details-filter-row -->
                                     <%
-                                     if(!cartData.products.find((val)=>val.productId._id == productData._id.toString())){
+                                     if(!cartData?.products?.find((val)=>val.productId._id == productData._id.toString())){
                                         %>
                                         <div id="qty" class="details-filter-row details-row-size">
                                             <label for="qty">Qty:</label>
@@ -318,10 +304,25 @@
                                         <%
                                      }
                                      %>
-                                    <div class="product-details-action">
-                                        <%
+
+                                    <div class="product-details-action ">
+                                        <div>
+                                           <%
+                                           if(wishlistData?.products?.some((prod)=>prod.productId == productData._id.toString())){
+                                             %>
+                                             <a id="btn-cart1" class="btn-product btn-wishlist" onclick="handlewishlist('<%=productData._id%>')" ><span id="btn-wishlist">remove from wishlist</span></a>
+                                             <%
+                                           }else{
+                                                %>
+                                                <a id="btn-cart1" class="btn-product btn-wishlist" onclick="handlewishlist('<%=productData._id%>')" ><span id="btn-wishlist">add to wishlist</span></a>
+                                                <%
+                                           }
+                                           %>
+                                        </div>
+                                        <div>
+                                            <%
                                         if(productData.stock>0){
-                                            if(cartData.products.find((val)=>val.productId._id == productData._id.toString())){
+                                            if(cartData?.products?.find((val)=>val.productId._id == productData._id.toString())){
                                                 %>
                                                 <a href="/cartt" class="btn-product btn-cart" ><span>go to cart</span></a>
                                                 <%
@@ -336,9 +337,8 @@
                                             <%
                                         }
                                         %>
-                                       
-
-                                       
+                                        </div>
+                                        
                                     </div><!-- End .product-details-action -->
 
                                     <div class="product-details-footer">
@@ -1113,8 +1113,20 @@
     async function addtoCart(productId){
       
         let quantity = document.getElementById(`quandity`).value;
-        const response = await fetch(`/cart?productId=${productId}`,{method:"PATCH",body:JSON.stringify({quantity}),headers:{"Content-Type": "application/json"}})
-        const res = await response.json();
+        const response = await fetch(`/cart?productId=${productId}`,{method:"PATCH",body:JSON.stringify({quantity}),headers:{"Content-Type": "application/json"}}).then((res)=>{
+          if(res.status == 401){
+             Swal.fire({
+                title:"Please Login!.",
+                icon: "warning",
+                draggable: true
+                });
+                window.location.href = "/"
+                return;
+          }else{
+           return res.json()
+          }
+        }).then((res)=>{
+
         if(res.success){
             Swal.fire("Product added to your Cart!");
             document.getElementById("cart-count").innerText=`${res.count}`;
@@ -1126,8 +1138,45 @@
         }else{
             Swal.fire(res.message);
         }
-        
+        });  
     }
+
+        function handlewishlist(productId){
+               
+            fetch(`/wishlist?productId=${productId}`,{method:"PATCH",headers:{"Content-Type":"application/json"}}).then((res)=>{
+                if(res.status == 401){
+                    Swal.fire({
+                    title:"Please Login!.",
+                    icon: "warning",
+                    draggable: true
+                    });
+                    window.location.href = "/"
+                    return;
+                }else{
+                   return res.json();
+                }
+            }).then((res)=>{
+                console.log(res);
+                if(res.added){
+                    const text = document.getElementById(`btn-wishlist`);
+                    text.innerHTML="remove from wishlist";
+                    document.getElementById("wishlist").innerText=`${res.totelProducts}`
+                    Swal.fire("Product added to your wishlist!");
+
+                }else if(res.removed){
+                 
+                    const text = document.getElementById(`btn-wishlist`);
+                    text.innerHTML="add to wishlist";
+                    document.getElementById("wishlist").innerText=`${res.totelProducts}`
+                    Swal.fire("Product removed to your wishlist!");
+                   
+                }else{
+                    Swal.fire(res.message);
+                    
+                }  
+            })
+           }  
+
     </script>
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/bootstrap.bundle.min.js"></script>

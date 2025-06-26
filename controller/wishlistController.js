@@ -37,6 +37,7 @@ const wishlist = async(req,res)=>{
 const handleWishlist = async(req,res)=>{
     try {
         const {productId} = req.query;
+   
         const checkUser = await WishlistDB.findOne({userId:req.session.user_id})
         const checkProduct = await ProductDb.findById({_id:productId})
          if(!checkUser){
@@ -47,9 +48,11 @@ const handleWishlist = async(req,res)=>{
          }
          const product = await WishlistDB.findOne({userId:req.session.user_id,'products.productId':{$in:[productId]}})
          if(!product){
+          
             const newWishlist = await WishlistDB.findOneAndUpdate({userId:req.session.user_id},{$push:{'products':{productId:productId}}},{new:true})
             res.json({success:true,added:true,totelProducts:newWishlist.products.length})
-         }else{
+        }else{
+           
             const newWishlist = await WishlistDB.findOneAndUpdate({userId:req.session.user_id},{$pull:{'products':{productId:productId}}},{new:true})
             res.json({success:true,removed:true,totelProducts:newWishlist.products.length})
          }
@@ -64,5 +67,4 @@ const handleWishlist = async(req,res)=>{
 module.exports = {
     wishlist,
     handleWishlist,
-    
 }

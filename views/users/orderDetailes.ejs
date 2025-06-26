@@ -257,9 +257,9 @@
                                                                     Status: <%=orderData.paymentStatus%>
                                                                 </p>
                                                                 <%
-                                                                if(orderData.productStatus==='Delivered'){
+                                                                if(orderData.productStatus==='Delivered' || orderData.paymentMethod !== "COD"){
                                                                     %>
-                                                                    
+                                
                                                                     <a class="btn btn-primary mt-1 text-white"  onclick="DownloadInvoice('<%=orderData._id%>')"><span>Download invoice</span></a>
                                                                     <%
                                                                 }
@@ -294,6 +294,7 @@
                                                                         <th>Product</th>
                                                                         <th>Name</th>
                                                                         <th >Unit Price</th>
+                                                                        <th >Discount Amount</th>
                                                                         <th >Quantity</th>
                                                                         <th>Total</th>
                                                                         <th >Delivery Status</th>
@@ -304,59 +305,46 @@
                                                                    
                                                                     <tr>
                                                                     <td>
-                                                                        <a class="itemside" href="">
+                                                                        <a class="itemside" href="/detailes?id=<%=orderData.productId._id%>">
                                                                             <div class="left">
-                                                                                <img src="/admin/assets/productImages/<%=orderData.productId.image[0]%>" width="40" height="40" class="img-xs" alt="Item" />
+                                                                                <img src="<%=orderData.productId.image[0].secure_url %>" width="40" height="40" class="img-xs" alt="Item" />
                                                                             </div>
-                                                                           
                                                                         </a>
                                                                     </td>
                                                                     <td><%=orderData.productId.name%></td>
-                                                                    <td><%=orderData.productTotal/orderData.quandity%></td>
+                                                                    <td><%=orderData.productId.Price%></td>
+                                                                    <td><%=  (orderData.productId.Price*orderData.quandity ) - orderData.productTotal %></td>
                                                                     <td><%=orderData.quandity%></td>
                                                                     <td><%=orderData.productTotal%></td>
                                                                     <%
-                                                                    if(orderData.paymentStatus!=="Failed"){
-                                                                        if(orderData.productStatus==="Canceled"){
+                                                                      if(orderData.paymentStatus == "Failed"){
                                                                         %>
-                                                                        <td ><span id="status" class="badge rounded-pill btn-danger"><%=orderData.productStatus%></span></td>
-                                                                    <td class="text-end">
-                                                                        <button id="button"  class="btnn btn-danger rounded  text-white p-2">Cancel</button>
-                                                                    </td>
+                                                                          <td ><span id="status" class="badge rounded-pill btn-danger"><%=orderData.productStatus%></span></td>
+                                                                          <td class="text-end"><button onclick="payAgain('<%=orderData._id%>','<%=orderData.quandity%>','<%=orderData.deliveryAddress._id%>')"  class="btnn btn-danger rounded  text-white p-2">pay again</button></td>
                                                                         <%
-                                                                    }else if(orderData.productStatus==='Delivered'){
-                                                                      %>
-                                                                        <td><span id="return" class="badge rounded-pill btn-success text-white "><%=orderData.productStatus%></span></td>
-                                                                         <td>
-                                                                         <button onclick="returnOrder(this,'<%=orderData._id%>')" class="btnn btn-danger rounded text-white p-2">Return</button>
-                                                                         </td>
-                                                                          <%
-                                                                       }else if(orderData.productStatus==='return'){
+                                                                      }else if(orderData.productStatus==='Delivered'){
                                                                         %>
-                                                                        <td><span id="badge" class="badge rounded-pill btn-danger text-white "><%=orderData.productStatus%></span></td>
-                                                                         <td>
-                                                                        <span>this iteam returned</span>
-                                                                         </td>
+                                                                          <td><span id="return" class="badge rounded-pill btn-success text-white "><%=orderData.productStatus%></span></td>
+                                                                          <td><button type="button" onclick="returnOrder(this,'<%=orderData._id%>')" class="btnn btn-danger rounded text-white p-2">Return</button></td>
+                                                                        <%
+                                                                      }else if(orderData.productStatus==="canceled"){
+                                                                        %>
+                                                                         <td ><span  class="badge rounded-pill btn-warning"><%=orderData.productStatus%></span></td>
+                                                                         <td class="text-end"><span>this iteam canceled</span>
+                                                                        </td>
+                                                                        <%
+                                                                      }else if(orderData.productStatus==='return'){
+                                                                         %>
+                                                                         <td><span id="badge" class="badge rounded-pill btn-danger text-white "><%=orderData.productStatus%></span></td>
+                                                                          <td><span>this iteam returned</span> </td>
                                                                          <%
-                                                                       }
-                                                                       else{
-                                                                        %>
-                                                                        <td ><span id="status" class="badge rounded-pill btn-success "><%=orderData.productStatus%></span></td>
-                                                                    <td class="text-end">
-                                                                        <button onclick="cancelOrder('<%=orderData._id%>')" class="btnn btn-danger rounded text-white p-2">Cancel</button>
-                                                                    </td>
-                                                                        <%
-                                                                    }
-                                                                    }else{
-                                                                        %>
-                                                                        <td ><span id="status" class="badge rounded-pill btn-danger"><%=orderData.productStatus%></span></td>
-                                                                    <td class="text-end">
-                                                                        <button onclick="payAgain('<%=orderData._id%>','<%=orderData.productTotal%>','<%=orderData.quandity%>','<%=orderData.deliveryAddress._id%>')"  class="btnn btn-danger rounded  text-white p-2">pay again</button>
-                                                                    </td>
-                                                                        <%
-                                                                    }
-                                                                   %>
-                                                                    
+                                                                      }else{
+                                                                         %>
+                                                                          <td><span id="status" class="badge rounded-pill btn-success text-white "><%=orderData.productStatus%></span></td>
+                                                                          <td id="actionCol" class="text-end"> <button onclick="cancelOrder('<%=orderData._id%>')" class="btnn btn-danger rounded text-white p-2">Cancel</button></td>
+                                                                          <%
+                                                                      }
+                                                                    %>
                                                                 </tr>
                                                             </tbody>
                                                             </table>
@@ -604,10 +592,7 @@
     <!-- Plugins JS File -->
     <script>
    
-        const button = document.getElementById("button");
-        if(button){
- button.disabled=true;
-        }
+   
        
         
         function cancelOrder(orderId){
@@ -622,23 +607,33 @@
   confirmButtonText: "Yes,cancell it!"
 }).then((result) => {
   if (result.isConfirmed) {
-    Swal.fire({
-      title: "Cancelled!",
-      text: "Your order has been cancelled.",
-      icon: "success"
-    });
-    const button = document.querySelector(".btnn");
-        button.disabled=true
-       
-         var status = document.getElementById('status');
-
-         status.innerHTML="canceled"
-         status.style.color="white"
-         status.style.backgroundColor="red"
-
-         console.log(status)
-         console.log(orderId)
-         fetch(`/cancelOrder?id=${orderId}`)
+   
+         
+         fetch(`/cancelOrder?_id=${orderId}`).then((res)=>res.json())
+         .then((res)=>{
+            if(res.success){
+                document.querySelector(".btnn").disabled=true;
+                var status = document.getElementById('status');
+                 document.getElementById('actionCol').innerHTML = `
+                <span>this iteam canceled</span>
+                 `
+               
+                status.innerHTML="canceled"
+                status.style.color="white"
+                status.style.backgroundColor="orange"
+                 Swal.fire({
+                    title: "Success!",
+                    text: res.message,
+                    icon: "success"
+                });
+            }else{
+                Swal.fire({
+                    title: "Warning!",
+                    text: res.message,
+                    icon: "warning"
+                });
+            }
+         })
   }
 });
 
@@ -681,11 +676,20 @@
              });             
         }
 
-       function payAgain(productId,productTotal,quandity,addressId){
-       console.log(productId,productTotal,quandity,addressId)
-          fetch(`/payAgain?productId=${productId}&productTotal=${productTotal}&quandity=${quandity}&addressId=${addressId}`).then(res=>res.json())
+       function payAgain(productId,quandity,addressId){
+       console.log(productId,quandity,addressId)
+      
+          fetch(`/payAgain?productId=${productId}&quandity=${quandity}&addressId=${addressId}`).then(res=>res.json())
           .then((data)=>{
             console.log(data)
+            if(!data.success){
+               Swal.fire({
+                        title: "Warning!.",
+                        text: data.message,
+                        icon: "warning"
+                         });
+              return;
+            }
             var options = {
 						"key": `${data.key_id}`,
 						"amount": `${data.amount}`,
@@ -695,10 +699,12 @@
 						// "image": "https://dummyimage.com/600x400/000/fff",
 						"order_id": `${data.order_id}`,
 						"handler": function (response){
-                            console.log('///////////////')
-							alert("Payment Succeeded");
-							// window.open(`/successPage?addressId=${data.addressId}&coupen=${data.coupenId}&paymentMethod=${paymentMethod}`,"_self")
-                            window.open(`/repay?addressId=${data.addressId}&amount=${data.amount}&quandity=${data.quandity}&productId=${data.productId}`,"_self")
+                            alert("Payment Succeeded");
+
+                             fetch(`/repay`,{method:"PATCH",body:JSON.stringify({orderId:data.productId,paymentMethod:"Razor pay",paymentStatus:"Paid",productStatus:"pending"}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
+                            .then((res)=>{
+                                window.location.href="/successPage"   
+                            }) 
 						},
 						"prefill": {
 							// "contact":""+res.contact+"",
@@ -712,14 +718,19 @@
 							"color": "#2300a3"
 						}
 					};
-                    console.log("ivaa")
+                   
 					var razorpayObject = new Razorpay(options);
 					razorpayObject.on('payment.failed', function (response){
                         console.log(response);
-							alert("Payment Failed");
-                         
-                            // fetch(`/failedPage?addressId=${data.addressId}&coupen=${data.coupenId}&paymentMethod=${paymentMethod}`)
-                         
+                              fetch(`/repay`,{method:"PATCH",body:JSON.stringify({orderId:data.productId,paymentMethod:"Razor pay",paymentStatus:"Failed",productStatus:"Failed"}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
+                              .then((res)=>{
+                                 Swal.fire({
+                                    title: "Failed!",
+                                    text: "Payment Failed",
+                                    icon: "warning"
+                                });
+                                 window.location.href="/failePage"
+                              })
                            
 					});
 					razorpayObject.open();

@@ -84,17 +84,17 @@
                     </div>
                 </li>
                 <li class="menu-item has-submenu">
-                    <a class="menu-link" href="/admin/coupens">
+                    <a class="menu-link" href="/admin/coupons">
                         <i class="icon material-icons md-shopping_bag"></i>
-                        <span class="text">Coupens</span>
+                        <span class="text">Coupons</span>
                     </a>
                     <div class="submenu">
-                        <a href="/admin/coupens">Coupens List</a>
+                        <a href="/admin/coupons">Coupons List</a>
                        
                     </div>
                 </li>
                 <li class="menu-item has-submenu">
-                    <a class="menu-link" href="/admin/coupens">
+                    <a class="menu-link" href="">
                         <i class="icon material-icons md-shopping_bag"></i>
                         <span class="text">Offers</span>
                     </a>
@@ -195,39 +195,28 @@
                     <div class="card mb-4">
                         <div class="card-body">
                             <div class="row">
-                                <form  action="" method="post" enctype="multipart/form-data">
-                                    <div class="form-group">
-                                        <% 
-                                        if(typeof message!== "undefined"){
-                                           %>
-                                           <p style="color:white; background-color:red; text-align: center;"><%= message %> </p>
-                                           <%
-                                        }                               
-                                        %>
-                                     </div>   
-                                    <div class="col-md-3">
-                                        <h6>1. General info</h6>
-                                    </div>
+                                <form enctype="multipart/form-data">
                                     <div class="col-md-9">
                                         <div class="mb-4">
-                                            <label class="form-label">Product title</label>
-                                            <input type="text" placeholder="Type here" name="name" class="form-control" required>
+                                            <label id="titleLabel" class="form-label">Product title</label>
+                                            <input type="text" placeholder="Type here" id="title" class="form-control" required>
                                         </div>
                                         <div class="form-group">
-                                            <label>Category</label>
-                                            <select class="form-control" id="product-category" name="category">
+                                            <label id="categoryLabel">Category</label>
+                                            <select class="form-select"  id="category">
+                                                <option selected disabled value="">Choose Category </option>
                                                 <% for (let i = 0; i < category.length; i++) { %>
                                                     <option value="<%= category[i]._id %>"><%= category[i].name %></option>
                                                 <% } %>
                                             </select>
                                         </div>
                                         <div class="mb-4">
-                                            <label class="form-label">Description</label>
-                                            <input placeholder="Type here" class="form-control" name="Description" rows="4"></input>
+                                            <label id="descriptionLabel" class="form-label">Description</label>
+                                            <input placeholder="Type here" class="form-control" id="description" rows="4"></input>
                                         </div>
                                        
-                                    </div> <!-- col.// -->
-                                </div> <!-- row.// -->
+                                    </div>
+                                </div> 
                                 <hr class="mb-4 mt-0">
                                 <div class="row">
                                     <div class="col-md-3">
@@ -235,11 +224,11 @@
                                     </div>
                                     <div class="col-md-9">
                                         <div class="mb-4">
-                                            <label class="form-label">Cost in Rs</label>
-                                            <input type="text" placeholder="Rs.00.0" name="Price" class="form-control" required>
+                                            <label id="priceLabel" class="form-label">Cost in Rs</label>
+                                            <input type="text" placeholder="Rs.00.0" id="price" class="form-control" required>
                                         </div>
-                                    </div> <!-- col.// -->
-                                </div> <!-- row.// -->
+                                    </div> 
+                                </div> 
                                 <hr class="mb-4 mt-0">
                                 <div class="row">
                                     <div class="col-md-3">
@@ -247,8 +236,8 @@
                                     </div>
                                     <div class="col-md-9">
                                         <div class="mb-4">
-                                            <label class="form-label">Stock</label>
-                                            <input type="text"  name="stock" class="form-control" required>
+                                            <label id="stockLabel" class="form-label">Stock</label>
+                                            <input type="number"  id="stock" class="form-control" required>
                                         </div>
                                     </div> <!-- col.// -->
                                 </div> <!-- row.// -->
@@ -256,20 +245,13 @@
                                 <div class="row">
                                    
                                    <div class="card mb-4 col-12">
-                                    <div class="card-header d-flex justify-content-between align-items-center">
-                                      <h5 class="mb-0 card-title">Media</h5>
-                                      <a href="javascript:void(0);" class="fw-medium">Add media from URL</a>
-                                    </div>
+                                   
                                     <div class="card-body">
-                                     <div class="dz-message needsclick my-5">
-                                          <p class="fs-4 note needsclick my-2">Drag and drop your image here</p>
-                                          <small class="text-muted d-block fs-6 my-2">or</small>
-                                          <span class="note needsclick btn bg-label-primary d-inline" id="btnBrowse">Browse image</span>
-                                        </div>
+                                     
                                         <div class="row">
                                             <% for (let i = 0; i < 4; i++) { %>
                                                 <div class="col-3 mb-3 d-flex flex-column align-items-center">
-                                                <label for="file-upload<%= i %>" class="form-label">Upload Image <%= i + 1 %></label>
+                                                <label for="file-upload<%= i %>" id="fileUploadLabel<%=i%>" class="form-label">Upload Image <%= i + 1 %></label>
                                                 <input 
                                                     name="file" 
                                                     id="file-upload<%= i %>" 
@@ -289,12 +271,10 @@
                                     </div>
                                   </div>
                                   <div class="mb-4">
-                                    <button type="submit" class="btn btn-primary w-25">Add Product</button>
+                                    <button type="button" id="button" onclick="handleClick()" class="btn btn-primary w-25">Add Product</button>
                                 </div>
                                 </form>
-                               
-                          
-                            </div>  <!--row end// --> 
+                            </div> 
                             
                         </div>
                     </div>
@@ -326,8 +306,6 @@
                     const fileReader = new FileReader();
                     const preview = document.getElementById(`file-preview${id}`);
                     fileReader.onload = function (event) {
-                      
-                        
                         preview.setAttribute('src', event.target.result);
                     }
                     fileReader.readAsDataURL(file[0]);
@@ -336,11 +314,161 @@
         }
         
     </script>
+    <script>
+        function handleClick() {
+            
+            const title =  document.getElementById("title").value.trim();
+            const titleLabel =  document.getElementById("titleLabel");
+            const description =  document.getElementById("description").value.trim();
+            const descriptionLabel =  document.getElementById("descriptionLabel");
+            const price =  document.getElementById("price").value.trim();
+            const priceLabel =  document.getElementById("priceLabel");
+            const stock =  document.getElementById("stock").value.trim();
+            const stockLabel =  document.getElementById("stockLabel");
+            const category =  document.getElementById("category").value;
+            const categoryLabel =  document.getElementById("categoryLabel");
+
+            const upload0 =  document.getElementById("file-upload0").files[0]
+            const upload1 =  document.getElementById("file-upload1").files[0]
+            const upload2 =  document.getElementById("file-upload2").files[0]
+            const upload3 =  document.getElementById("file-upload3").files[0]
+
+            const fileUploadLabel0 =  document.getElementById("fileUploadLabel0")
+            const fileUploadLabel1 =  document.getElementById("fileUploadLabel1")
+            const fileUploadLabel2 =  document.getElementById("fileUploadLabel2")
+            const fileUploadLabel3 =  document.getElementById("fileUploadLabel3")
+            console.log(stock);
+            
+            const button =  document.getElementById("button")
+            // console.log(button);
+
+            let error = false;
+
+            if(title.length == 0){
+             titleLabel.style.color="red"
+             error = true;
+            }else{
+             titleLabel.style.color=""
+            }
+            if(description.length == 0){
+             descriptionLabel.style.color="red"
+             error = true;
+            }else{
+             descriptionLabel.style.color=""
+            }
+            if(price.length == 0){
+             priceLabel.style.color="red"
+             error = true;
+            }else{
+             priceLabel.style.color=""
+            }
+            if(stock.length == 0){
+             stockLabel.style.color="red"
+             error = true;
+            }else{
+             stockLabel.style.color=""
+            }
+
+            if(category.length == 0){
+             categoryLabel.style.color="red"
+             error = true;
+            }else{
+             categoryLabel.style.color=""
+            }
+
+            if(!upload0){
+             fileUploadLabel0.style.color="red"
+             error = true;
+            }else{
+             fileUploadLabel0.style.color=""
+            }
+            if(!upload1){
+             fileUploadLabel1.style.color="red"
+             error = true;
+            }else{
+             fileUploadLabel1.style.color=""
+            }
+            if(!upload2){
+             fileUploadLabel2.style.color="red"
+             error = true;
+            }else{
+             fileUploadLabel2.style.color=""
+            }
+            if(!upload3){
+             fileUploadLabel3.style.color="red"
+             error = true;
+            }else{
+             fileUploadLabel3.style.color=""
+            }
+
+            if(error){
+                Swal.fire({
+                    title:"Error!.",
+                    text: "Please Provide All Informations!.",
+                    icon: "warning",
+                });
+                return;
+            } 
+
+            const formData = new FormData();
+            formData.append("title",title)
+            formData.append("description",description)
+            formData.append("category",category)
+            formData.append("stock",stock)
+            formData.append("price",price)
+            for (let i = 0; i < 4; i++) {
+                
+                formData.append(`file-upload${i}`,document.getElementById(`file-upload${i}`).files[0])
+            }
+
+           
+
+             Swal.fire({
+                    title: "Are you sure?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: `Yes`
+                    }).then((result)=>{
+                        if(result.isConfirmed){
+                           button.disabled =true
+                            button.innerHTML =button.innerHTML = `
+                                    <div class="spinner-border spinner-border-sm me-2" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    Loading...
+                                    `;
+                               fetch(`/admin/addProducts`,{method:"POST",body:formData,"Content-Type":"multipart/form-data"}).then((res)=>res.json())
+                               .then((res)=>{
+                                  if(res.success){
+                                    Swal.fire({
+                                        title:"Success!.",
+                                        text:res.message,
+                                        icon: "success",
+                                    });
+                                    button.disabled =true;
+                                    window.location.href="/admin/viewProducts";
+                                }else{
+                                    button.disabled =false
+                                    button.innerText="Edit Product"
+                                    Swal.fire({
+                                        title:"Error!.",
+                                        text:res.message,
+                                        icon: "warning",
+                                    });
+                                }
+                            })
+                        }
+                    })
+        }
+    </script>
     <script src="assets/js/vendors/jquery-3.6.0.min.js"></script>
     <script src="assets/js/vendors/bootstrap.bundle.min.js"></script>
     <script src="assets/js/vendors/select2.min.js"></script>
     <script src="assets/js/vendors/perfect-scrollbar.js"></script>
     <script src="assets/js/vendors/jquery.fullscreen.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Main Script -->
     <script src="assets/js/main.js?v=1.1" type="text/javascript"></script>
 </body>

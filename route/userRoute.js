@@ -50,16 +50,19 @@ user_route.get('/otp',auth.logoutUser,userControll.loadOtp);
 user_route.post('/otp',userControll.verifyOtp);
 user_route.post("/login",userControll.veryfyLogin);
 user_route.get('/resend',auth.logoutUser,userControll.resendOtp)
-user_route.get("/home",auth.loginUser,authBlock.blockUser,userControll.loadHome);
+user_route.get('/resendOTP',auth.loginUser,authBlock.blockUser,userControll.resendOtp)
+user_route.get("/home",userControll.loadHome);
 
 // ########################products##############################
 
-user_route.get("/wcollection",auth.loginUser,authBlock.blockUser,productController.wcollection);
-user_route.get("/mcollection",auth.loginUser,authBlock.blockUser,productController.mcollection);
-user_route.get("/products",auth.loginUser,authBlock.blockUser,productController.loadProducts);
+user_route.get("/wcollection",productController.wcollection);
+user_route.get("/mcollection",productController.mcollection);
+user_route.get("/products",productController.loadProducts);
 user_route.get("/changePage",auth.loginUser,authBlock.blockUser,productController.changePage);
-user_route.get("/detailes",auth.loginUser,authBlock.blockUser,userControll.productsDetailes);
-user_route.get("/sort",auth.loginUser,authBlock.blockUser,userControll.sort);
+user_route.get("/detailes",userControll.productsDetailes);
+user_route.get("/sort",userControll.sort);
+user_route.get("/paginationProduct",userControll.paginationProduct);
+user_route.get("/searchProduct",userControll.searchProduct);
 
 // ########################password##############################
 
@@ -89,18 +92,22 @@ user_route.post('/checkout',auth.loginUser,authBlock.blockUser,userControll.chan
 // ########################address##############################
 
 user_route.get('/addAddress',auth.loginUser,authBlock.blockUser,userControll.addAddress);
-user_route.post('/addAddress',auth.loginUser,authBlock.blockUser,userControll.saveAddress);
+user_route.patch('/addAddress',auth.loginUser,authBlock.blockUser,userControll.saveAddress);
 user_route.get('/Addresses',auth.loginUser,authBlock.blockUser,userControll.loadAddress);
 user_route.get('/editAddress',auth.loginUser,authBlock.blockUser,userControll.loadeditAddress);
-user_route.post('/editAddress',auth.loginUser,authBlock.blockUser,userControll.veryfyAddress);
+user_route.patch('/editAddress',auth.loginUser,authBlock.blockUser,userControll.veryfyAddress);
 user_route.get('/deleteAddress',auth.loginUser,authBlock.blockUser,userControll.removeAddress);
+user_route.get('/paginationAddress',auth.loginUser,authBlock.blockUser,userControll.paginationAddress);
 // ########################profile##############################
 
 user_route.get('/profile',auth.loginUser,authBlock.blockUser,userControll.profile);
 user_route.get('/edit',auth.loginUser,authBlock.blockUser,userControll.loadedit);
-user_route.post('/edit',auth.loginUser,authBlock.blockUser,userControll.updateProfile);
+user_route.patch('/edit',auth.loginUser,authBlock.blockUser,userControll.updateProfile);
+user_route.get('/changeEmail',auth.loginUser,authBlock.blockUser,userControll.changeEmail);
+user_route.patch('/changeEmail',auth.loginUser,authBlock.blockUser,userControll.verifychangeEmail);
+user_route.delete('/verifychangeEmailOtp',auth.loginUser,authBlock.blockUser,userControll.verifychangeEmailOtp);
 
-// ########################order##############################
+// ########################order############################## 
 
 user_route.get('/orders',auth.loginUser,authBlock.blockUser,orderController.order);
 user_route.post('/orders',auth.loginUser,authBlock.blockUser,orderController.placeOrder);
@@ -108,22 +115,22 @@ user_route.get('/orderDetailes',auth.loginUser,authBlock.blockUser,orderControll
 user_route.get('/cancelOrder',auth.loginUser,authBlock.blockUser,orderController.cancelUserOrder);
 user_route.get('/returnOrder',auth.loginUser,authBlock.blockUser,orderController.returnOrder);
 user_route.get('/payAgain',auth.loginUser,authBlock.blockUser,orderController.payAgain);
-user_route.get('/repay',auth.loginUser,authBlock.blockUser,orderController.repay);
+user_route.patch('/repay',auth.loginUser,authBlock.blockUser,orderController.repay);
 user_route.get('/wallet',auth.loginUser,authBlock.blockUser,orderController.wallet);
 user_route.get('/successPage',auth.loginUser,authBlock.blockUser,orderController.successPage);
 user_route.post('/saveOrder',auth.loginUser,authBlock.blockUser,orderController.saveOrder);
 user_route.get('/failePage',auth.loginUser,authBlock.blockUser,orderController.failePage);
+user_route.get('/paginationOrder',auth.loginUser,authBlock.blockUser,orderController.paginationUserOrder);
 
 // ######################## wishlist ##############################
 
 user_route.get('/wishlist',auth.loginUser,authBlock.blockUser,wishlistController.wishlist);
 user_route.patch('/wishlist',auth.loginUser,authBlock.blockUser,wishlistController.handleWishlist);
 user_route.get('/coupens',auth.loginUser,authBlock.blockUser,userControll.coupens);
+user_route.get('/filterCoupon',auth.loginUser,authBlock.blockUser,userControll.filterCoupon);
+user_route.get('/paginationCoupon',auth.loginUser,authBlock.blockUser,userControll.paginationCoupon);
 user_route.post('/applyCoupon',auth.loginUser,authBlock.blockUser,couponController.applyCoupon);
-
 user_route.get('/about',auth.loginUser,authBlock.blockUser,userControll.about);
 user_route.get('/contact',auth.loginUser,authBlock.blockUser,userControll.contact);
-
 user_route.get('/test',auth.loginUser,authBlock.blockUser,userControll.test);
-
 module.exports=user_route;

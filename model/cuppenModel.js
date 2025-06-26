@@ -5,35 +5,42 @@ const cupenModel = new mongoose.Schema({
    
 name:{
     type:String,
-    require:true
+    required:true
  },
  status:{
     type:String,
     enum:['active','expired','used'],
-    require:true
+    required:true
  },
  expiryDate:{
     type:Date,
-    require:true
+    required:true
  },
  offer:{
     type:Number,
-    require:true
+    required:true
  },
  image:{
+   secure_url:{
     type:String,
-    require:true
+    required:true
+   },
+   public_id:{
+    type:String,
+    required:true
+   }
  },
  minLimite:{
     type:Number,
-    require:true
+    required:true
  },
- coupenId:{
+ couponCode:{
     type:String,
-    require:true
+    required:true
  },
  usedUsers: {
-   type: Array,
+   type:  [mongoose.Schema.Types.ObjectId],
+   ref:"User",
    default: [],
  },
 

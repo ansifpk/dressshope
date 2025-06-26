@@ -130,29 +130,21 @@
 							</ul>
                             <div class="tab-content" id="tab-content-5">
                                 <div class="tab-pane fade show active" id="signin" role="tabpanel" aria-labelledby="signin-tab">
-                                    <form action="/login" method="post">
-                                        <% 
-
-                                        if(typeof message!== "undefined"){
-                                           %>
-                                           <p style="color:white; background-color:red; text-align: center;"><%= message %> </p>
-                                           <%
-                                        }
-                                        
-                                        %>
-                                        <div class="form-group">
-                                            <label for="singin-email">Username or email address *</label>
-                                            <input type="text" class="form-control" id="singin-email" name="email" required>
+                                    <form>
+                                      
+                                        <div class="form-group">  
+                                            <label for="singin-email" id="singin-email-label" >Username or email address *</label>
+                                            <input type="text" class="form-control " id="singin-email" name="email" required>
                                         </div><!-- End .form-group -->
 
                                         <div class="form-group">
-                                            <label for="singin-password">Password *</label>
+                                            <label id="singin-password-label" for="singin-password">Password *</label>
                                             <input type="password" class="form-control" id="singin-password" name="password" required>
                                         </div><!-- End .form-group -->
 
                                         <div class="form-footer">
                                             <!-- <a href="" class="btn btn-primary text-white">Sign in</a> -->
-                                            <button type="submit" class="btn btn-outline-primary-2">
+                                            <button onclick="handleClick()" type="button" class="btn btn-outline-primary-2">
 			                					<span>SIGN IN</span>
 			            						<i class="icon-long-arrow-right"></i>
 			                				</button>
@@ -169,17 +161,11 @@
                                             <a href="/register" class="btn btn-primary">Sign Up</a>
                                             
                                         <p class="text-center">or sign in with</p>
-                                        <div class="row">
+                                        <div class="row justify-content-center">
                                             <div class="col-sm-6">
                                                 <a href="/auth/google" class="btn btn-login btn-g">
                                                     <i class="icon-google"></i>
                                                     Login With Google
-                                                </a>
-                                            </div><!-- End .col-6 -->
-                                            <div class="col-sm-6">
-                                                <a href="#" class="btn btn-login btn-f">
-                                                    <i class="icon-facebook-f"></i>
-                                                    Login With Facebook
                                                 </a>
                                             </div><!-- End .col-6 -->
                                         </div><!-- End .row -->
@@ -329,5 +315,54 @@
             </div><!-- End .modal-content -->
         </div><!-- End .modal-dialog -->
     </div><!-- End .modal -->
+<script>
+    
+    function handleClick(){
 
+        const emailLabel = document.getElementById("singin-email-label")
+        const passwordLabel = document.getElementById("singin-password-label")
+        const email = document.getElementById("singin-email");
+        const password = document.getElementById("singin-password");
+        if(email.value.length == 0){
+            emailLabel.style.color = "red"
+              Swal.fire({
+                title:"Please Enter Your Email & Password!.",
+                icon: "warning",
+                draggable: true
+                });
+                return
+        }else{
+            emailLabel.style.color = ""
+        }
+        if(password.value.length == 0){
+            passwordLabel.style.color = "red"
+              Swal.fire({
+                title:"Please Enter Your Email & Password!.",
+                icon: "warning",
+                draggable: true
+                });
+                return
+        }else{
+              passwordLabel.style.color = ""
+        }
+        fetch("/login",{method:"POST",body:JSON.stringify({email:email.value,password:password.value}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
+        .then((res)=>{
+            if(res.success){
+                 Swal.fire({
+                title:"Login Succefully!.",
+                icon: "success",
+                draggable: true
+                });
+                window.location.href="/home"
+            }else{
+                Swal.fire({
+                title:res.message,
+                icon: "warning",
+                draggable: true
+                });
+            }
+        })
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <% include("../layout/footer.ejs") %>

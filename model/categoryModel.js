@@ -4,11 +4,10 @@ const categoryModel = new mongoose.Schema({
     name:{
         type:String,
         required:true,
-        
      },
      Description:{
-    type:String,
-    required:true
+      type:String,
+      required:true
      },
      is_listed:{
         type:Boolean,
@@ -18,9 +17,8 @@ const categoryModel = new mongoose.Schema({
       type:Number,
       default:0,
      }
-     
-    
-
+},{
+   timestamps:true
 });
 
 

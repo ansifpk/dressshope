@@ -10,7 +10,7 @@ const CartDB = require('../model/cartModel');
 const AddressDB = require('../model/addressModel');
 const CoupenDB = require('../model/cuppenModel');
 const razorPay = require('razorpay');
-
+const getStoreDataForUser  = require('../helperfunctions/helper') ;
 
 const instance = new razorPay({
     key_id: process.env.RAZOR_ID,
@@ -32,32 +32,23 @@ const viewOrders = async (req, res) => {
 
 const ordersList = async (req, res) => {
     try {
-        var search = req.query.search || ""
-        if (req.query.search) {
-            search = req.query.search
-        }
-        const data = await OrderDB.find({
-            $or: [
-                { 'products.paymentStatus': { $regex: '.*' + search + '.*', $options: 'i' } },
-                { "products.deliveryAddress.fname": { $regex: '.*' + search + '.*', $options: 'i' } },
-                { "products.deliveryAddress.lname": { $regex: '.*' + search + '.*', $options: 'i' } },
-                { "products.deliveryAddress.address": { $regex: '.*' + search + '.*', $options: 'i' } },
-                { "products.deliveryAddress.city": { $regex: '.*' + search + '.*', $options: 'i' } },
-                { "products.deliveryAddress.state": { $regex: '.*' + search + '.*', $options: 'i' } },
-                { "products.deliveryAddress.country": { $regex: '.*' + search + '.*', $options: 'i' } },
-                { "products.deliveryAddress.email": { $regex: '.*' + search + '.*', $options: 'i' } }
-            ]
-        }).populate('userId').populate("products.productId");
+      
+       const limit = 4 ;
+      
+        let orders = await OrderDB.find({}).sort({orderDate:-1}).populate('userId').populate("products.productId");
+        
         let array=[];
-        for(let i=0;i<data.length;i++){
-            for(let j=0;j<data[i].products.length;j++){
+        for(let i=0;i<orders.length;i++){
+            for(let j=0;j<orders[i].products.length;j++){
               
-                array.push(data[i].products[j])
+                array.push(orders[i].products[j])
             }
         }
-      
-        const arrayNew = array.sort((a,b) => new Date(b.orderDate) - new Date(a.orderDate) )
-        res.render('orders', { orderData: arrayNew });
+        const totalPage =  Math.ceil(array.length/limit) ;
+        const arrayNew = array.sort((a,b) => new Date(b.orderDate) - new Date(a.orderDate) ).slice(0,limit)
+        
+       
+        res.render('orders', { orderData: arrayNew,totalPage });
 
     } catch (error) {
         console.log(error.message);
@@ -111,34 +102,108 @@ const orderStatus = async (req, res) => {
 
         const { changeStatus, productId } = req.query;
         const data = await OrderDB.findOne({ 'products._id': productId }).populate('userId').populate('products.productId')
-        const order = data.products.find((p) => {
+         const order = data.products.find((p) => {
             return p._id.equals(productId)
         });
+       
+        const product = await ProductDb.findOne({ _id: order.productId._id }).populate("categoryID");
         if(order.productStatus == "Delivered"){
            res.json({success:false,message:"This order is deliverd!."})
            return
         }
-        const product = await ProductDb.findOne({ _id: order.productId._id }).populate("categoryID");
-     
-        if (changeStatus == "Delivered") {
-     
-            order.productStatus = changeStatus;
-            product.orderCount++;
-            await data.save();
-            await product.save();
-           
-            const category = await CategoryDb.find({});
-            const checkCategory = category.find((value) => {
-                return value.name == product.categoryID.name
-            });
-            
-            checkCategory.orderCount++;
-            await checkCategory.save();
 
-        } else {
-            order.productStatus = changeStatus
-            await data.save();
+        if(order.productStatus == "return"){
+           res.json({success:false,message:"This order is Returned!."})
+           return
         }
+
+        if(order.productStatus == changeStatus){
+           res.json({success:false,message:"You Cannot Set The Same Status Again!."})
+           return
+        }
+   
+        switch (changeStatus) {
+            case "pending":
+                if(product.stock < 1){
+                    return  res.json({success:false,message:"Product is Out of Stock!."})
+                }
+
+                if(order.paymentMethod == "COD"){
+                   order.productStatus = changeStatus;
+                   await data.save();
+                }else{
+                    const userWallet = await WalletDB.findOne({userId:data.userId})
+                    if(userWallet.Balance<order.productTotal){
+                      return  res.json({success:false,message:"This User Dont Have The Enough Money In His Wallat!."})
+                    }
+                    order.productStatus = changeStatus;
+                    product.orderCount++;
+                    product.stock--;
+                    await data.save();
+                    await product.save();
+                    await WalletDB.findOneAndUpdate({ userId:data.userId},{$inc:{Balance: -order.productTotal},$push:{ walletHistery:`Debit : Amount of Rs.${order.productTotal}.00 is Debited for This Product Order ${order.productId.name}`}});
+                    const category = await CategoryDb.find({});
+                    const checkCategory = category.find((value) => {
+                        return value.name == product.categoryID.name
+                    });
+                    
+                    checkCategory.orderCount++;
+                    await checkCategory.save();
+                }
+                break;
+        
+            case "canceled":
+                
+                if(order.paymentMethod == "COD"){
+                   
+                    order.productStatus = changeStatus;
+                    await data.save();
+                }else{
+                    await WalletDB.findOneAndUpdate({ userId:data.userId},{$inc:{Balance:order.productTotal},$push:{ walletHistery:`Credit : ${order.productId.name} refunded amount of Rs.${order.productTotal}.00`}});
+                    order.productStatus = changeStatus;
+                    product.orderCount--;
+                    product.stock++;
+                    await data.save();
+                    await product.save();
+                
+                    const category = await CategoryDb.find({});
+                    const checkCategory = category.find((value) => {
+                        return value.name == product.categoryID.name
+                    });
+                    
+                    checkCategory.orderCount--;
+                    await checkCategory.save();
+                }
+                break;
+            case "Delivered":
+                if(order.paymentMethod == "COD"){
+                    order.productStatus = changeStatus;
+                    product.orderCount++;
+                    product.stock--;
+                    if(product.stock < 0){
+                     product.stock = 0;
+                    }
+                    await data.save();
+                    await product.save();
+                
+                    const category = await CategoryDb.find({});
+                    const checkCategory = category.find((value) => {
+                        return value.name == product.categoryID.name
+                    });
+                    
+                    checkCategory.orderCount++;
+                    await checkCategory.save();
+                }else{
+                    order.productStatus = changeStatus;
+                    await data.save();
+                }
+                break;
+        
+            default:
+                break;
+        }
+
+       
         res.json({success:true,message:"Successfully change the order status!."})
 
     } catch (error) {
@@ -146,35 +211,168 @@ const orderStatus = async (req, res) => {
     }
 }
 
+const filterAndsortOrders = async(req,res) => {
+    try {
+         const { filter,sort,search} = req.query;
+          
+             const limit = 4;
+       
+             let orders = await OrderDB.find({}).populate('userId').populate("products.productId");
+            
+              let array=[];
+            for(let i=0;i<orders.length;i++){
+                for(let j=0;j<orders[i].products.length;j++){
+                    array.push(orders[i].products[j])
+                }
+            }
+
+            if(filter == "Paid" || filter == "Not Paid"){
+                array =  array.filter((pro)=>{
+                    if(pro.paymentStatus == filter && pro.productId.name.toLowerCase().includes(search.toLowerCase())){
+                      return pro
+                    }
+                })
+            }else if(filter == "Show all" || filter == ""){
+                array =  array.filter((pro)=>pro.productId.name.toLowerCase().includes(search.toLowerCase()))
+            }else{
+                 array =  array.filter((pro)=>{
+                    if(pro.productStatus == filter && pro.productId.name.toLowerCase().includes(search.toLowerCase())){
+                      return pro
+                    }
+                })
+            }
+
+           
+           
+            
+             switch (sort) {
+                case "Name Z - A":
+                array =array.sort((a,b) => b.productId.name.toLowerCase().localeCompare(a.productId.name.toLowerCase()))
+                break;
+                case "Name A - Z":
+                array = array.sort((a,b) => a.productId.name.toLowerCase().localeCompare(b.productId.name.toLowerCase()) )
+                break;
+                case "Old":
+                array = array = array.sort((a,b) => new Date(a.orderDate) - new Date(b.orderDate) )
+                break;
+                default:
+                array = array.sort((a,b) => new Date(b.orderDate) - new Date(a.orderDate) )
+                break;
+            }
+            const totalPage =  Math.ceil(array.length/limit) ;
+            array = array.slice(0,limit);
+            return res.json({products:array,totalPage})
+
+    } catch (error) {
+         console.log(error.message);
+    }
+}
+
+const searchOrders = async(req,res)=>{
+   try {
+          const { search } = req.query;
+          let limit = 4;
+          const orders = await OrderDB.find({}).populate("products.productId");
+           let array=[];
+            for(let i=0;i<orders.length;i++){
+                for(let j=0;j<orders[i].products.length;j++){
+                    array.push(orders[i].products[j])
+                }
+            }
+          array = array.filter((product)=>product.productId.name.toLowerCase().includes(search.toLowerCase()))
+          array = array.slice(0,limit)
+          return res.send({orders:array,totelPage:Math.ceil(array.length/limit)})
+   } catch (error) {
+       console.error(error.message)
+   }
+}
+const paginationOrders = async(req,res)=>{
+   try {
+      const { search,filter,sort,page} = req.query;
+ 
+         const limit = 4;
+       
+             let orders = await OrderDB.find({}).populate('userId').populate("products.productId");
+            
+              let array=[];
+            for(let i=0;i<orders.length;i++){
+                for(let j=0;j<orders[i].products.length;j++){
+                    array.push(orders[i].products[j])
+                }
+            }
+          
+            if(filter == "Paid" || filter == "Not Paid"){
+                array =  array.filter((pro)=>{
+                    if(pro.paymentStatus == filter && pro.productId.name.toLowerCase().includes(search.toLowerCase())){
+                      return pro
+                    }
+                })
+            }else if(filter == "Show all" || filter == ""){
+                array =  array.filter((pro)=>pro.productId.name.toLowerCase().includes(search.toLowerCase()))
+            }else{
+               
+                 array =  array.filter((pro)=>{
+                    if(pro.productStatus == filter && pro.productId.name.toLowerCase().includes(search.toLowerCase())){
+                      return pro
+                    }
+                })
+            }
+
+            const totalPage =  Math.ceil(array.length/limit) ;
+            
+             switch (sort) {
+                case "Name Z - A":
+                array =array.sort((a,b) => b.productId.name.toLowerCase().localeCompare(a.productId.name.toLowerCase()))
+                break;
+                case "Name A - Z":
+                array = array.sort((a,b) => a.productId.name.toLowerCase().localeCompare(b.productId.name.toLowerCase()) )
+                break;
+                case "Old":
+                array = array = array.sort((a,b) => new Date(a.orderDate) - new Date(b.orderDate) )
+                break;
+                default:
+                array = array.sort((a,b) => new Date(b.orderDate) - new Date(a.orderDate) )
+                break;
+            }
+             
+            array = array.slice((page-1)*limit,page*limit)
+            return res.json({orders:array,totalPage})
+
+          
+   } catch (error) {
+       console.error(error.message)
+   }
+}
 //############################################################################
 //####################   order user side   ###################################
 //############################################################################
 
 const order = async (req,res)=>{
     try {
-        const cartData = await CartDB.findOne({userId:req.session.user_id}).populate({
-            path: 'products.productId',
-            populate: { path: 'categoryID' }})
-            const wishlistData = await WishlistDB.findOne({userId:req.session.user_id}).populate('products.productId')
-        const offerData = await OfferDB.find({});
-        let cartTotal=0;
-        if(cartData){
-            cartTotal = cartData.products.reduce((acc,productsId)=>{
-            parseInt(productsId.quandity);
-             parseInt(productsId.productId.Price);
-             const offer = offerData.find( value => value.iteam === productsId.productId.name ||  value.iteam === productsId.productId.categoryID.name)
-           if(offer){
-            return acc+productsId.quandity*productsId.productId.Price - Math.round(productsId.quandity*productsId.productId.Price*offer.offerRate/100)
-           }else{
-            return acc+productsId.quandity*productsId.productId.Price
-           }
-        },0);
 
+        const {cartData,wishlistData,cartTotal} = await getStoreDataForUser(req,res)
+        const limit = 4;
+        let data =  await OrderDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId') 
+        data = data.products
+        data.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+        const totalPage = Math.ceil(data.length/limit);
+        data = data.slice(0,limit);
+        res.render('order',{orderData:data,cartData,wishlistData,cartTotal,totalPage})
+    } catch (error) {
+        console.log(error.message);
     }
-    
-        const data =  await OrderDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId') 
-        data.products.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
-        res.render('order',{orderData:data,cartData,wishlistData,cartTotal})
+}
+
+const paginationUserOrder = async (req,res)=>{
+    try {
+        const {page} = req.query;
+        const limit = 4;
+        let data =  await OrderDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId') 
+        data = data.products
+        data.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+        const totalPage = Math.ceil(data.length/limit);
+        data = data.slice((page-1)*limit,page*limit);
+        return res.json({orderData:data,totalPage});
     } catch (error) {
         console.log(error.message);
     }
@@ -192,7 +390,7 @@ const placeOrder = async (req,res)=>{
         let coupenData;
 
         if(coupen){
-             coupenData = await CoupenDB.findOne({_id:coupen});
+             coupenData = await CoupenDB.findById({_id:coupen});
              if(!coupenData){
               return  res.send({success:false,message:"Coupen Not Found!."})
             }
@@ -274,10 +472,10 @@ const placeOrder = async (req,res)=>{
 const saveOrder = async(req,res)=>{
    try { 
        const {addressId,coupen,paymentMethod,paymentStatus,productStatus} = req.body;
-       
       
        const products = await CartDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId').populate('products.productId.categoryID')
         let productsData = products.products;
+        
         if(productsData.length == 0){
            return;
         }
@@ -301,23 +499,34 @@ const saveOrder = async(req,res)=>{
             return acc + parseInt(value.productId.Price)*value.quandity
         }
        },0);
-       if(coupen){
-        coupenData = await CoupenDB.findById({_id:coupen});
+     
+       if(coupen && paymentStatus !== 'Failed'){
+        coupenData = await CoupenDB.findOne({_id:coupen});
         if(coupenData){
             money = money - Math.round(money*coupenData.offer/100);
-            await CoupenDB.findOneAndUpdate({coupenId:coupen},{$push:{usedUsers:req.session.user_id}})
+    
+            await CoupenDB.findByIdAndUpdate({_id:coupen},{$push:{usedUsers:req.session.user_id}})
         }
        }
-
+  
       for(let i=0;i<productsData.length;i++){
              let product = await ProductDb.findOne({_id:productsData[i].productId._id});
-             if(productsData[i].productId.stock>0){
-                product.stock=product.stock-productsData[i].quandity;
+             let category = await CategoryDb.findOne({_id:productsData[i].productId.categoryID._id});
+             if(productsData[i].productId.stock > 0 && paymentStatus !== "Failed"){
+                product.stock = product.stock - productsData[i].quandity;
+                if(paymentMethod !== "COD"){
+                  product.orderCount = product.orderCount + productsData[i].quandity;
+                  category.orderCount = category.orderCount + productsData[i].quandity;
+                  await category.save();
+                }
+               
                 await product.save();
+               
              }
              const exist = await OrderDB.findOne({userId:req.session.user_id});
+            
              if(exist){
-                await OrderDB.findByIdAndUpdate({_id:exist._id},{$push:{
+               await OrderDB.findByIdAndUpdate({_id:exist._id},{$push:{
                      products:{
                         productId:productsData[i].productId._id,
                         productStatus,
@@ -347,8 +556,11 @@ const saveOrder = async(req,res)=>{
                 await data.save();
              }
          }
-
-       await CartDB.findOneAndUpdate({userId:req.session.user_id},{$set:{products:[]}});
+       
+       if(paymentStatus !== 'Failed'){
+           await CartDB.findOneAndUpdate({userId:req.session.user_id},{$set:{products:[]}});
+       }
+      
        res.json({success:true});
    
       
@@ -365,6 +577,7 @@ const successPage = async(req,res)=>{
    }
 }
 
+
 const failePage = async(req,res)=>{
     try {
        res.render("faile")
@@ -374,20 +587,32 @@ const failePage = async(req,res)=>{
 }
 const payAgain = async(req,res)=>{
    try {
-       const {productId,productTotal,quandity,addressId} = req.query
-       const cartData = await CartDB.findOne({userId:req.session.user_id}).populate('products.productId');
-                   const userData = await User.findOne({userId: req.session.user_Id});
-       
-                   const amount =productTotal*100;
-                   const options = {
+       const {productId,quandity,addressId} = req.query  
+       const userData = await User.findOne({_id: req.session.user_id});
+       const orderData = await OrderDB.findOne({userId:req.session.user_id}).populate('products.productId');
+       const product = orderData.products.find((value)=>value._id == productId);
+       let amount = 0;
+       if(product.productId.stock <= 0){
+         return res.json({success:false,message:"Product Is Out Of Stock!."});
+       }
+
+       if( product.productId.stock < quandity ){
+         amount = (product.productId.stock*product.productId.Price )*100
+       }else{
+         amount = (product.productId.Price*quandity) *100;
+       }
+
+       console.log(quandity,"quandity",amount,"amount");
+
+       const options = {
                        amount: amount,
                        currency: 'INR',
-                       receipt: 'pkansif39@gmail.com'
-                   }
-                   instance.orders.create(options, 
+                       receipt: userData.email
+                       }
+        instance.orders.create(options, 
                        (err, order)=>{
                            if(!err){
-                               console.log(order)
+                              
                                res.send({
                                    success:true,
                                    msg:'Order Created',
@@ -398,15 +623,15 @@ const payAgain = async(req,res)=>{
                                    quandity:quandity,
                                    addressId:addressId,
                                    name:userData.name,
-                                   email: "pkansif39@gmail.com"
+                                   email: userData.email
                                });
                            }else{
                                console.error("Error creating order:", err);
-       
                                res.send({success:false,msg:'Something went wrong!'});
                            }
                        }
-                   );
+                   );           
+                   
        
 
    } catch (error) {
@@ -417,16 +642,35 @@ const payAgain = async(req,res)=>{
 
 const repay = async(req,res)=>{
     try {
-        const { addressId,amount,quandity,productId} = req.query;
+
+         const {paymentStatus,productStatus,orderId} = req.body;
         const orderData =  await OrderDB.findOne({userId:req.session.user_id}).populate('products.productId');
-        console.log(req.query)
-        const product = orderData.products.find((pro)=>{
-            return pro._id.equals(productId)
+        let product = orderData.products.find((pro)=>{
+            return pro._id.equals(orderId)
         });
+        product = product.toObject();
+       
+        product.productStatus = productStatus
+        product.paymentStatus = paymentStatus
+        if(product.productId.stock < product.quandity  ){
+          product.quandity = product.productId.stock
+          product.productTotal = product.productId.Price*product.quandity
+        }else{
+          product.productTotal = product.productId.Price*product.quandity
+        }
         
-       product.paymentStatus="Paid"
-       await orderData.save();
-       res.render('success');
+        if(paymentStatus !== "Failed"){
+            product.productId.stock = product.productId.stock - product.quandity;
+        }
+
+        product.orderDate = new Date();
+        delete product._id;
+      
+          await OrderDB.findOneAndUpdate({userId:req.session.user_id},{$push:{
+                     products:product
+          }})
+         return res.json({success:true});
+
     } catch (error) {
         console.log(error.message);
     }
@@ -471,7 +715,7 @@ const returnOrder = async (req,res)=>{
        if(offer){
         amount = product.productId.Price*product.quandity   - Math.round(product.productId.Price*offer.offerRate/100)*product.quandity
        }else{
-        amount =product.productId.Price*product.quandity;
+        amount = product.productId.Price*product.quandity;
        }
       
     if(!walletData){
@@ -540,37 +784,46 @@ const orderUserDetailes = async (req,res)=>{
 const cancelUserOrder = async (req,res)=>{
     try {
     
-        const {id} = req.query;
+        const {_id} = req.query;
         const orderData =  await OrderDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId');
-          
-        const a = orderData.products.find((p)=>{
-            return p._id.equals(id)
+       
+         if(!orderData){
+            return  res.json({success:false,message:"Order Not Found!."});
+         }
+        const order = orderData.products.find((p)=>{
+            return p._id.equals(_id)
         });
-                
-       a.productStatus="canceled" 
-       a.stock=a.stock--
-        await orderData.save();
-        const data =  await OrderDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId');;
-                  
-        let totalPriceOfPendingProducts = 0;
+  
+        const product = await ProductDb.findById({_id:order.productId._id});
+        if(!product){
+            return res.json({success:false,message:"Product Not Found!."});
+        }
+        const category = await CategoryDb.findById({_id:order.productId.categoryID});
+      
+        if(!category){
+            return res.json({success:false,message:"Category Not Found!."});
+        }
+       
 
-         for (let i = 0; i < data.products.length; i++) {
-              if (data.products[i].productStatus === "pending") {
-                    totalPriceOfPendingProducts += data.products[i].totalPrice;
-                    const data = new WalletDB({
-                        userId:req.session.user_id,
-                        Balance:amount,
-                        walletHistery:[`Credit : ${data.products[i].productId.name} refunded amount of Rs.${data.products[i].productId.Price*data.products[i].quandity}.00`]
-                    });
-
-                   await data.save()
-                    //    await WalletDB.findByIdAndUpdate({_id:req.session.user_id},{$set:{$inc:{Balance:}}})
-                }
-            }
-         console.log('totalPriceOfPendingProducts',totalPriceOfPendingProducts)
-         data.total=totalPriceOfPendingProducts
-         await data.save();
-           
+         order.productStatus= "canceled";
+         await orderData.save();
+     
+        
+        product.stock =  product.stock + order.quandity;
+        if(order.paymentMethod !==  "COD"){
+          product.orderCount =  product.orderCount - order.quandity;
+          category.orderCount =  category.orderCount - order.quandity;
+          await category.save();
+        }
+       
+        await product.save();
+        
+         if(order.paymentMethod !==  "COD"){
+          await WalletDB.findOneAndUpdate({ userId:req.session.user_id},{$inc:{Balance:order.productTotal},$push:{ walletHistery:`Credit : ${order.productId.name} refunded amount of Rs.${order.productTotal}.00`}},{new:true});
+        }
+        
+        res.send({success:true,message:"Successfully Cancelled this Products!."})
+        
     } catch (error) {
         console.log(error.message);
     }
@@ -580,27 +833,10 @@ const cancelUserOrder = async (req,res)=>{
 
 const wallet = async (req,res)=>{
     try {           
-        const cartData = await CartDB.findOne({userId:req.session.user_id}).populate({
-            path: 'products.productId',
-            populate: { path: 'categoryID' }})
-            const wishlistData = await WishlistDB.findOne({userId:req.session.user_id}).populate('products.productId')
-        const offerData = await OfferDB.find({});
-        let cartTotal=0;
-        if(cartData){
-            cartTotal = cartData.products.reduce((acc,productsId)=>{
-            parseInt(productsId.quandity);
-             parseInt(productsId.productId.Price);
-             const offer = offerData.find( value => value.iteam === productsId.productId.name ||  value.iteam === productsId.productId.categoryID.name)
-           if(offer){
-            return acc+productsId.quandity*productsId.productId.Price - Math.round(productsId.quandity*productsId.productId.Price*offer.offerRate/100)
-           }else{
-            return acc+productsId.quandity*productsId.productId.Price
-           }
-        },0);
-
-    }
-       const walletData = await WalletDB.findOne({userId:req.session.user_id})
-       res.render("wallet",{walletData:walletData,cartData,wishlistData,cartTotal});
+        
+        const {cartData,wishlistData,cartTotal} = await getStoreDataForUser(req,res)
+        const walletData = await WalletDB.findOne({userId:req.session.user_id})
+        res.render("wallet",{walletData:walletData,cartData,wishlistData,cartTotal});
 
     } catch (error) {
         console.log(error.message);
@@ -614,6 +850,10 @@ module.exports={
     orderDetailes,
     cancelOrder,
     orderStatus,
+    filterAndsortOrders,
+    paginationOrders,
+    searchOrders,
+    paginationUserOrder,
 
     //user side
 

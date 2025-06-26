@@ -83,17 +83,17 @@
                         </div>
                     </li>
                     <li class="menu-item has-submenu">
-                        <a class="menu-link" href="/admin/coupens">
+                        <a class="menu-link" href="/admin/coupons">
                             <i class="icon material-icons md-shopping_bag"></i>
-                            <span class="text">Coupens</span>
+                            <span class="text">Coupons</span>
                         </a>
                         <div class="submenu">
-                            <a href="/admin/coupens">Coupens List</a>
+                            <a href="/admin/coupons">Coupons List</a>
                            
                         </div>
                     </li>
                     <li class="menu-item has-submenu">
-                        <a class="menu-link" href="/admin/coupens">
+                        <a class="menu-link" href="">
                             <i class="icon material-icons md-shopping_bag"></i>
                             <span class="text">Offers</span>
                         </a>
@@ -184,7 +184,7 @@
                 <div class="content-header">
                     <div>
                         <h2 class="content-title card-title">Categories</h2>
-                        <p>Add, edit or delete a category</p>
+                        <p>Add a category</p>
                     </div>
                     <div>
                         <input type="text" placeholder="Search Categories" class="form-control bg-white" />
@@ -193,19 +193,19 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-3">
-                                <form action="" method="post">
+                            <div class="col-md-12">
+                                <form>
                                     <div class="mb-4">
-                                        <label for="product_name" class="form-label">Name</label>
-                                        <input type="text" placeholder="Type here" name="name" class="form-control" id="product_name" />
+                                        <label id="nameLabel" for="product_name" class="form-label">Category Name *</label>
+                                        <input type="text"  placeholder="Type here" name="name" class="form-control" id="name" />
                                     </div>
                                    
                                     <div class="mb-4">
-                                        <label class="form-label">Description</label>
-                                        <input placeholder="Type here" name="description" class="form-control"></input>
+                                        <label id="descriptionLabel" class="form-label">Category Description *</label>
+                                        <textarea id="description" placeholder="Category Description should be more than 20 words" name="description" class="form-control" ></textarea>
                                     </div>
                                     <div class="d-grid">
-                                        <button class="btn btn-primary">Create category</button>
+                                        <button type="button" onclick="handleSubmit()" class="btn btn-primary">Create category</button>
                                     </div>
                                 </form>
                             </div>
@@ -233,11 +233,62 @@
                 </div>
             </footer>
         </main>
+        <script>
+            function handleSubmit() {
+                const name = document.getElementById("name").value.trim()
+                const nameLabel = document.getElementById("nameLabel")
+                const description = document.getElementById("description").value.trim()
+                const descriptionLabel = document.getElementById("descriptionLabel")
+                
+                if(name.length == 0){
+                   nameLabel.style.color = "red"
+                }else{
+                    nameLabel.style.color = ""
+                }
+                if(description.length == 0){
+                   descriptionLabel.style.color = "red"
+                }else{
+                    descriptionLabel.style.color = ""
+                }
+
+                fetch("/admin/addCategory",{method:"POST",body:JSON.stringify({name,description}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
+                .then((res)=>{
+                    if(res.success){
+                        Swal.fire({
+                            title:"Success!.",
+                            text: res.message,
+                            icon: "success",
+                            draggable: true
+                        });
+                        window.location.href="/admin/category"
+                    }else{
+                       if(res.field == 'description'){
+                           descriptionLabel.style.color = "red";
+                        }else{
+                                descriptionLabel.style.color = "";
+                        }
+                        if(res.field == 'name'){
+                                nameLabel.style.color = "red";
+                        }else{
+                                nameLabel.style.color = "";
+                        }
+                        
+                         Swal.fire({
+                            title:"Failed!.",
+                            text: res.message,
+                            icon: "warning",
+                            draggable: true
+                        });
+                    }
+                })
+            }
+        </script>
         <script src="assets/js/vendors/jquery-3.6.0.min.js"></script>
         <script src="assets/js/vendors/bootstrap.bundle.min.js"></script>
         <script src="assets/js/vendors/select2.min.js"></script>
         <script src="assets/js/vendors/perfect-scrollbar.js"></script>
         <script src="assets/js/vendors/jquery.fullscreen.min.js"></script>
+         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <!-- Main Script -->
         <script src="assets/js/main.js?v=1.1" type="text/javascript"></script>
     </body>

@@ -12,7 +12,7 @@ products:[{
         require:true,
         ref:'products'
         },
-        productStatus:{type:String,required:true,default:'pending',enum:['pending','canceled','Delivered','processing','return','shipping']},
+        productStatus:{type:String,required:true,default:'pending',enum:['pending','canceled',"Failed",'Delivered','processing','return','shipping']},
         paymentStatus:{type:String,required:true,default:'Not paid',enum:['Not paid','Paid','Failed',]},
         productTotal:{
          type:Number,

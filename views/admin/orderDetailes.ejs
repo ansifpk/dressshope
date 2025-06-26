@@ -84,17 +84,17 @@
                         </div>
                     </li>
                     <li class="menu-item has-submenu">
-                        <a class="menu-link" href="/admin/coupens">
+                        <a class="menu-link" href="/admin/coupons">
                             <i class="icon material-icons md-shopping_bag"></i>
-                            <span class="text">Coupens</span>
+                            <span class="text">Coupons</span>
                         </a>
                         <div class="submenu">
-                            <a href="/admin/coupens">Coupens List</a>
+                            <a href="/admin/coupons">Coupons List</a>
                            
                         </div>
                     </li>
                     <li class="menu-item has-submenu">
-                        <a class="menu-link" href="/admin/coupens">
+                        <a class="menu-link" href="">
                             <i class="icon material-icons md-shopping_bag"></i>
                             <span class="text">Offers</span>
                         </a>
@@ -181,8 +181,8 @@
                     <header class="card-header">
                         <div class="row align-items-center">
                             <div class="col-lg-6 col-md-6 mb-lg-0 mb-15">
-                                <span> <i class="material-icons md-calendar_today"></i> <b>Wed, Aug 13, 2020, 4:34PM</b> </span> <br />
-                                <small class="text-muted">Order ID: 3453012</small>
+                                <span> <i class="material-icons md-calendar_today"></i> <b>Order Details </b> </span> <br />
+                        
                             </div> 
                         </div>
                     </header>
@@ -251,10 +251,9 @@
                                                 <option>pending</option>
                                                 <option>canceled</option>
                                                 <option>Delivered</option>
-                                                <option>shipping</option>
                                             </select>
                                             <a class="btn btn-primary" onclick="orderStatus('<%=productData._id%>')">Save</a>
-                                            <a class="btn btn-secondary print ms-2" href="#"><i class="icon material-icons md-print"></i></a>
+                                            
                                         </div>
                                         <thead>
                                             <tr>
@@ -264,18 +263,18 @@
                                                 <th >Quantity</th>
                                                 <th >Total</th>
                                                 <th >Date</th>
+                                                <th >Payment Status</th>
                                                 <th >Delivery Status</th>
-                                                <th >Action</th>
+                                            
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr>
                                                 <td>
-                                                    <a class="itemside" href="#">
+                                                    <a class="itemside">
                                                         <div class="left">
-                                                            <img src="/admin/assets/productImages/<%=productData.productId.image[0]%>" width="40" height="40" class="img-xs" alt="Item" />
+                                                            <img src="<%=productData.productId.image[0].secure_url%>" width="40" height="40" class="img-xs" alt="Item" />
                                                         </div>
-                                                        
                                                     </a>
                                                 </td>
                                                 <td><%=productData.productId.name%></td>
@@ -284,33 +283,16 @@
                                                 <td><%=productData.quandity%></td>
                                 
                                                 <td ><%=productData.productTotal%></td>
-                                                <td id="date"><%=productData.orderDate%></td>
-                                                <%
-                                                if(productData.productStatus==='canceled'){
-                                                    %>
-                                                    <td><span id="badge" class="badge rounded-pill btn-danger text-black "><%=productData.productStatus%></span></td>
-                                                    <td>
-                                                    <button  class="button btn-danger rounded text-white p-2">Cancel</button>
-                                                </td>
-                                                    <%
-                                                }else if(productData.productStatus==='return'){
-                                                    %>
-                                                    <td><span id="badge" class="badge rounded-pill btn-danger text-black "><%=productData.productStatus%></span></td>
-                                                    <td><button onclick="reason()" class="btnn btn-danger rounded text-white">show reason</button></td>
-                                                     <td><input id="reason" type="hidden" value="<%=productData.cancellationReason%>"></inpute></td>
-                                                    <%
-                                                }else{
-                                                    %>
-                                                <td><span id="badge" class="badge rounded-pill btn-success text-white "><%=productData.productStatus%></span></td>
+                                                <td id="date"><%= new Date(productData.orderDate).toLocaleDateString()%></td>
                                                 
-                                                    <td>
-                                                    <button onclick="cancelOrder('<%=productData._id%>')" class="btnn btn-danger rounded text-white p-2">Cancel</button>
-                                                </td>
-                                                    <%
-                                                }
+                                                <td><span id="paymentBadge" class="badge rounded-pill <%=productData.paymentStatus == "Failed" || productData.paymentStatus == "Not Paid" ?"btn-danger":"btn-success" %>  text-black "><%=productData.paymentStatus%></span></td>
+                                                <td><span id="badge" class="badge rounded-pill <%=productData.productStatus == "pending" || productData.productStatus == "Delivered" ?"btn-success":"btn-danger" %>  text-black "><%=productData.productStatus%></span></td>
+                                                <%
+                                                  if(productData.productStatus == "return"){%>
+                                                    <td><button onclick="reason()" class="btnn btn-danger rounded text-white">show reason</button></td>
+                                                    <td><input id="reason" type="hidden" value="<%=productData.cancellationReason%>"></inpute></td>
+                                                  <%} 
                                                 %>
-                                              
-                                               
                                                
                                             </tr>
                                         
@@ -345,12 +327,22 @@
 function orderStatus(productId){
     const  changeStatus = document.getElementById("changeStatus");
     const status =  document.getElementById("badge");
- 
+   
+   
    if(changeStatus.value == 'Change status') {
     return ;
+   }else if(changeStatus.value == status.innerText){
+       Swal.fire({
+            title: "Warning!.",
+            text: "You Cannot Set The Current Status Again!.",
+            icon: "warning"
+        });
+        return;
    }
     fetch(`/admin/orderStatus?changeStatus=${changeStatus.value}&productId=${productId}`).then((res)=>res.json())
     .then((res)=>{
+    
+        
         if(res.success){
             status.innerText=changeStatus.value;
             if(status.innerText==="canceled"){

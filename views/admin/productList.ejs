@@ -83,17 +83,17 @@
                         </div>
                     </li>
                     <li class="menu-item has-submenu">
-                        <a class="menu-link" href="/admin/coupens">
+                        <a class="menu-link" href="/admin/coupons">
                             <i class="icon material-icons md-shopping_bag"></i>
-                            <span class="text">Coupens</span>
+                            <span class="text">Coupons</span>
                         </a>
                         <div class="submenu">
-                            <a href="/admin/coupens">Coupens List</a>
+                            <a href="/admin/coupons">Coupons List</a>
                            
                         </div>
                     </li>
                     <li class="menu-item has-submenu">
-                        <a class="menu-link" href="/admin/coupens">
+                        <a class="menu-link" href="">
                             <i class="icon material-icons md-shopping_bag"></i>
                             <span class="text">Offers</span>
                         </a>
@@ -128,18 +128,7 @@
         <main class="main-wrap">
             <header class="main-header navbar">
                 <div class="col-search">
-                    <form class="searchform">
-                        <div class="input-group">
-                            <input list="search_terms" type="text" class="form-control" placeholder="Search term" />
-                            <button class="btn btn-light bg" type="button"><i class="material-icons md-search"></i></button>
-                        </div>
-                        <datalist id="search_terms">
-                            <option value="Products"></option>
-                            <option value="New orders"></option>
-                            <option value="Apple iphone"></option>
-                            <option value="Ahmed Hassan"></option>
-                        </datalist>
-                    </form>
+                    
                 </div>
                 <div class="col-nav">
                     <button class="btn btn-icon btn-mobile me-auto" data-trigger="#offcanvas_aside"><i class="material-icons md-apps"></i></button>
@@ -184,7 +173,7 @@
                 <div class="content-header">
                     <div>
                         <h2 class="content-title card-title">Products List</h2>
-                        <p>Lorem ipsum dolor sit amet.</p>
+                      
                     </div>
                     <div>
                         
@@ -195,24 +184,44 @@
                 <div class="card mb-4">
                     <header class="card-header">
                         <div class="row gx-3">
-                            <div class="col-lg-4 col-md-6 me-auto">
-                                <form action="" method="">
-                                    <input type="text" placeholder="Search..." name="search" class="form-control" />
-                                    <button class="btn btn-sm font-sm rounded btn-primary" type="submit">Search</button>
-                                </form>
-                                
+                            <div class="col-lg-6 col-md-6 me-auto">
+                                <div class="searchform">
+                                    <div class="input-group">
+                                        <input id="search" list="search_terms"  oninput="handlSearch(this)" type="search" class="form-control" placeholder="Search products" />
+                                    </div>
+                                </div>
                             </div>
                            
-                            <!-- <div class="col-lg-2 col-6 col-md-3">
-                                <select class="form-select">
-                                    <option>Show 20</option>
-                                    <option>Show 30</option>
-                                    <option>Show 40</option>
+                            <div class="col-lg-2 col-6 col-md-3">
+                                <select id="sort" onchange="filterAndsortProduct()" class="form-select">
+                                    <option value="" selected disabled>Sort Item</option>
+                                    <option value="All">All</option>
+                                    <option value="New">New</option>
+                                    <option value="Old">Old</option>
+                                    <option value="Price Low - High">Price Low - High</option>
+                                    <option value="Price High - Low">Price High - Low</option>
+                                    <option value="Name A - Z">Name A - Z</option>
+                                    <option value="Name Z - A">Name Z - A</option>
                                 </select>
-                            </div> -->
+                            </div>
+                            <div class="col-lg-3 col-6 col-md-4">
+                                <select id="filter" onchange="filterAndsortProduct()" class="form-select">
+                                    <option value="" selected disabled>Filter Products</option>
+                                    <option value="All">All</option>
+                                    <%
+                                     categories.map((value)=>{
+                                        %>
+                                        <option value="<%=value.name%>"><%=value.name%></option>
+                                        <%
+                                     })
+                                    %>
+                                    <option value="OUT OF STOCK">OUT OF STOCK</option>
+                                    <option value="IN STOCK">IN STOCK</option>
+                                </select>
+                            </div>
                         </div>
                     </header>
-                    <!-- card-header end// -->
+                  
                     <div class="card-body">
                         <div class="table-responsive">
                             <table class="table table-hover">
@@ -227,76 +236,60 @@
                                         <th scope="col" >Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="table">
                                   
-        <%
-        if(productData.length > 0){
-           for(let i=0;i<productData.length;i++){
-            %>
-            <tr>
-                <td>
-                    <a href="/detailes?id=<%=productData[i]._id%>">
-                        <img src="/admin/assets/productImages/<%=productData[i].image[0]%>" class="img-sm img-thumbnail" alt="Item" /></td>
-                    </a>
-                    
-                
-                <td><%= productData[i].name %></td>
-                <td><%= productData[i].categoryID.name %></td>
-                <td>Rs.<%= productData[i].Price %></td>
-                <td><%= productData[i].stock %></td>
-                <td><%= productData[i].Description %></td>
-                <td>
-                    
-                    <div class="col-lg-2 col-sm-2 col-4 col-action text-end">
-                        <a href="/admin/editProducts?id=<%= productData[i]._id %>" class="btn btn-sm font-sm rounded btn-brand"> <i class="material-icons md-edit"></i> Edit </a>
-                        <%
-                        if(productData[i].is_listed === true){
-                            %>
-                            <button class="btn btn-sm font-sm rounded text-white btn-success " onclick="listProduct(this,'<%=productData[i]._id%>')"> Unlist </button>
-                            <%
-                        }else{
-                            %>
-                            <button  class="btn btn-sm font-sm rounded text-white btn-danger " onclick="listProduct(this,'<%=productData[i]._id%>') ">  List </button>
-                            <%
-                        }
-                        %>   
-                        </div>
-               </td>
-                
-            </tr>
-            <%
-           }
-        }else{
-            %>
-            <tr>
-                <td colspan="3">Products Not Found</td>
-            </tr>
-            <%
-        }
-        %>
+                                    <%
+                                    if(productData.length > 0){
+                                    for(let i=0;i<productData.length;i++){
+                                        %>
+                                        <tr>
+                                            <td>
+                                                <a href="/detailes?id=<%=productData[i]._id%>">
+                                                    <img src="<%=productData[i].image[0].secure_url%>" class="img-sm img-thumbnail" alt="Item" /></td>
+                                                </a>
+                                            <td><%= productData[i].name %></td>
+                                            <td><%= productData[i].categoryID.name %></td>
+                                            <td>Rs.<%= productData[i].Price %></td>
+                                            <td><%= productData[i].stock %></td>
+                                            <td><%= productData[i].Description %></td>
+                                            <td>
+                                                <div class="col-lg-2 col-sm-2 col-4 col-action text-end">
+                                                    <a href="/admin/editProducts?_id=<%= productData[i]._id %>" class="btn btn-sm font-sm rounded btn-brand"> <i class="material-icons md-edit"></i> Edit </a>
+                                                     <button class="btn btn-sm font-sm rounded text-white <%= productData[i].is_listed ? 'btn-success' : 'btn-danger' %>" onclick="listProduct(this,'<%=productData[i]._id%>')"><%= productData[i].is_listed ? 'Unlist' : 'List' %></button>
+                                                </div>
+                                            </td> 
+                                        </tr>
+                                        <%
+                                    }
+                                    }else{
+                                        %>
+                                        <tr>
+                                            <td colspan="3">Products Not Found</td>
+                                        </tr>
+                                        <%
+                                    }
+                                    %>
                                 </tbody>
                             </table>
                         </div>
-                        <!-- table-responsive //end -->
+                      
                     </div>
-                    <!-- card-body end// -->
+                  
                 </div>
-                <!-- card end// -->
-
-                <!-- card end// -->
+             
                 <div class="pagination-area mt-30 mb-50">
                     <nav aria-label="Page navigation example">
-                        <ul class="pagination justify-content-start">
-                            <%
-                            for(let j=1;j<=totalPages;j++){%>
-                              <li class="page-item active"><a class="page-link" href="?page=<%=j%>"><%=j%></a></li>
-                            <% }
-                            %> 
+                        <ul id="pagination" class="pagination justify-content-start">
+                            <li class="page-item " onclick="handlPage('decrement')"><a class="page-link"><</a></li>
+                         
+                              <li  class="page-item active"><a id="page" class="page-link">1</a></li>
+                              <input type="hidden" value="<%=totalPages%>" id="totalPages">
+                            <li class="page-item " onclick="handlPage('increment')"><a class="page-link">></a></li>
                         </ul>
                     </nav>
                 </div>
             </section>
-            <!-- content-main end// -->
+
             <footer class="main-footer font-xs">
                 <div class="row pb-30 pt-15">
                     <div class="col-sm-6">
@@ -312,56 +305,186 @@
             </footer>
         </main>
         <script>
-            function listProduct(tag,userId){
-              
-                if(tag.innerText=='List'){
+            function listProduct(tag,productId){
                     Swal.fire({
-  title: "Are you sure?",
-  icon: "warning",
-  showCancelButton: true,
-  confirmButtonColor: "#3085d6",
-  cancelButtonColor: "#d33",
-  confirmButtonText: "Yes, List the Product!"
-}).then((result) => {
-  if (result.isConfirmed) {
-    Swal.fire({
-      title: "Listed!",
-      text: "This Product has been Listed.",
-      icon: "success"
-    });
-                    tag.innerText="Unlist"
-                    tag.style.background='green'
-                    tag.style.color='white'
-                    fetch(`/admin/listProducts?userId=${userId}`)
-  }
-});
-                    
-                }else if(tag.innerText=='Unlist'){
-                    Swal.fire({
-  title: "Are you sure?",
-  icon: "warning",
-  showCancelButton: true,
-  confirmButtonColor: "#3085d6",
-  cancelButtonColor: "#d33",
-  confirmButtonText: "Yes, Unlist the Product!"
-}).then((result) => {
-  if (result.isConfirmed) {
-    Swal.fire({
-      title: "Unlist!",
-      text: "This Product has been Unlisted.",
-      icon: "success"
-    });
-                    tag.innerText="List"
-                    tag.style.background='red'
-                    tag.style.color='white'
-                    fetch(`/admin/listProducts?userId=${userId}`,{method:'post'})
-  }
-});
-                    
-                }
-              
-               
+                    title: "Are you sure?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: `Yes, ${tag.innerText} the Product!`
+                    }).then((result)=>{
+                        if(result.isConfirmed){
 
+                               fetch(`/admin/listProducts?_id=${productId}`,{method:"PATCH"}).then((res)=>res.json())
+                               .then((res)=>{
+                                if(res.success){
+                                    tag.innerText=`${tag.innerText == "Unlist"?"List":"Unlist" }`
+                                    tag.style.background= `${tag.innerText == "Unlist"?"green":"red" }` 
+                                    tag.style.color='white'
+                                    Swal.fire({
+                                        title: "Success!",
+                                        text: res.message,
+                                        icon: "success"
+                                    });
+                                }else{
+                                    Swal.fire({
+                                    title: "Error!",
+                                    text: res.message,
+                                    icon: "warning"
+                                    });
+                                }
+                               })
+                        }
+                    })     
+            }
+        </script>
+        <script>
+            function handlSearch(tag) {
+                
+                let totalPages = document.getElementById("totalPages");
+                fetch(`/admin/searchProduct?search=${tag.value}`).then((res)=>res.json())
+                .then((res)=>{
+                    document.getElementById("sort").value = ""
+                    document.getElementById("filter").value = ""
+                    totalPages.value = res.totelPage 
+                    if(res.products.length == 0){
+                        document.getElementById("page").innerText=0
+                        document.getElementById("table").innerHTML=
+                    `
+                                       <tr>
+                                            <td colspan="3">Products Not Found</td>
+                                        </tr>
+                    `
+                    }else{
+                        document.getElementById("page").innerText = 1
+                        document.getElementById("table").innerHTML=
+                        res.products.map((product) => {
+                           return  `
+                            <tr>
+                                            <td>
+                                                <a href="/detailes?id=${product._id}">
+                                                    <img src="${product.image[0].secure_url}" class="img-sm img-thumbnail" alt="Item" /></td>
+                                                </a>
+                                                
+                                            
+                                            <td> ${product.name}</td>
+                                            <td>${product.categoryID.name }</td>
+                                            <td>Rs.${ product.Price }</td>
+                                            <td>${product.stock }</td>
+                                            <td>${product.Description }</td>
+                                            <td>
+                                                
+                                                <div class="col-lg-2 col-sm-2 col-4 col-action text-end">
+                                                    <a href="/admin/editProducts?_id=${product._id }" class="btn btn-sm font-sm rounded btn-brand"> <i class="material-icons md-edit"></i> Edit </a>
+                                                    <button class="btn btn-sm font-sm rounded text-white ${product.is_listed?"btn-success":"btn-danger"} " onclick="listProduct(this,'${product._id}')"> ${product.is_listed?"Unlist":"List"}  </button>
+                                                    </div>
+                                        </td>
+                                            
+                                        </tr>
+                           `
+                        }).join("");
+                       
+                    }
+     
+                })
+            }
+        </script>
+        <script>
+            function handlPage(action) {
+                let totalPages = document.getElementById("totalPages").value;
+                let page = document.getElementById("page")
+                const search = document.getElementById("search").value
+                const sort = document.getElementById("sort").value
+                const filter = document.getElementById("filter").value
+                 
+                   if(action == "increment" && page.innerText*1<totalPages){
+                    page.innerText++
+                    }else if(action == "decrement" && page.innerText>1){
+                    page.innerText--
+                    }else{
+                        return;
+                    }
+              
+                 
+                 fetch(`/admin/paginationProduct?search=${search}&&page=${page.innerText}&&sort=${sort}&&filter=${filter}`).then((res)=>res.json())
+                 .then((res)=>{
+                   
+                    if(res.products.length == 0){
+
+                    }else{
+                        document.getElementById("table").innerHTML=
+                        res.products.map((product) => {
+                           return  `
+                            <tr>
+                                <td>
+                                    <a href="/detailes?id=${product._id}">
+                                        <img src="${product.image[0].secure_url}" class="img-sm img-thumbnail" alt="Item" /></td>
+                                    </a>
+                                <td> ${product.name}</td>
+                                <td>${product.categoryID.name }</td>
+                                <td>Rs.${ product.Price }</td>
+                                <td>${product.stock }</td>
+                                <td>${product.Description }</td>
+                                <td>
+                                 <div class="col-lg-2 col-sm-2 col-4 col-action text-end">
+                                    <a href="/admin/editProducts?_id=${product._id }" class="btn btn-sm font-sm rounded btn-brand"> <i class="material-icons md-edit"></i> Edit </a>
+                                    <button class="btn btn-sm font-sm rounded text-white ${product.is_listed?"btn-success":"btn-danger"} " onclick="listProduct(this,'${product._id}')"> ${product.is_listed?"Unlist":"List"}  </button>
+                                    </div>
+                                 </td>
+                            </tr>
+                           `
+                        }).join("");
+                       
+                    }
+                 })
+            }
+        </script>
+        <script>
+            function filterAndsortProduct() {
+                 const sort = document.getElementById("sort").value
+                 const filter = document.getElementById("filter").value
+                 const search = document.getElementById("search").value
+                 let page = document.getElementById("page")
+                 let totalPages = document.getElementById("totalPages")
+                 fetch(`/admin/filterAndsortProduct?filter=${filter}&&search=${search}&&sort=${sort}`).then((res)=>res.json())
+                 .then((res)=>{
+                  
+                     totalPages.value = res.totelPage;
+                     if(res.products.length == 0){
+                        document.getElementById("page").innerText=0;
+                        document.getElementById("table").innerHTML=
+                                       `
+                                       <tr>
+                                            <td colspan="3">Products Not Found</td>
+                                        </tr>
+                                        `
+                     }else{
+                         document.getElementById("page").innerText=1;
+                         document.getElementById("table").innerHTML=
+                         res.products.map((product) => {
+                           return  `
+                            <tr>
+                                <td>
+                                    <a href="/detailes?id=${product._id}">
+                                        <img src="${product.image[0].secure_url}" class="img-sm img-thumbnail" alt="Item" /></td>
+                                    </a>
+                                <td> ${product.name}</td>
+                                <td>${product.categoryID.name }</td>
+                                <td>Rs.${ product.Price }</td>
+                                <td>${product.stock }</td>
+                                <td>${product.Description }</td>
+                                <td>
+                                 <div class="col-lg-2 col-sm-2 col-4 col-action text-end">
+                                    <a href="/admin/editProducts?_id=${product._id }" class="btn btn-sm font-sm rounded btn-brand"> <i class="material-icons md-edit"></i> Edit </a>
+                                    <button class="btn btn-sm font-sm rounded text-white ${product.is_listed?"btn-success":"btn-danger"} " onclick="listProduct(this,'${product._id}')"> ${product.is_listed?"Unlist":"List"}  </button>
+                                    </div>
+                                 </td>
+                            </tr>
+                           `
+                        }).join("");
+                     }
+                 });
             }
         </script>
         <script src="assets/js/vendors/jquery-3.6.0.min.js"></script>
@@ -369,7 +492,7 @@
         <script src="assets/js/vendors/select2.min.js"></script>
         <script src="assets/js/vendors/perfect-scrollbar.js"></script>
         <script src="assets/js/vendors/jquery.fullscreen.min.js"></script>
-        <!-- Main Script -->
+      
         <script src="assets/js/main.js" type="text/javascript"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     </body>

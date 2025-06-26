@@ -12,7 +12,7 @@ const fs = require('fs');
 const path = require('path');
 const ejs = require('ejs');
 const randomstring = require('randomstring');
-const { log } = require('console');
+
 
 const securePassword = async (password) => {
     try {
@@ -36,26 +36,23 @@ const adminLogin = async (req, res) => {
 
 const veryfyLogin = async (req, res) => {
     try {
-
-        const password = req.body.password
-        const email = req.body.email;
+        const {password,email} = req.body;
         const userData = await UserDb.findOne({ email: email });
 
-        if (userData) {
-            const passwordMatch = await bcrypt.compare(password, userData.password)
-            if (passwordMatch) {
-                if (userData.is_admin == 0) {
-                    res.render('adminLogin', { message: 'You Are Not Admin' });
-                } else {
-                    req.session.admin_id = userData._id;
-                    res.redirect('/admin/dashboard')
-                }
-            } else {
-                res.render('adminLogin', { message: "Incorrect Password" });
-            }
-        } else {
-            res.render('adminLogin', { message: "You are not registered" });
+        if(!userData){
+            return res.json({success:false,message: "You are not registered" })
         }
+        const passwordMatch = await bcrypt.compare(password, userData.password)
+        if(!passwordMatch){
+            return res.json({success:false, message: "Incorrect Password" })
+        }
+        if(userData.is_admin == 0){
+            return res.json({success:false, message: 'You Are Not Admin' })
+        }
+        req.session.admin_id = userData._id;
+        return res.json({success:true,message:"Login Success!."})
+        
+        
     } catch (error) {
         console.log(error.message)
 
@@ -65,48 +62,20 @@ const veryfyLogin = async (req, res) => {
 const viewUser = async (req, res) => {
     try {
 
-        var search = '';
-        if (req.query.search) {
-            search = req.query.search
-        }
-
-        let page;
-        if (req.query.page) {
-            page = req.query.page;
-        }
-      
+ 
          
-        const limit = 2;
+        const limit = 4;
 
-        const userData = await UserDb.find({
-            is_admin: false,
-            $or: [
-                { name: { $regex: '.*' + search + '.*', $options: 'i' } },
-                { email: { $regex: '.*' + search + '.*', $options: 'i' } },
-                { mobile: { $regex: '.*' + search + '.*', $options: 'i' } },
-
-            ]
-        }).limit(limit * 1)
-            .skip((page - 1) * limit)
-            .exec();
-
-
+        const userData = await UserDb.find({is_admin: false,}).limit(limit * 1)
 
         const count = await UserDb.find({
-            is_admin: false,
-            $or: [
-                { name: { $regex: '.*' + search + '.*', $options: 'i' } },
-                { email: { $regex: '.*' + search + '.*', $options: 'i' } },
-                { mobile: { $regex: '.*' + search + '.*', $options: 'i' } },
-
-            ]
+            is_admin: false
         }).countDocuments();
 
 
         res.render('usersList', {
             userData: userData,
             totalPages: Math.ceil(count / limit),
-            currentPage: page
         })
     } catch (error) {
         console.log(error.message)
@@ -186,13 +155,14 @@ const blockUser = async (req, res) => {
     try {
         const { userId } = req.query
 
-        const data = await UserDb.findOne({ _id: userId })
+        const data = await UserDb.findOne({ _id: userId });
+        if(!data){
+          return res.json({success:false,message:"User Not Found!."});
+        }
 
-        data.is_blocked = !data.is_blocked
-
-
-        data.save();
-        res.redirect("/admin/viewUser")
+        data.is_blocked = !data.is_blocked;
+        await data.save();
+        res.json({success:true})
 
     } catch (error) {
         console.log(error.message)
@@ -208,7 +178,6 @@ const loadaddUser = async (req, res) => {
         res.render('addUser')
     } catch (error) {
         console.log(error.message)
-
     }
 }
 
@@ -216,45 +185,37 @@ const loadaddUser = async (req, res) => {
 
 const addUser = async (req, res) => {
     try {
-
-        if (/^[A-Za-z]+(?:[A-Za-z]+)?$/.test(req.body.name)) {
-            if (/^[A-Za-z0-9.%+-]+@gmail\.com$/.test(req.body.email)) {
-                const emailCheck = await UserDb.findOne({ email: req.body.email });
-                if (!emailCheck) {
-                    const mobileLength = (req.body.mobile).length;
-                    if (mobileLength < 11) {
-                        const passwordLength = (req.body.password).length;
-                        if (passwordLength > 4) {
-                            const userData = new UserDb({
-                                name: req.body.name,
-                                email: req.body.email,
-                                password: req.body.password,
-                                mobile: req.body.mobile,
-
-                            });
-                            const user = await userData.save();
-                            if (user) {
-                                res.redirect('/admin/viewUser')
-                            } else {
-                                res.render('addUser', { message: "SOmthing Wrong..." });
-                            }
-                        } else {
-                            res.render('addUser', { message: "Password Is Note Strong" });
-                        }
-                    } else {
-                        res.render('addUser', { message: " Mobile Number Should be 10 Degits " });
-                    }
-
-                } else {
-                    res.render('addUser', { message: " User Already Exists" });
-                }
-            } else {
-                res.render('addUser', { message: " Please Check Your Email Structure" });
-            }
-        } else {
-            res.render('addUser', { message: " Invalid Name Provide" });
+      
+        const {email,password,name,mobile} = req.body;
+      
+        if(!/^[A-Za-z0-9.%+-]+@gmail\.com$/.test(email)){
+         return res.json({success:false,field:'email',message:"Invalid Email!."});
         }
 
+        if(!/^[A-Za-z]+(?:\s+[A-Za-z]+)*$/.test(name)){
+          return  res.json({success:false,field:'name',message:"Invalid Name!."});
+        }
+
+          const emailCheck = await UserDb.findOne({ email: req.body.email });
+          if(emailCheck){
+            return res.json({success:false,field:'email',message:"Email Already Registerd!."});
+          }
+          if(mobile.length >10){
+           return  res.json({success:false,field:'mobile',message:"Mobile number mustbe 10 digits numbes!."});
+          }
+          if (password.length < 8 || password.length > 20) {
+          return res.json({success:false,field:'password', message: "Password Should be in between 8 - 20" });
+          }
+          
+          const userData = new UserDb({
+               name: name,
+               email: email,
+               password: password,
+               mobile: mobile
+             });
+           await userData.save();
+           res.json({success:true,message:"User created Successfully!."});
+           return;
 
     } catch (error) {
         console.log(error.message)
@@ -263,6 +224,92 @@ const addUser = async (req, res) => {
 }
 
 
+const sortUser = async (req, res) => {
+    try {
+       const {sort,search} = req.query;
+       const limit = 4;
+       let totelPage = 0;
+       const query = {};
+
+    switch (sort) {
+        case "Email A - Z":
+        query.email = 1;
+        break;
+        case "Email Z - A":
+        query.email = -1;
+        break;
+        case "Name Z - A":
+        query.name = -1;
+        break;
+        case "Name A - Z":
+        query.name = 1;
+        break;
+        case "Old":
+        query.createdAt = 1;
+        break;
+        default:
+        query.createdAt = -1;
+        break;
+    }
+   
+       let users = await UserDb.find({$or: [{ name: { $regex: ".*" + search + ".*", $options: "i" } }]}).sort(query)
+       totelPage = Math.ceil(users.length/limit)
+       users = users.slice(0,limit)
+       return res.json({users,totelPage:totelPage});
+
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+const searchrUser = async (req, res) => {
+    try {
+        const {search} = req.query;
+        const limit = 4;
+        const count = await UserDb.find({$or: [{ name: { $regex: ".*" + search + ".*", $options: "i" } }]}).countDocuments()
+        const users = await UserDb.find({$or: [{ name: { $regex: ".*" + search + ".*", $options: "i" } }]}).limit(limit)
+         res.json({users,totelPage:Math.ceil(count/limit)});
+       
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+const userPagination = async (req, res) => {
+    try {
+        const { page,search,sort,} = req.query;
+        const limit = 4;
+
+        const query = {};
+
+    switch (sort) {
+        case "Email A - Z":
+        query.email = 1;
+        break;
+        case "Email Z - A":
+        query.email = -1;
+        break;
+        case "Name Z - A":
+        query.name = -1;
+        break;
+        case "Name A - Z":
+        query.name = 1;
+        break;
+        case "Old":
+        query.createdAt = 1;
+        break;
+        default:
+        query.createdAt = -1;
+        break;
+    }
+
+       
+        const users = await UserDb.find({ name: { $regex: ".*" + search + ".*", $options: "i" }}).skip((page*limit)-limit).limit(limit).sort(query)
+        res.json({users});
+
+       
+    } catch (error) {
+        console.log(error.message);
+    }
+}
 const adminLogout = async (req, res) => {
     try {
         req.session.destroy();
@@ -281,16 +328,8 @@ module.exports = {
     blockUser,
     loadaddUser,
     addUser,
-  
-   
+    sortUser,
+    userPagination,
+   searchrUser,
     adminLogout,
-    // test,
-    
-   
-
-
-    
-
-   
-
 }

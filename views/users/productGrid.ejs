@@ -37,7 +37,7 @@
 <body>
      <div id="product-grid" class="row" >
                 <%
-                if(productData.length > 0){                  
+                if(productData?.length > 0){                  
                         for(let i=0;i<productData.length;i++){
                             if(productData[i].is_listed===true){
                              if(productData[i].categoryID.is_listed===true){
@@ -51,25 +51,25 @@
                           
                            
                             <a href="/detailes?id=<%=productData[i]._id%>">
-                                <img src="/admin/assets/productImages/<%=productData[i].image[0]%>" alt="Product image" class="product-image">
+                                <img src="<%=productData[i].image[0].secure_url%>" alt="Product image" class="product-image">
                             </a>
    
                             <%if(offerData){
                                     const productName = productData[i].name;
                                     const productCategory = productData[i].categoryID.name;
-                                    const productOffer = offerData.find(offer => offer.iteam === productName);
-                                    const categoryOffer = offerData.find(offer => offer.iteam === productCategory);  
+                                    const productOffer = offerData?.find(offer => offer.iteam === productName);
+                                    const categoryOffer = offerData?.find(offer => offer.iteam === productCategory);  
 
                                     if(productOffer){%>
                                         <div class="product-countdown-container">
                                                <span class="product-contdown-title">offer ends in:</span>
-                                               <div class="product-contdown-title text-danger" data-until="2019, 10, 5" data-compact="true"><%=productOffer.validity%></div><!-- End .product-countdown -->
+                                               <div class="product-contdown-title text-danger" data-until="2019, 10, 5" data-compact="true"><%=productOffer?.validity%></div><!-- End .product-countdown -->
                                        </div><!-- End .product-countdown-container -->
                                     <%}else if(categoryOffer){
                                         %>
                                         <div class="product-countdown-container">
                                     <span class="product-contdown-title">offer ends in:</span>
-                                    <div class="product-contdown-title text-danger" data-until="2019, 10, 5" data-compact="true"><%=categoryOffer.validity%></div><!-- End .product-countdown -->
+                                    <div class="product-contdown-title text-danger" data-until="2019, 10, 5" data-compact="true"><%=categoryOffer?.validity%></div><!-- End .product-countdown -->
                             </div><!-- End .product-countdown-container -->
                                         <%
                                     }
@@ -80,7 +80,7 @@
                                 %>
                             <div class="product-action-vertical">
                                 <%
-                                    if(wishlistData.products.some((pro)=>pro.productId==productData[i]._id.toString())){
+                                    if(wishlistData?.products?.some((pro)=>pro.productId==productData[i]._id.toString())){
                                         %>
                                         <a id="wishlist<%=i%>" onclick="handlewishlist('<%=productData[i]._id%>','<%=i%>')" class="btn-product-icon btn-wishlist bg-danger btn-expandable"><span id="text<%=i%>">remove from wishlist</span></a>
                                         <%
@@ -99,8 +99,8 @@
                                 %>
                                 <%
                                 
-                                const cartProducts = new Map(cartData.products.map(product => [product.productId._id.toString(), true]));
-                                if(cartProducts.has(productData[i]._id.toString())){
+     
+                                if(cartData?.products?.some((pro)=>pro.productId._id==productData[i]._id.toString())){
                                     %>
                                     <div class="product-action">
                                       <a id="cartBtn" class="btn-product btn-cart"  onclick="handleCart('<%=productData[i]._id%>')"><span id="cart<%=productData[i]._id%>">remove from cart </span></a>
@@ -166,7 +166,7 @@
                             </div><!-- End .rating-container -->
                         </div><!-- End .product-footer -->
                     </div><!-- End .product -->
-                </div><!-- End .col-sm-6 col-lg-3 -->
+                </div>
 
                     <%
                             }          
@@ -206,12 +206,9 @@
               <script>
        function changePage(totel,status) {
             const sort = document.getElementById("size").value
-            
             const filter = document.getElementById("filter")?document.getElementById("filter").value:document.getElementById("header").innerText 
             let page = document.getElementById("currentPage").innerText*1
-            console.log(sort,"sort",filter,"filter",page,"page");
-            
-          
+  
            if(status == "increment" && page<totel){
              page++
             }else if(status == "decrement" && page>1){
@@ -224,10 +221,7 @@
             .then((res)=>{
                 document.getElementById("main").innerHTML=res
             })
-        //    fetch(`/changePage?page=${page}&&sort=${sort}`).then((res)=>res.json())
-        //    .then((res)=>{
-        //     console.log(res);
-        //    })
+  
        }    
     </script>
 </body>

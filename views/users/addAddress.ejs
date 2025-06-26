@@ -171,9 +171,7 @@
                         </button>
                     </div><!-- End .header-left -->
 
-                    <div class="header-right">
-                        <i class="la la-lightbulb-o"></i><p>Clearance Up to 30% Off</span></p>
-                    </div>
+                    
                 </div><!-- End .container -->
             </div><!-- End .header-bottom -->
         </header><!-- End .header -->
@@ -220,85 +218,52 @@
 		                			<h2 class="checkout-title">Billing Details</h2><!-- End .checkout-title -->
 		                				<div class="row">
 		                					<div class="col-sm-6">
-		                						<label>First Name *</label>
-                                                <% 
-                                                if(typeof message1!== "undefined"){
-                                                   %>
-                                                   <label style="color: white; color:red; text-align: center;"><%= message1 %> </label>
+		                						<label id="fnameLabel">Enter First Name *</label>
                                                 
-                                                   <%
-                                                }
-                                                %>
-		                						<input type="text" name="fname" class="form-control" >
+		                						<input id="fname" type="text" name="name" class="form-control" >
 		                					</div><!-- End .col-sm-6 -->
-
 		                					<div class="col-sm-6">
-		                						<label>Last Name *</label>
-                                                <% 
-                                        if(typeof message2!== "undefined"){
-                                           %>
-                                           <label style="color: white; color:red; text-align: center;"><%= message2 %> </label>
-                                        
-                                           <%
-                                        }
-                                        %>
-		                						<input type="text" name="lname" class="form-control" >
+		                						<label id="snameLabel">Enter Second Name *</label>
+                                                
+		                						<input id="sname" type="text" name="name" class="form-control" >
 		                					</div><!-- End .col-sm-6 -->
 		                				</div><!-- End .row -->
 
 	            						
 
-	            						<label>Country *</label>
-	            						<input type="text" class="form-control" name="country" >
+	            						<label id="countryLabel">Country *</label>
+	            						<input id="country" type="text" class="form-control" name="country" >
 
-	            						<label>Street address *</label>
-                                        <% 
-                                        if(typeof message3!== "undefined"){
-                                           %>
-                                           <label style="color: white; color:red; text-align: center;"><%= message3 %> </label>
-                                        
-                                           <%
-                                        }
-                                        %>
-	            						<input type="text" class="form-control" name="address" placeholder="House number and Street name" >
+	            						<label id="addressLabel">Street address *</label>
+	            						<input id="address" type="text" class="form-control" name="address" placeholder="House number and Street name" >
 	            						
 
 	            						<div class="row">
 		                					<div class="col-sm-6">
-		                						<label>Town / City *</label>
-		                						<input type="text" name="city" class="form-control" >
+		                						<label id="cityLabel">Town / City *</label>
+		                						<input id="city" type="text" name="city" class="form-control" >
 		                					</div><!-- End .col-sm-6 -->
 
 		                					<div class="col-sm-6">
-		                						<label>State / County *</label>
-		                						<input type="text" name="state" class="form-control" >
+		                						<label id="stateLabel">State / County *</label>
+		                						<input type="text" name="state" id="state" class="form-control" >
 		                					</div><!-- End .col-sm-6 -->
 		                				</div><!-- End .row -->
 
 		                				<div class="row">
 		                					<div class="col-sm-6">
-		                						<label>Postcode / ZIP *</label>
-		                						<input type="text" name="pincode" class="form-control" >
+		                						<label id="pincodeLabel">Postcode / ZIP *</label>
+		                						<input id="pincode" type="text" name="pincode" class="form-control" >
 		                					</div><!-- End .col-sm-6 -->
 
 		                					<div class="col-sm-6">
-		                						<label>Phone *</label>
-		                						<input type="tel" name="mobile" class="form-control" >
+		                						<label id="mobileLabel">Phone *</label>
+		                						<input id="mobile" type="tel" name="mobile" class="form-control" >
 		                					</div><!-- End .col-sm-6 -->
 		                				</div><!-- End .row -->
 
-	                					<label>Email address *</label>
-                                        <% 
-                                        if(typeof message4!== "undefined"){
-                                           %>
-                                           <label style="color: white; color:red; text-align: center;"><%= message4 %> </label>
-                                        
-                                           <%
-                                        }
-                                        %>
-	        							<input type="email" name="email" class="form-control" >
-
-                                        <button type="submit" class="btn btn-outline-primary-2 btn-order btn-block">Save Address</button>
+	                					
+                                        <button type="button" onclick="handleSubmit()" id="button" class="btn btn-outline-primary-2 btn-order btn-block">Save Address</button>
 	        							
 		                		</div>
 		                		
@@ -317,17 +282,6 @@
             
 
             <div class="mb-6"></div><!-- End .mb-6 -->
-             
-            
-            <nav class="portfolio-nav">
-                <ul class="nav-filter portfolio-filter justify-content-center">
-                    <li class="active"><a href="/home" data-filter="*">More Products</a></li>
-                </ul>
-            </nav><!-- End .portfolio-nav -->
-
-          
-
-           
         </main><!-- End .main -->
 
         <footer class="footer">
@@ -557,7 +511,126 @@
         </div>
     </div>
     <!-- Plugins JS File -->
-    
+    <script>
+        function handleSubmit() {
+           const button =   document.getElementById("button")
+           let fname =  document.getElementById("fname").value.trim();
+           let lname =  document.getElementById("sname").value.trim();
+           let country =  document.getElementById("country").value.trim();
+           let address =   document.getElementById("address").value.trim();
+           let city =   document.getElementById("city").value.trim();
+           let state =   document.getElementById("state").value.trim();
+           let pincode =   document.getElementById("pincode").value.trim();
+           let mobile =  document.getElementById("mobile").value.trim();
+          
+           const snameLabel =  document.getElementById("snameLabel")
+           const fnameLabel =  document.getElementById("fnameLabel")
+           const countryLabel =  document.getElementById("countryLabel")
+           const addressLabel =   document.getElementById("addressLabel")
+           const cityLabel =   document.getElementById("cityLabel")
+           const stateLabel =   document.getElementById("stateLabel")
+           const pincodeLabel =   document.getElementById("pincodeLabel")
+           const mobileLabel =  document.getElementById("mobileLabel")
+        
+           let error = false;
+
+           if(fname.length == 0 ){
+              fnameLabel.style.color = "red";
+              error = true;
+            }else{
+               fnameLabel.style.color = "";
+           }
+           if(lname.length == 0 ){
+              snameLabel.style.color = "red";
+              error = true;
+            }else{
+               snameLabel.style.color = "";
+           }
+
+           if(address.length == 0 ){
+              addressLabel.style.color = "red";
+              error = true;
+            }else{
+               addressLabel.style.color = "";
+           }
+
+           if(country.length == 0 ){
+              countryLabel.style.color = "red";
+              error = true;
+            }else{
+               countryLabel.style.color = "";
+           }
+
+           if(city.length == 0 ){
+              cityLabel.style.color = "red";
+              error = true;
+            }else{
+               cityLabel.style.color = "";
+           }
+           if(state.length == 0 ){
+              stateLabel.style.color = "red";
+              error = true;
+            }else{
+               stateLabel.style.color = "";
+           }
+
+           if(pincode.length == 0 ){
+              pincodeLabel.style.color = "red";
+              error = true;
+            }else{
+               pincodeLabel.style.color = "";
+           }
+
+           if(mobile.length == 0 ){
+              mobileLabel.style.color = "red";
+              error = true;
+            }else{
+               mobileLabel.style.color = "";
+           }
+
+         
+           
+           if(error){
+            Swal.fire({
+                                title:"Warning!.",
+                                text:"Please Provide All Information!.",
+                                icon: "warning",
+                            });
+                            return;
+           }
+
+
+           button.disabled = true;
+
+             Swal.fire({
+                title: "Do you want to save the changes?",
+                showCancelButton: true,
+                confirmButtonText: "Save",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        button.disabled = false;
+                        fetch("/addAddress",{method:"PATCH",body:JSON.stringify({fname,lname,country,address,city,pincode,state,mobile}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
+                        .then((res)=>{
+                            if(res.success){
+                              Swal.fire({
+                                title:"Success!.",
+                                text:res.message,
+                                icon: "success",
+                              });
+                              window.location.href ="/Addresses"
+                            }else{
+                              Swal.fire({
+                                title:"Warning!.",
+                                text:res.message,
+                                icon: "warning",
+                              });
+                            }
+                        })
+                    } 
+            });   
+        }
+    </script>
+     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/jquery.hoverIntent.min.js"></script>

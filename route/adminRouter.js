@@ -32,7 +32,16 @@ const storage = multer.diskStorage({
     }
 });
 
-const upload = multer({storage:storage});
+const imageFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files are allowed!'), false);
+  }
+};
+
+
+const upload = multer({storage:storage,fileFilter:imageFilter});
 
 
 adminRouter.set('views','./views/admin')
@@ -52,24 +61,34 @@ adminRouter.get('/viewUser',authadmin.loginAdmin,adminController.viewUser);
 adminRouter.get('/blockUser',authadmin.loginAdmin,adminController.blockUser);
 adminRouter.get('/addUser',authadmin.loginAdmin,adminController.loadaddUser)
 adminRouter.post('/addUser',adminController.addUser);
+adminRouter.get('/sortUser',adminController.sortUser);
+adminRouter.get('/searchrUser',adminController.searchrUser);
+adminRouter.get('/userPagination',adminController.userPagination);
 
 //################### products ##########################
 
 adminRouter.get('/viewProducts',authadmin.loginAdmin,productController.viewProducts)
 adminRouter.get('/addProducts',authadmin.loginAdmin,productController.loadaddProducts)
-adminRouter.post('/addProducts',upload.array('file'),productController.addProducts)
+adminRouter.post('/addProducts',upload.fields([{name:"file-upload0",maxCount:1},{name:"file-upload1",maxCount:1},{name:"file-upload2",maxCount:1},{name:"file-upload3",maxCount:1}]),productController.addProducts)
 adminRouter.get('/editProducts',authadmin.loginAdmin,productController.editProducts)
-adminRouter.post('/editProducts',upload.array('file'),productController.UpdateProducts)
-adminRouter.get('/listProducts',authadmin.loginAdmin,productController.listProduct);
+adminRouter.patch('/editProducts',upload.fields([{name:"file-upload0",maxCount:1},{name:"file-upload1",maxCount:1},{name:"file-upload2",maxCount:1},{name:"file-upload3",maxCount:1}]),productController.UpdateProducts)
+adminRouter.patch('/listProducts',authadmin.loginAdmin,productController.listProduct);
+adminRouter.get('/searchProduct',authadmin.loginAdmin,productController.searchProduct);
+adminRouter.get('/paginationProduct',authadmin.loginAdmin,productController.paginationProduct);
+adminRouter.get('/filterAndsortProduct',authadmin.loginAdmin,productController.filterAndsortProduct);
+
 
 //################### category ##########################
 
 adminRouter.get('/category',authadmin.loginAdmin,categoryController.category)
+adminRouter.patch('/category',authadmin.loginAdmin,categoryController.listcategory)
 adminRouter.get('/addcategory',authadmin.loginAdmin,categoryController.loadaddcategory) 
 adminRouter.post('/addcategory',categoryController.addcategory) 
 adminRouter.get('/editCategory',authadmin.loginAdmin,categoryController.loadeditcategory)
-adminRouter.post('/editCategory',categoryController.editcategory);
-adminRouter.get('/listCategory',authadmin.loginAdmin,categoryController.listcategory)
+adminRouter.patch('/editCategory',authadmin.loginAdmin,categoryController.editcategory);
+adminRouter.get('/searchCategory',authadmin.loginAdmin,categoryController.searchCategory);
+adminRouter.get('/filterAndsortCategory',authadmin.loginAdmin,categoryController.filterAndsortCategory);
+adminRouter.get('/categoryPagination',authadmin.loginAdmin,categoryController.categoryPagination);
 
 //################### order ##########################
 
@@ -78,22 +97,33 @@ adminRouter.get('/viewOrder',authadmin.loginAdmin,orderController.viewOrders)
 adminRouter.get('/orderDetailes',authadmin.loginAdmin,orderController.orderDetailes)
 adminRouter.get('/cancelOrder',authadmin.loginAdmin,orderController.cancelOrder)
 adminRouter.get('/orderStatus',authadmin.loginAdmin,orderController.orderStatus)
+adminRouter.get('/filterAndsortOrders',authadmin.loginAdmin,orderController.filterAndsortOrders)
+adminRouter.get('/ordersPagination',authadmin.loginAdmin,orderController.paginationOrders)
+adminRouter.get('/searchOrders',authadmin.loginAdmin,orderController.searchOrders)
 
 //############### cuppen #######################################
 
-adminRouter.get('/coupens',authadmin.loginAdmin,couponController.coupens)
-adminRouter.get('/addCuppen',authadmin.loginAdmin,couponController.loadaddCuppen)
-adminRouter.post('/addCuppen',upload.single('file'),authadmin.loginAdmin,couponController.addCuppen)
-adminRouter.get('/editCoupen',authadmin.loginAdmin,couponController.loadeditCuppen)
-adminRouter.post('/editCoupen',upload.single('file'),authadmin.loginAdmin,couponController.editCuppen)
-adminRouter.get('/deleteCoupen',authadmin.loginAdmin,couponController.deleteCoupen)
+adminRouter.get('/coupons',authadmin.loginAdmin,couponController.coupons)
+adminRouter.get('/addCoupon',authadmin.loginAdmin,couponController.loadaddCoupons)
+adminRouter.post('/addCoupon',upload.single('file'),authadmin.loginAdmin,couponController.addCuppen)
+adminRouter.get('/editCoupon',authadmin.loginAdmin,couponController.loadeditCuppen)
+adminRouter.patch('/editCoupon',upload.single('file'),authadmin.loginAdmin,couponController.editCuppen)
+adminRouter.delete('/coupon',authadmin.loginAdmin,couponController.deleteCoupen)
+adminRouter.get('/searchCoupon',authadmin.loginAdmin,couponController.searchCoupon)
+adminRouter.get('/filterAndsortCoupon',authadmin.loginAdmin,couponController.filterAndsortCoupon)
+adminRouter.get('/couponPagination',authadmin.loginAdmin,couponController.couponPagination)
 
 //############# addOffer #################################
 
 adminRouter.get('/offer',authadmin.loginAdmin,offerController.offer)
 adminRouter.get('/addOffer',authadmin.loginAdmin,offerController.loadaddOffer)
 adminRouter.post('/addOffer',offerController.verifyOffer)
-adminRouter.get('/deleteOffer',authadmin.loginAdmin,offerController.deleteOffer)
+adminRouter.delete('/offer',authadmin.loginAdmin,offerController.deleteOffer)
+adminRouter.get('/selectOffer',authadmin.loginAdmin,offerController.selectOffer)
+adminRouter.get('/referalOffer',authadmin.loginAdmin,offerController.referalOffer)
+adminRouter.post('/referalOffer',authadmin.loginAdmin,offerController.createReferalOffer)
+adminRouter.patch('/referalOffer',authadmin.loginAdmin,offerController.editReferalOffer)
+adminRouter.delete('/referalOffer',authadmin.loginAdmin,offerController.deleteReferalOffer)
 
 // ###########  Report #################################
 

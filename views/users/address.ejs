@@ -180,11 +180,8 @@
                 </div><!-- End .container -->
             </div><!-- End .header-bottom -->
         </header><!-- End .header -->
-      <div class="col-6">
 
         <main class="main">
-           
-          
             <div class="page-content">
             	<div class="dashboard">
 	                <div class="container">
@@ -234,7 +231,7 @@
 														<%=addressData.address[i].city%>, <%=addressData.address[i].pincode%><br>
 														<%=addressData.address[i].mobile%><br>
 														<%=addressData.address[i].email%><br>
-														<a href="/editAddress?id=<%= addressData.address[i]._id %>">Edit <i class="icon-edit"></i></a>
+														<a href="/editAddress?_id=<%= addressData.address[i]._id %>">Edit <i class="icon-edit"></i></a>
                                                         <button class="btn-danger"  onclick="deleteAddress('<%=addressData.address[i]._id%>')" >Delete <i class="icon-close"></i></button></p>
                                                     <%
                                                     }
@@ -245,32 +242,36 @@
                                                   }
                                                   %>
 														
-                                    </div><!-- .End .tab-pane -->
+                                    </div>
 								</div>
-	                		</div><!-- End .col-lg-9 -->
-	                	</div><!-- End .row -->
-	                </div><!-- End .container -->
-                </div><!-- End .dashboard -->
-            </div><!-- End .page-content -->
-         
-          
-            
+	                		</div>
+	                	</div>
+	                </div>
+                </div>
+            </div> 
+             <nav class="portfolio-nav">
+                <ul class="nav-filter portfolio-filter justify-content-center">
+                    <div class="pagination-area mt-5 mb-50">
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination justify-content-start">
+                            <li class="page-item" onclick="changePage('decrement')">
+                                <a class="page-link cursor-pointer"><</a>
+                            </li>
+                       
+                            <li class="page-item active"><a class="page-link" id="currentPage" >1</a></li>
+                            <li class="page-item"><a class="page-link dot">...</a></li>
+                            <li class="page-item"><a class="page-link" id="totalPage" ><%=totalPage%></a></li>
+                            <li class="page-item"  onclick="changePage('increment')">
+                                <a class="page-link cursor-pointer">></a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                </ul>
+            </nav> 
+        </main>
 
-       
-
-       
-              
-            
-        </div><!-- End .bg-lighter pt-5 pb-5 -->
-
-        
-
-       
-       
-    </main><!-- End .main -->
-
-      </div>
-        
+   
         <footer class="footer">
             <div class="footer-middle">
                 <div class="container">
@@ -410,6 +411,54 @@
            
         }
     </script>
+
+    <script>
+       
+        function changePage(status) {
+            let currentPage = document.getElementById("currentPage").innerText*1
+            const totalPage = document.getElementById("totalPage").innerText*1
+            console.log(currentPage,totalPage);
+            
+           if(status == "increment" && currentPage<totalPage){
+             currentPage++
+            }else if(status == "decrement" && currentPage>1){
+               currentPage--
+           }else{
+            return;
+           }
+           document.getElementById("currentPage").innerText=`${currentPage}`;
+             fetch(`/paginationAddress?page=${currentPage}`,{method:"GET"}).then((res)=>res.json())
+            .then((res)=>{
+             
+                 if(res.addressData.length == 0){
+                      document.getElementById("table").innerHTML= `
+                       <tr>
+                        <td>
+                            No AddresS
+                        </td>
+                       </tr>
+                      `
+                 }else{
+                   document.getElementById("table").innerHTML=  res.addressData.map((address,i)=>{
+
+               return `
+                   <p id="address${address._id}">${address.fname}${address.lname}<br>
+                   ${address.address}<br>
+                    ${address.country}<br>
+					${address.state}<br>
+					${address.city}, ${address.pincode}<br>
+					${address.mobile}<br>
+					${address.email}<br>
+					<a href="/editAddress?_id=${address._id}">Edit <i class="icon-edit"></i></a>
+                    <button class="btn-danger"  onclick="deleteAddress('${address._id}')" >Delete <i class="icon-close"></i></button></p>
+                `
+                }).join("")
+            }     
+          })
+       }    
+    
+    </script>
+
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/jquery.hoverIntent.min.js"></script>

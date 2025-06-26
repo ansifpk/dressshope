@@ -19,6 +19,8 @@ app.set("views",'./views/layout');
 
 app.use(nocahe())
 app.use(flash());
+app.use(express.json());
+app.use(express.urlencoded({extended:true}));
 app.use(express.static(path.join(__dirname,"public")));
 app.use(express.static(path.join(__dirname,"public/assets")));
 // for user route 

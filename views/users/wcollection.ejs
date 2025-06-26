@@ -27,13 +27,13 @@
                     <div class="header-left">
                         <div class="header-search header-search-extended header-search-visible d-none d-lg-block">
                             <a href="#" class="search-toggle" role="button"><i class="icon-search"></i></a>
-                            <form action="#" method="get">
+                            <div >
                                 <div class="header-search-wrapper search-wrapper-wide">
                                     <label for="q" class="sr-only">Search</label>
-                                    <button class="btn btn-primary" type="submit"><i class="icon-search"></i></button>
-                                    <input type="search" class="form-control" name="search" id="q" placeholder="Search product ..." required>
+                                    <button class="btn btn-primary" type="button"><i class="icon-search"></i></button>
+                                    <input type="search" class="form-control" oninput="search(this)" id="search"  placeholder="Search product ..." required>
                                 </div><!-- End .header-search-wrapper -->
-                            </form>
+                            </div>
                         </div><!-- End .header-search -->
                     </div>
                     <div class="header-center">
@@ -127,7 +127,9 @@
                             
                             <div class="select-custom">
                                 <select name="sort" id="size" onchange="filteringAndSort()" class="form-control">
-                                     <option >Defult Sort</option>
+                                    <option >Defult Sort</option>
+                                    <option >New</option>
+                                    <option >Old</option>
                                     <option >Sort by Price: low to high</option>
                                     <option >Sort by Price: high to low</option>
                                     <option >Sort by Name : A-Z</option>
@@ -146,8 +148,171 @@
                     <li class="active"><h3>WOMEN</h3></li>
                 </ul>
             </nav><!-- End .portfolio-nav -->
-        <main class="main">
-            <%- include('../users/productGrid', { productData, offerData, wishlistData, cartData,totalPage }) %>          
+        <main id="main" class="main">
+             <div id="product-grid" class="row" >
+                <%
+                if(productData?.length > 0){                  
+                        for(let i=0;i<productData.length;i++){
+                          
+                             if(productData[i].categoryID.is_listed===true){
+                                %>
+                    <div class="col-6 col-md-4 col-lg-3">
+                       <div class="product product-3">
+                        <figure class="product-media">
+                            <span class="product-label">
+                              <%= productData[i].stock > 0 ? "Sale" : "Out of Stock" %>
+                            </span>
+                            <a href="/detailes?id=<%=productData[i]._id%>">
+                                <img src="<%=productData[i].image[0].secure_url%>" alt="Product image" class="product-image">
+                            </a>
+   
+                            <%if(offerData){
+                                    const productName = productData[i].name;
+                                    const productCategory = productData[i].categoryID.name;
+                                    const productOffer = offerData?.find(offer => offer.iteam === productName);
+                                    const categoryOffer = offerData?.find(offer => offer.iteam === productCategory);  
+
+                                    if(productOffer){%>
+                                        <div class="product-countdown-container">
+                                               <span class="product-contdown-title">offer ends in:</span>
+                                               <div class="product-contdown-title text-danger" data-until="2019, 10, 5" data-compact="true"><%=productOffer?.validity%></div><!-- End .product-countdown -->
+                                       </div><!-- End .product-countdown-container -->
+                                    <%}else if(categoryOffer){
+                                        %>
+                                        <div class="product-countdown-container">
+                                    <span class="product-contdown-title">offer ends in:</span>
+                                    <div class="product-contdown-title text-danger" data-until="2019, 10, 5" data-compact="true"><%=categoryOffer?.validity%></div><!-- End .product-countdown -->
+                            </div><!-- End .product-countdown-container -->
+                                        <%
+                                    }
+                                    else{%>
+                                        
+                                    <%}
+                                }
+                                %>
+                            <div class="product-action-vertical">
+                                <%
+                                    if(wishlistData?.products?.some((pro)=>pro.productId==productData[i]._id.toString())){
+                                        %>
+                                        <a id="wishlist<%=i%>" onclick="handlewishlist('<%=productData[i]._id%>','<%=i%>')" class="btn-product-icon btn-wishlist bg-danger btn-expandable"><span id="text<%=i%>">remove from wishlist</span></a>
+                                        <%
+                                    }else{
+                                        %>
+                                        <a id="wishlist<%=i%>" onclick="handlewishlist('<%=productData[i]._id%>','<%=i%>')" class="btn-product-icon btn-wishlist btn-expandable"><span id="text<%=i%>">add to wishlist</span></a>
+                                        <%
+                                    } %>
+                            </div>
+                        </figure>
+
+                        <div class="product-body">
+                            <%
+                            if(productData[i].stock>0){
+                                %>
+                                <%
+                                
+     
+                                if(cartData?.products?.some((pro)=>pro.productId._id==productData[i]._id.toString())){
+                                    %>
+                                    <div class="product-action">
+                                      <a id="cartBtn" class="btn-product btn-cart"  onclick="handleCart('<%=productData[i]._id%>')"><span id="cart<%=productData[i]._id%>">remove from cart </span></a>
+                                    </div>
+                                    <%
+                                }else{
+                                    %>
+                                    <div class="product-action">
+                                      <a  class="btn-product btn-cart"  onclick="handleCart('<%=productData[i]._id%>')"><span id="cart<%=productData[i]._id%>">add to cart </span></a>
+                                    </div>
+                                    <%
+                                }
+                              
+                                %>
+                                <%
+                            }else{
+                                %>
+                                <div class="product-action">
+                                <a  class="btn-product btn-cart" ><span>Out of stock</span></a>
+                               
+                            </div><!-- End .product-action -->
+                                <%
+                            }
+                            %>
+                           
+                            <div class="product-cat">
+                                <a href=""><%=productData[i].categoryID.name%></a>
+                            </div><!-- End .product-cat -->
+                            <h3 class="product-title"><a href="/detailes"><%=productData[i].name%></a></h3><!-- End .product-title -->
+                            <div class="product-price">
+                                <%if(offerData){
+                                    const productName = productData[i].name;
+                                    const productCategory = productData[i].categoryID.name;
+                                    const productOffer = offerData.find(offer => offer.iteam === productName);
+                                    const categoryOffer = offerData.find(offer => offer.iteam === productCategory);  
+
+                                    if(productOffer){%>
+                                       
+                                        <span class="new-price">Rs.<%=productData[i].Price-Math.round(productData[i].Price*productOffer.offerRate/100)%>.00</span>
+                                        <span class="old-price">Rs.<%=productData[i].Price%>.00</span>
+                                    <%}else if(categoryOffer){
+                                        %>
+                                        <span class="new-price">Rs.<%=productData[i].Price-Math.round(productData[i].Price*categoryOffer.offerRate/100)%>.00</span>
+                                        <span class="old-price">Rs.<%=productData[i].Price%>.00</span>
+                                        <%
+                                    }
+                                    else{%>
+                                        <span class="new-price">Rs.<%=productData[i].Price%>.00</span>
+                                    <%}
+                                }else{%> 
+                                        <span class="new-price">Rs.<%=productData[i].Price%>.00</span><%
+                                }%>
+                               
+                            </div><!-- End .product-price -->
+                        </div><!-- End .product-body -->
+
+                        <div class="product-footer">
+                            <div class="ratings-container">
+                                <div class="ratings">
+                                    <div class="ratings-val" style="width: 40%;"></div><!-- End .ratings-val -->
+                                </div><!-- End .ratings -->
+                                <span class="ratings-text">( 4 Reviews )</span>
+                            </div><!-- End .rating-container -->
+                        </div><!-- End .product-footer -->
+                    </div><!-- End .product -->
+                </div>
+
+                    <%
+                            }          
+                    
+                }
+                  
+                }else{
+                    %>
+                    <div class="col-12 items-center">
+                        <p class="text-center items-center underline">No Products Available</p>
+                    </div>
+                    <%
+                }
+
+                %>     
+            </div>  
+            <nav class="portfolio-nav">
+                <ul class="nav-filter portfolio-filter justify-content-center">
+                    <div class="pagination-area mt-5 mb-50">
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination justify-content-start">
+                            <li class="page-item" onclick="changePage('decrement')">
+                                <a class="page-link "><</a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" id="currentPage" >1</a></li>
+                            <li class="page-item"><a class="page-link dot">...</a></li>
+                            <li class="page-item"><a id="totalPage" class="page-link" ><%=totalPage%></a></li>
+                            <li class="page-item"  onclick="changePage('increment')">
+                                <a class="page-link cursor-pointer">></a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                </ul>
+            </nav> 
         </main><!-- End .main -->
 
         <footer class="footer">
@@ -505,68 +670,443 @@
             </div>
         </div>
     </div>
-    <!-- Plugins JS File -->
+   
     <script>
         async function handleCart(productId){
-const response = await fetch(`/cart?productId=${productId}`,{method:"PATCH",body:JSON.stringify({quantity:1}),headers:{"Content-Type": "application/json"}});
-const res = await response.json();
-if(res.success){
-  if(res.added){
-     Swal.fire("Product added to your Cart!");
-     document.getElementById(`cart${productId}`).innerText="remove from cart";
-     document.getElementById('cart-count').innerText=`${res.count}`;
-     document.getElementById('cart-txt').innerText=`Rs.${res.totel}.00`;
-  }else if(res.removed){
-     Swal.fire("Product removed from your Cart!");
-     document.getElementById(`cart${productId}`).innerText="add to cart";
-     document.getElementById('cart-count').innerText=`${res.count}`;
-     document.getElementById('cart-txt').innerText=`Rs.${res.totel}.00`;
-  }
-}else{
- Swal.fire(res.message);
-}
-}
+            const response = await fetch(`/cart?productId=${productId}`,{method:"PATCH",body:JSON.stringify({quantity:1}),headers:{"Content-Type": "application/json"}}).then((res)=>{
+                 if(res.status == 401){
+                    Swal.fire({
+                    title:"Please Login!.",
+                    icon: "warning",
+                    draggable: true
+                    });
+                    window.location.href = "/"
+                    return;
+                }else{
+                   return res.json();
+                }
+            }).then((res)=>{
+                if(res.success){
+                    if(res.added){
+                        Swal.fire("Product added to your Cart!");
+                        document.getElementById(`cart${productId}`).innerText="remove from cart";
+                        document.getElementById('cart-count').innerText=`${res.count}`;
+                        document.getElementById('cart-txt').innerText=`Rs.${res.totel}.00`;
+                    }else if(res.removed){
+                        Swal.fire("Product removed from your Cart!");
+                        document.getElementById(`cart${productId}`).innerText="add to cart";
+                        document.getElementById('cart-count').innerText=`${res.count}`;
+                        document.getElementById('cart-txt').innerText=`Rs.${res.totel}.00`;
+                    }
+                }else{
+                   Swal.fire(res.message);
+                }
+            })
+        }
 
     function handlewishlist(productId,num){
               
-            fetch(`/wishlist?productId=${productId}`,{method:"PATCH"}).then(res=>res.json())
-            .then(data=>{
-                console.log(data)
-                if(data.added){
-                    
-                    const wishlist = document.getElementById(`wishlist${num}`);
-                    const text = document.getElementById(`text${num}`);
-                    wishlist.style.backgroundColor="red";
-                    text.innerText="remove from wishlist"
-                    document.getElementById("wishlist-count").innerText=`${data.totelProducts}`
-                    Swal.fire("Product added to your wishlist!");
-
-                }else if(data.removed){
-                   
-                    const wishlist2 = document.getElementById(`wishlist${num}`);
-                    const text2 = document.getElementById(`text${num}`);
-                    document.getElementById("wishlist-count").innerText=`${data.totelProducts}`
-                 
-                    wishlist2.style.backgroundColor="white";
-                    text2.innerText="add to wishlist";
-                    Swal.fire("Product removed to your wishlist!");
-                   
+           fetch(`/wishlist?productId=${productId}`,{method:"PATCH",headers:{"Content-Type":"application/json"}}).then((res)=>{
+               
+                 if(res.status == 401){
+                    Swal.fire({
+                    title:"Please Login!.",
+                    icon: "warning",
+                    draggable: true
+                    });
+                    window.location.href = "/"
+                    return;
                 }else{
-                  console.log("no")
-                } 
+                   return res.json();
+                }
+            })
+            .then(data=>{
+
+                if(data.success){
+                    if(data.added){
+                        
+                        const wishlist = document.getElementById(`wishlist${num}`);
+                        const text = document.getElementById(`text${num}`);
+                        wishlist.style.backgroundColor="red";
+                        text.innerText="remove from wishlist"
+                        document.getElementById("wishlist-count").innerText=`${data.totelProducts}`
+                        Swal.fire("Product added to your wishlist!");
+
+                    }else if(data.removed){
+                    
+                        const wishlist2 = document.getElementById(`wishlist${num}`);
+                        const text2 = document.getElementById(`text${num}`);
+                        document.getElementById("wishlist-count").innerText=`${data.totelProducts}`
+                    
+                        wishlist2.style.backgroundColor="white";
+                        text2.innerText="add to wishlist";
+                        Swal.fire("Product removed to your wishlist!");
+                    
+                    }else{
+                     Swal.fire(data.message);
+                    } 
+                }else{
+
+                }
             });    
         }
     </script>
-     <script>
+    <script>
        function filteringAndSort(){
-     
          const sort = document.getElementById("size").value
-      
-         fetch(`/sort?sort=${sort}&&filter=WOMEN`,{method:"GET"}).then((res)=>res.text())
+         const search = document.getElementById("search").value
+         const page = document.getElementById("currentPage")
+         const totalPage = document.getElementById("totalPage")
+         fetch(`/sort?sort=${sort}&&filter=WOMEN&&search=${search}`,{method:"GET"}).then((res)=>res.json())
          .then((res)=>{
-            document.getElementById("main").innerHTML=res
+
+            totalPage.value = res.totalPage
+            page.innerText = 1
+            document.getElementById("product-grid").innerHTML=  res.productData
+            .filter((product)=>product.categoryID.is_listed == true)
+            .map((product,i)=>{
+                
+                const productName = product.name
+                const productCategory = product.categoryID.name
+                const productOffer = res.offerData.find(offer => offer.iteam === productName);
+                const categoryOffer = res.offerData.find(offer => offer.iteam === productCategory);  
+               
+               return `
+                 <div class="col-6 col-md-4 col-lg-3">
+                       <div class="product product-3">
+                        <figure class="product-media">
+                            <span class="product-label">
+                             ${product.stock> 0 ? "Sale" : "Out of Stock" } 
+                            </span>
+                            <a href="/detailes?id=${product._id }">
+                                <img src="${product.image[0].secure_url}" alt="Product image" class="product-image">
+                            </a>
+                            
+                            ${res.offerData?
+                              productOffer?
+                               ` <div class="product-countdown-container">
+                                               <span class="product-contdown-title">offer ends in:</span>
+                                               <div class="product-contdown-title text-danger" data-until="2019, 10, 5" data-compact="true">${productOffer?.validity}</div><!-- End .product-countdown -->
+                                 </div>`
+                              :
+                              categoryOffer?
+                              `
+                               <div class="product-countdown-container">
+                                    <span class="product-contdown-title">offer ends in:</span>
+                                    <div class="product-contdown-title text-danger" data-until="2019, 10, 5" data-compact="true">${categoryOffer?.validity}</div><!-- End .product-countdown -->
+                               </div>
+                              `
+                              :""
+                            :
+                            ""
+                            }
+                           
+                            <div class="product-action-vertical">
+                                ${res.wishlistData?.products?.some((pro)=>pro.productId==product._id.toString())?
+                            `<a id="wishlist${i}" onclick="handlewishlist('${product._id}','${i}')" class="btn-product-icon btn-wishlist bg-danger btn-expandable"><span id="text${i}">remove from wishlist</span></a>`
+                            :
+                            `<a id="wishlist${i}" onclick="handlewishlist('${product._id},'${i}')" class="btn-product-icon btn-wishlist btn-expandable"><span id="text${i}">add to wishlist</span></a>`
+                            }     
+                            </div>
+                        </figure>
+
+                             <div class="product-body">
+                               ${product.stock>0?
+                                 res.cartData?.products?.some((pro)=>pro.productId._id==product._id.toString())?
+                                 `<div class="product-action">
+                                      <a id="cartBtn" class="btn-product btn-cart"  onclick="handleCart('${product._id}')"><span id="cart${product._id}">remove from cart </span></a>
+                                 </div>`
+                                 :
+                                 `<div class="product-action">
+                                      <a  class="btn-product btn-cart"  onclick="handleCart('${product._id}')"><span id="cart${product._id}">add to cart </span></a>
+                                  </div>`
+                                :
+                                `<div class="product-action">
+                                   <a  class="btn-product btn-cart" ><span>Out of stock</span></a>
+                                 </div>`
+                                }
+                           
+                            <div class="product-cat">
+                                <a href="">${product.categoryID.name}</a>
+                            </div>
+
+                            <h3 class="product-title"><a href="/detailes">${product.name}</a></h3><!-- End .product-title -->
+                            <div class="product-price">
+                                ${res.offerData?
+                                 productOffer?
+                                 `
+                                  <span class="new-price">Rs.${product.Price-Math.round(product.Price*productOffer.offerRate/100)}.00</span>
+                                  <span class="old-price">Rs.${product.Price}.00</span>`
+                                 :
+                                 categoryOffer?
+                                 `<span class="new-price">Rs.${product.Price-Math.round(product.Price*categoryOffer.offerRate/100)}.00</span>
+                                  <span class="old-price">Rs.${product.Price}.00</span>`
+                                 : 
+                                 `<span class="new-price">Rs.${product.Price}.00</span>`
+                                :
+                                ` <span class="new-price">Rs.${product.Price}.00</span>`
+                                }
+                               
+                            </div>
+                        </div>
+
+                        <div class="product-footer">
+                            <div class="ratings-container">
+                                <div class="ratings">
+                                    <div class="ratings-val" style="width: 40%;"></div><!-- End .ratings-val -->
+                                </div><!-- End .ratings -->
+                                <span class="ratings-text">( 4 Reviews )</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+               `
+            }).join("")
          })
        }
+    </script>
+    <script>
+       function changePage(status) {
+            const sort = document.getElementById("size").value
+            const search = document.getElementById("search").value
+            let currentPage = document.getElementById("currentPage").innerText*1
+            let totalPage = document.getElementById("totalPage").innerText*1
+             
+             
+           if(status == "increment" && currentPage<totalPage){
+             currentPage++
+            }else if(status == "decrement" && currentPage>1){
+               currentPage--
+           }else{
+            return;
+           }
+           document.getElementById("currentPage").innerText=`${currentPage}`;
+             fetch(`/paginationProduct?sort=${sort}&&filter=WOMEN&&page=${currentPage}&&search=${search}`,{method:"GET"}).then((res)=>res.json())
+            .then((res)=>{
+               
+                 document.getElementById("product-grid").innerHTML=  res.productData.map((product,i)=>{
+                
+                const productName = product.name
+                const productCategory = product.categoryID.name
+                const productOffer = res.offerData.find(offer => offer.iteam === productName);
+                const categoryOffer = res.offerData.find(offer => offer.iteam === productCategory);  
+               
+               return `
+                 <div class="col-6 col-md-4 col-lg-3">
+                       <div class="product product-3">
+                        <figure class="product-media">
+                            <span class="product-label">
+                             ${product.stock> 0 ? "Sale" : "Out of Stock" } 
+                            </span>
+                            <a href="/detailes?id=${product._id }">
+                                <img src="${product.image[0].secure_url}" alt="Product image" class="product-image">
+                            </a>
+                            
+                            ${res.offerData?
+                              productOffer?
+                               ` <div class="product-countdown-container">
+                                               <span class="product-contdown-title">offer ends in:</span>
+                                               <div class="product-contdown-title text-danger" data-until="2019, 10, 5" data-compact="true">${productOffer?.validity}</div><!-- End .product-countdown -->
+                                 </div>`
+                              :
+                              categoryOffer?
+                              `
+                               <div class="product-countdown-container">
+                                    <span class="product-contdown-title">offer ends in:</span>
+                                    <div class="product-contdown-title text-danger" data-until="2019, 10, 5" data-compact="true">${categoryOffer?.validity}</div><!-- End .product-countdown -->
+                               </div>
+                              `
+                              :""
+                            :
+                            ""
+                            }
+                           
+                            <div class="product-action-vertical">
+                                ${res.wishlistData?.products?.some((pro)=>pro.productId==product._id.toString())?
+                            `<a id="wishlist${i}" onclick="handlewishlist('${product._id}','${i}')" class="btn-product-icon btn-wishlist bg-danger btn-expandable"><span id="text${i}">remove from wishlist</span></a>`
+                            :
+                            `<a id="wishlist${i}" onclick="handlewishlist('${product._id},'${i}')" class="btn-product-icon btn-wishlist btn-expandable"><span id="text${i}">add to wishlist</span></a>`
+                            }     
+                            </div>
+                        </figure>
+
+                             <div class="product-body">
+                               ${product.stock>0?
+                                 res.cartData?.products?.some((pro)=>pro.productId._id==product._id.toString())?
+                                 `<div class="product-action">
+                                      <a id="cartBtn" class="btn-product btn-cart"  onclick="handleCart('${product._id}')"><span id="cart${product._id}">remove from cart </span></a>
+                                 </div>`
+                                 :
+                                 `<div class="product-action">
+                                      <a  class="btn-product btn-cart"  onclick="handleCart('${product._id}')"><span id="cart${product._id}">add to cart </span></a>
+                                  </div>`
+                                :
+                                `<div class="product-action">
+                                   <a  class="btn-product btn-cart" ><span>Out of stock</span></a>
+                                 </div>`
+                                }
+                           
+                            <div class="product-cat">
+                                <a href="">${product.categoryID.name}</a>
+                            </div>
+
+                            <h3 class="product-title"><a href="/detailes">${product.name}</a></h3><!-- End .product-title -->
+                            <div class="product-price">
+                                ${res.offerData?
+                                 productOffer?
+                                 `
+                                  <span class="new-price">Rs.${product.Price-Math.round(product.Price*productOffer.offerRate/100)}.00</span>
+                                  <span class="old-price">Rs.${product.Price}.00</span>`
+                                 :
+                                 categoryOffer?
+                                 `<span class="new-price">Rs.${product.Price-Math.round(product.Price*categoryOffer.offerRate/100)}.00</span>
+                                  <span class="old-price">Rs.${product.Price}.00</span>`
+                                 : 
+                                 `<span class="new-price">Rs.${product.Price}.00</span>`
+                                :
+                                ` <span class="new-price">Rs.${product.Price}.00</span>`
+                                }
+                               
+                            </div>
+                        </div>
+
+                        <div class="product-footer">
+                            <div class="ratings-container">
+                                <div class="ratings">
+                                    <div class="ratings-val" style="width: 40%;"></div><!-- End .ratings-val -->
+                                </div><!-- End .ratings -->
+                                <span class="ratings-text">( 4 Reviews )</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+               `
+            }).join("")
+         
+               
+            })
+  
+       }    
+    </script>
+     <script>
+        function search(tag) {
+            
+            const totalPage = document.getElementById("totalPage")
+            const currentPage = document.getElementById("currentPage")
+            
+            fetch(`/searchProduct?search=${tag.value}&&filter=WOMEN`).then((res)=>res.json())
+            .then((res)=>{
+                 if(res.productData.length == 0){
+                 currentPage.innerText = 0
+               totalPage.innerText = 0
+                  document.getElementById("product-grid").innerHTML=` <div class="col-12 items-center">
+                        <p class="text-center items-center underline">No Products Available</p>
+                    </div>`
+              }else{
+                 totalPage.value = res.totalPage
+            currentPage.innerText = 1
+            document.getElementById("product-grid").innerHTML = res.productData
+            .map((product,i)=>{
+                
+                const productName = product.name
+                const productCategory = product.categoryID.name
+                const productOffer = res.offerData.find(offer => offer.iteam === productName);
+                const categoryOffer = res.offerData.find(offer => offer.iteam === productCategory);  
+               
+               return `
+                 <div class="col-6 col-md-4 col-lg-3">
+                       <div class="product product-3">
+                        <figure class="product-media">
+                            <span class="product-label">
+                             ${product.stock> 0 ? "Sale" : "Out of Stock" } 
+                            </span>
+                            <a href="/detailes?id=${product._id }">
+                                <img src="${product.image[0].secure_url}" alt="Product image" class="product-image">
+                            </a>
+                            
+                            ${res.offerData?
+                              productOffer?
+                               ` <div class="product-countdown-container">
+                                               <span class="product-contdown-title">offer ends in:</span>
+                                               <div class="product-contdown-title text-danger" data-until="2019, 10, 5" data-compact="true">${productOffer?.validity}</div><!-- End .product-countdown -->
+                                 </div>`
+                              :
+                              categoryOffer?
+                              `
+                               <div class="product-countdown-container">
+                                    <span class="product-contdown-title">offer ends in:</span>
+                                    <div class="product-contdown-title text-danger" data-until="2019, 10, 5" data-compact="true">${categoryOffer?.validity}</div><!-- End .product-countdown -->
+                               </div>
+                              `
+                              :""
+                            :
+                            ""
+                            }
+                           
+                            <div class="product-action-vertical">
+                                ${res.wishlistData?.products?.some((pro)=>pro.productId==product._id.toString())?
+                            `<a id="wishlist${i}" onclick="handlewishlist('${product._id}','${i}')" class="btn-product-icon btn-wishlist bg-danger btn-expandable"><span id="text${i}">remove from wishlist</span></a>`
+                            :
+                            `<a id="wishlist${i}" onclick="handlewishlist('${product._id},'${i}')" class="btn-product-icon btn-wishlist btn-expandable"><span id="text${i}">add to wishlist</span></a>`
+                            }     
+                            </div>
+                        </figure>
+
+                             <div class="product-body">
+                               ${product.stock>0?
+                                 res.cartData?.products?.some((pro)=>pro.productId._id==product._id.toString())?
+                                 `<div class="product-action">
+                                      <a id="cartBtn" class="btn-product btn-cart"  onclick="handleCart('${product._id}')"><span id="cart${product._id}">remove from cart </span></a>
+                                 </div>`
+                                 :
+                                 `<div class="product-action">
+                                      <a  class="btn-product btn-cart"  onclick="handleCart('${product._id}')"><span id="cart${product._id}">add to cart </span></a>
+                                  </div>`
+                                :
+                                `<div class="product-action">
+                                   <a  class="btn-product btn-cart" ><span>Out of stock</span></a>
+                                 </div>`
+                                }
+                           
+                            <div class="product-cat">
+                                <a href="">${product.categoryID.name}</a>
+                            </div>
+
+                            <h3 class="product-title"><a href="/detailes">${product.name}</a></h3><!-- End .product-title -->
+                            <div class="product-price">
+                                ${res.offerData?
+                                 productOffer?
+                                 `
+                                  <span class="new-price">Rs.${product.Price-Math.round(product.Price*productOffer.offerRate/100)}.00</span>
+                                  <span class="old-price">Rs.${product.Price}.00</span>`
+                                 :
+                                 categoryOffer?
+                                 `<span class="new-price">Rs.${product.Price-Math.round(product.Price*categoryOffer.offerRate/100)}.00</span>
+                                  <span class="old-price">Rs.${product.Price}.00</span>`
+                                 : 
+                                 `<span class="new-price">Rs.${product.Price}.00</span>`
+                                :
+                                ` <span class="new-price">Rs.${product.Price}.00</span>`
+                                }
+                               
+                            </div>
+                        </div>
+
+                        <div class="product-footer">
+                            <div class="ratings-container">
+                                <div class="ratings">
+                                    <div class="ratings-val" style="width: 40%;"></div><!-- End .ratings-val -->
+                                </div><!-- End .ratings -->
+                                <span class="ratings-text">( 4 Reviews )</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+               `
+               }).join("")   
+              } 
+            })
+        }
     </script>
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/bootstrap.bundle.min.js"></script>
@@ -575,7 +1115,7 @@ if(res.success){
     <script src="assets/js/superfish.min.js"></script>
     <script src="assets/js/owl.carousel.min.js"></script>
     <script src="assets/js/jquery.magnific-popup.min.js"></script>
-    <!-- Main JS File -->
+
     <script src="assets/js/main.js"></script>
     <script src="assets/js/demos/demo-16.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

@@ -196,7 +196,7 @@
                                         }
                                         %>
 	            						<input type="text" class="form-control" required name="address" placeholder="House number and Street name" >
-	            						<input type="hidden" id="addressId" value="">
+	            						<input type="hidden" id="couponId" value="">
 
 	            						<div class="row">
 		                					<div class="col-sm-6">
@@ -329,9 +329,19 @@
 		                				
                                         <div class="form-group">
                                 <label>Choose payment methods</label>
-                                <select class="col-sm-6" id="paymentMethod" name="paymentMethod">                                  
-                                   <option>COD</option>
-                                    <option >Razor pay</option>
+                                <select class="col-sm-6" id="paymentMethod" name="paymentMethod">        
+                                    <%
+                                     if((subTotal-offer)>1000){  
+                                       %>
+                                        <option >Razor pay</option>
+                                       <%
+                                     }else{ 
+                                        %>
+                                        <option>COD</option>
+                                        <option >Razor pay</option>
+                                        <%
+                                     }
+                                    %>  
                                 </select>
                             </div>
                                 <div class="form-group">
@@ -618,25 +628,22 @@
      
        async function applyCoupon() {
          const coupon = document.getElementById("coupon").value
-         let subTotel = document.getElementById("subTotel").innerText
          let total = document.getElementById("offerTotal")
          let couponOffer = document.getElementById("couponOffer")
-         subTotel=subTotel.replace("Rs.","")
-         subTotel=subTotel.replace(".00","")
 
-         fetch("/applyCoupon",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({couponCode:coupon,amount:subTotel})})
+         fetch("/applyCoupon",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({couponCode:coupon})})
          .then((res)=>res.json())
          .then((res)=>{
-             console.log(res,"coipo");
-             
+            
             if(res.success){
-                document.getElementById("addressId").value = res.coupon._id
-                let offerPrice = Math.floor((subTotel*1)*(40/100));
-                couponOffer.innerText = `Rs:${offerPrice}.00`;
-                total.innerText=total.innerText.replace("Rs.","")
-                total.innerText=total.innerText.replace(".00","")
-                total.innerText=`RS:${parseInt(total.innerText)-offerPrice}.00`
-                Swal.fire(res.message);
+                couponOffer.innerText = `Rs:${res.offerPrice}.00`;
+                total.innerText=`Rs.${res.total}.00`;
+                document.getElementById("couponId").value = res.couponId
+                Swal.fire({
+                    text: res.message,
+                    icon: "success",
+                    confirmButtonText: "ok!"
+                });
                             
             }else{
                 Swal.fire({
@@ -646,12 +653,14 @@
                     confirmButtonColor: "#3085d6",
                     confirmButtonText: "ok!"
                 });
+                document.getElementById("couponId").value = ""
             }
          });
        }
 
         function order() {
-        const counponId =   document.getElementById("addressId").value ;
+        const couponId =   document.getElementById("couponId").value ;
+ 
         let selectElement0 = document.getElementById("offerTotal").innerText.replace("Rs.","").replace(".00","");
         let selectElement1 = document.getElementById("chooseAddress");
         let selectElement2 = document.getElementById("paymentMethod");
@@ -659,8 +668,7 @@
         let paymentMethod = selectElement2.value;
         let selectElement3 = document.getElementById("sub");
         let couponOffer = document.getElementById("couponOffer").innerText.replace("RS:","").replace(".00","");;
-        console.log(couponOffer,paymentMethod,selectElement0,'address',address);
-       
+     
         if (parseInt(selectElement0)>1000 && paymentMethod == "COD" ) {
             Swal.fire(`Paying Total Amount greater than 1000 is not possile in COD`);
             return;
@@ -683,7 +691,7 @@
      
        
         if(paymentMethod=="Razor pay"){
-            fetch(`/orders`,{method:"POST",body:JSON.stringify({addressId:address,paymentMethod,coupen:counponId}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
+            fetch(`/orders`,{method:"POST",body:JSON.stringify({addressId:address,paymentMethod,coupen:couponId}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
             .then((data)=>{
                
                 if(data.success){
@@ -696,11 +704,9 @@
 						"handler": function (response){ 
 
 							alert("Payment Succeeded");
-                            fetch(`/saveOrder`,{method:"POST",body:JSON.stringify({addressId:data.addressId,coupen:data.coupenId,paymentMethod:paymentMethod,paymentStatus:"Paid",productStatus:"Pending"}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
+                            fetch(`/saveOrder`,{method:"POST",body:JSON.stringify({addressId:data.addressId,coupen:data.coupenId,paymentMethod:paymentMethod,paymentStatus:"Paid",productStatus:"pending"}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
                             .then((res)=>{
-                               
-                                    window.location.href="/successPage"
-                                
+                                window.location.href="/successPage"   
                             })      
 							
 						},
@@ -750,7 +756,7 @@
                             .then((res)=>{
                                
                                 if(res.success){
-                                    fetch(`/orders`,{method:"POST",body:JSON.stringify({addressId:address,paymentMethod,coupen:counponId}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
+                                    fetch(`/orders`,{method:"POST",body:JSON.stringify({addressId:address,paymentMethod,coupen:couponId}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
                                     .then((res)=>{
                                         var options = {
                                         "key": `${data.key_id}`,
@@ -759,9 +765,10 @@
                                         "name":`${data.name}` ,
                                         "order_id": `${data.order_id}`,
                                         "handler": function (response){ 
-                                            alert("Payment Succeeded");
+                                         
                                              fetch(`/saveOrder`,{method:"POST",body:JSON.stringify({addressId:data.addressId,coupen:data.coupenId,paymentMethod:paymentMethod,paymentStatus:"Paid",productStatus:"Failed"}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
                                              .then((res)=>{
+                                               
                                                  window.location.href="/successPage"
                                              })
                                            
@@ -779,6 +786,7 @@
                             razorpayObject.on('payment.failed', function (response){
                                  fetch(`/saveOrder`,{method:"POST",body:JSON.stringify({addressId:data.addressId,coupen:data.coupenId,paymentMethod:paymentMethod,paymentStatus:"Failed",productStatus:"Failed"}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
                                  .then(()=>{
+                                     
                                     window.location.href="/failePage"
                                  })
                             });
@@ -803,150 +811,20 @@
                 }
             })
         }else{
-            fetch(`/orders`,{method:"POST",body:JSON.stringify({addressId:address,paymentMethod,coupen:counponId}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
+            fetch(`/orders`,{method:"POST",body:JSON.stringify({addressId:address,paymentMethod,coupen:couponId}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
             .then((data)=>{
-                console.log(data,"cod")
+                
                 if(data.success){
-                     fetch(`/saveOrder`,{method:"POST",body:JSON.stringify({addressId:address,coupen:counponId,paymentMethod:paymentMethod,paymentStatus:"Not paid",productStatus:"pending"}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
+                     fetch(`/saveOrder`,{method:"POST",body:JSON.stringify({addressId:address,coupen:couponId,paymentMethod:paymentMethod,paymentStatus:"Not paid",productStatus:"pending"}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
                      .then(()=>{
+                        
                         window.location.href="/successPage"
                      })
                     
                 }
             })
         }
-      
-//       if(paymentMethod=="Razor pay"){
-//         fetch(`/orders`,{method:"POST",body:JSON.stringify({addressId:address,paymentMethod,coupen}),headers:{"Content-Type":"application/json"}})
-//             .then(data=>{
-                 
-//                  if(data.success){
-              
-//                     var options = {
-// 						"key": `${data.key_id}`,
-// 						"amount": `${data.amount}`,
-// 						"currency": "INR",
-// 						"name":`${data.name}` ,
-// 						// "description": ""+res.description+"",
-// 						// "image": "https://dummyimage.com/600x400/000/fff",
-// 						"order_id": `${data.order_id}`,
-// 						"handler": function (response){
-                           
-// 							alert("Payment Succeeded");
-// 							window.open(`/successPage?addressId=${data.addressId}&coupen=${data.coupenId}&paymentMethod=${paymentMethod}`,"_self")
-// 						},
-// 						"prefill": {
-// 							// "contact":""+res.contact+"",
-// 							"name":`${data.name}`,
-// 							"email": `${data.email}`
-// 						},
-// 						// "notes" : {
-// 						// 	"description":""+res.description+""
-// 						// },
-// 						"theme": {
-// 							"color": "#2300a3"
-// 						}
-// 					};
-                  
-				// 	var razorpayObject = new Razorpay(options);
-				// 	razorpayObject.on('payment.failed', function (response){
-                //         console.log(response);
-				// 			alert("Payment Failed");
-                //             fetch(`/failedPage?addressId=${data.addressId}&coupen=${data.coupenId}&paymentMethod=${paymentMethod}`)      
-				// 	});
-				// 	razorpayObject.open();
-                //  }else if(data.addAddress){
-                //     Swal.fire({
-                //     title: "You dont have any address?",
-                //     text: "Add a address first!",
-                //     icon: "warning",
-                    
-                //     confirmButtonColor: "#3085d6",
-                    
-                //     confirmButtonText: "ok!"
-                //     }).then((result) => {
-                //     if (result.isConfirmed) {
-                    
-                //         window.location.href="/addAddress"
-                //     }
-                //   });         
-//                  }else{
-                    
-//                  }
-
-//             })
-//        }else{
-        
-//          if(selectElement3.value<=1000){
-           
-//         if(coupen){
-//             fetch(`/orders`,{method:"POST",body:JSON.stringify({addressId:address,paymentMethod,coupen}),headers:{"Content-Type":"application/json"}})
-//         .then(data=>{
-          
-//             if(data.addAddress){
-//                 console.log("sett")
-//                 Swal.fire({
-//   title: "You dont have any address?",
-//   text: "Add a address first!",
-//   icon: "warning",
-  
-//   confirmButtonColor: "#3085d6",
- 
-//   confirmButtonText: "ok!"
-// }).then((result) => {
-//   if (result.isConfirmed) {
-   
-//     window.location.href="/addAddress"
-//   }
-// });
-                   
-//             }else if(data.outofstock){
-//                 Swal.fire(`${data.product} is out of stock`);
-                
-//             }else if(data.invalidCoupen){
-                
-//                 Swal.fire(`Invalid Coupen Number`);
-//             }else if(data.successPage){
-//                 console.log("hi")
-//                 window.open(`/successPage?paymentMethod=${paymentMethod}`,"_self")
-//             }
-           
-//         }); 
-//         }else{
-            
-//             fetch(`/orders`,{method:"POST",body:JSON.stringify({addressId:address,paymentMethod}),headers:{"Content-Type":"application/json"}}).then(res=>res.json())
-//         .then(data=>{
-           
-//             if(data.addAddress){
-//                 Swal.fire({
-//   title: "You dont have any address?",
-//   text: "Add a address first!",
-//   icon: "warning",
-  
-//   confirmButtonColor: "#3085d6",
- 
-//   confirmButtonText: "ok!"
-// }).then((result) => {
-//   if (result.isConfirmed) {
-   
-//     window.location.href="/addAddress"
-//   }
-// });
-                   
-//             }else if(data.outofstock){
-//                 Swal.fire(`${data.product} is out of stock`);
-                
-//             }else if(data.successPage){
-//                 window.open(`/successPage?paymentMethod=${paymentMethod}`,"_self")
-//             }
-           
-//         }); 
-//         }
-//         }else{
-//             Swal.fire(`Paying Total Amount greater than 1000 is not possile in COD`);
-//         }     
-//     }      
-}  
+    }  
     </script>
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/bootstrap.bundle.min.js"></script>

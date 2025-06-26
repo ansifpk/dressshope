@@ -11,7 +11,9 @@ const randomstring = require("randomstring");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const walletModel = require("../model/walletModel");
-
+const ReferalDB = require("../model/referalOfferModel");
+const easyinvoice = require('easyinvoice');
+const getStoreDataForUser  = require('../helperfunctions/helper') ;
 
 const securePassword = async (password) => {
   try {
@@ -159,27 +161,7 @@ const veryfyChangePassword = async (req, res) => {
   }
 };
 
-const getStoreDataForUser = async(req,res)=>{
-    try {
-        const cartData = await CartDB.findOne({userId:req.session.user_id}).populate({
-            path: 'products.productId',
-            populate: { path: 'categoryID' }})
-           
-        const wishlistData = await WishlistDB.findOne({userId:req.session.user_id})
-        const offerData = await OfferDB.find({});
-        const  cartTotal = cartData.products.reduce((acc,value)=>{value
-           const offer =  offerData.find( iteam => iteam.iteam === value.productId.name || iteam.iteam === value.productId.categoryID.name)
-           if(offer){
-             return acc+ value.productId.Price*value.quandity - Math.round(value.productId.Price*value.quandity * offer.offerRate/100)
-           }else{
-             return acc+value.productId.Price*value.quandity
-           }
-       },0);
-        return {cartData,wishlistData,offerData,cartTotal}
-    } catch (error) {
-        console.error(error.message)
-    }
-} 
+
 
 const veryfyForgetPassword = async (req, res) => {
   try {
@@ -282,7 +264,8 @@ const veryfynewPassword = async (req, res) => {
 
 const register = async (req, res) => {
   try {
-    res.render("register");
+    const {refferalCode} = req.query
+    res.render("register",{refferalCode});
   } catch (error) {
     console.log(error.message);
   }
@@ -290,6 +273,19 @@ const register = async (req, res) => {
 
 const insertUser = async (req, res) => {
   try {
+
+    const {refferalCode} = req.query;
+    if(refferalCode){
+       const refaralOffer = await ReferalDB.findOne();
+       if(!refaralOffer){
+        return res.json({ success: false, message: "No Refferal Offer Currently Available" });
+       }
+       const referredUser = await userModel.findOne({reffaralCode:refferalCode})
+       if(!referredUser){
+        return res.json({ success: false, message: "Invalid Refferal Code" });
+       }
+    } 
+      
     req.body.name = req.body.name.trim();
     if (/^[A-Za-z]+(?:[A-Za-z]+)?$/.test(req.body.name)) {
       if (/^[A-Za-z0-9.%+-]+@gmail\.com$/.test(req.body.email)) {
@@ -316,6 +312,7 @@ const insertUser = async (req, res) => {
           is_admin: 0,
           is_blocked: false,
           is_verified: false,
+          refferalCode
         };
 
         sendOTPverificationEmail(req.body.email, res);
@@ -346,6 +343,11 @@ const loadOtp = async (req, res) => {
 const verifyOtp = async (req, res) => {
   try {
     const { otp, email } = req.body;
+
+    let balance = 0;
+    const history = []
+    let str= ""
+   
     const userVerification = await UserOtpVerification.findOne({
       email: email,
     });
@@ -360,7 +362,22 @@ const verifyOtp = async (req, res) => {
       res.json({ success: false, message: "Invalid OTP" });
       return;
     }
+    await UserOtpVerification.findOneAndDelete({email: email});
+
+     function generateCouponId(email,length) {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            const charactersLength = characters.length;
+            const emi = email.split("@")[0]
+            let couponId = `${emi}`
+            for (let i = 0; i < length; i++) {
+                couponId += characters.charAt(Math.floor(Math.random() * charactersLength));
+            }
+            return couponId;
+      }
+            
+      const reffaralCode = generateCouponId(req.session.user.email,4);
     // creating user
+
     const userData = new userModel({
       email: req.session.user.email,
       name: req.session.user.name,
@@ -369,39 +386,60 @@ const verifyOtp = async (req, res) => {
       is_admin: req.session.user.is_admin,
       is_blocked: req.session.user.is_blocked,
       is_verified: true,
+      reffaralCode:reffaralCode,
     });
-    await userData.save();
+     
+    await userData.save()
     // creating cart
     const cart = new CartDB({
       userId: userData._id,
       products: [],
     });
     await cart.save();
-    console.log( "cart ok");
+   
     // creating wallet
+    
+     if(req.session.user.refferalCode){
+
+       const refaralOffer = await ReferalDB.findOne();
+       const referredUser = await userModel.findOne({reffaralCode:req.session.user.refferalCode})
+
+       balance = refaralOffer.newUserAmount;
+       str=`Credit : Referal Amount RS : ${refaralOffer.refaralUserAmount} Has Been Credited`
+       await walletModel.findOneAndUpdate({userId:referredUser._id},{$push:{walletHistery:`Credit : Referal Amount RS : ${refaralOffer.refaralUserAmount} Has Been Credited`}});
+       history.push(`Credit : Refferal Welcome Offer Rs${refaralOffer.newUserAmount} Has Been Credited.`)
+    }
+  
     const wallet = new walletModel({
       userId: userData._id,
-      Balance: 0,
-      walletHistery: [],
+      Balance: balance,
+      walletHistery: history,
     });
-
+    
     await wallet.save();
-    console.log( "wallet ok");
-    // creating wishlist
+    
+    // creating 
+   
     const wishlist = new WishlistDB({
       userId: userData._id,
       products: [],
     });
     await wishlist.save();
-    console.log( "wishlist okjjj");
+    
     // crete address
     const address = await AddressDB({
         userID: userData._id,
         address: [],
       });
-
       await address.save();
-      console.log( "address ok");
+
+    const order = await OrderDB({
+        userId: userData._id,
+        products: [],
+      });
+    
+     await order.save();
+
     req.session.user_id = userData._id;
     res.json({ success: true });
   } catch (error) {
@@ -413,7 +451,7 @@ const resendOtp = async (req, res) => {
   try {
     const { email } = req.query;
     await UserOtpVerification.findOneAndDelete({ email: email });
-    sendOTPverificationEmail(email, res);
+    await sendOTPverificationEmail(email, res);
   } catch (error) {
     console.log(error.message);
   }
@@ -421,29 +459,28 @@ const resendOtp = async (req, res) => {
 
 const veryfyLogin = async (req, res) => {
   try {
-    const email = req.body.email;
-    const password = req.body.password;
-    const userData = await userModel.findOne({ email: email });
 
-    if (userData) {
-      const passwordMatch = await bcrypt.compare(password, userData.password);
-      if (passwordMatch) {
+    const {email,password} = req.body;
+    const userData = await userModel.findOne({ email: email });
+    if(!userData){
+      res.json({success:false,message: "User Not Found" });
+    }
+     const passwordMatch = await bcrypt.compare(password, userData.password);
+     if(!passwordMatch){
+      res.json({success:false, message: "Email or Password is incorrect" });
+     }
+
         if (userData.is_blocked == false) {
           if (userData.is_verified == true) {
             req.session.user_id = userData._id;
-            res.redirect("/home");
+             res.json({success:true});
           } else {
-            res.render("login", { message: "you Are an Bloked User" });
+             res.json({success:false, message:"you Are an Bloked User" });
           }
         } else {
-          res.render("login", { message: "you Are an Bloked User" });
+           res.json({success:false, message: "you Are an Bloked User" });
         }
-      } else {
-        res.render("login", { message: "Email or Password is incorrect" });
-      }
-    } else {
-      res.render("login", { message: "User Not Found" });
-    }
+  
   } catch (error) {
     console.log(error.message);
   }
@@ -491,364 +528,7 @@ const loadHome = async (req, res) => {
   }
 };
 
-const wcollection = async (req, res) => {
-  try {
-    
-    let sort;
-    const id = req.query.sort;
-    
-    let search = "";
-    if (req.query.search) {
-      search = req.query.search;
-    }
 
-    const cartData = await CartDB.findOne({
-      userId: req.session.user_id,
-    }).populate({
-      path: "products.productId",
-      populate: { path: "categoryID" },
-    });
-    const wishlistData = await WishlistDB.findOne({
-      userId: req.session.user_id,
-    }).populate("products.productId");
-    const offerData = await OfferDB.find({});
-    let cartTotal = 0;
-    if (cartData) {
-      cartTotal = cartData.products.reduce((acc, value) => {
-        value;
-        const offer = offerData.find(
-          (iteam) =>
-            iteam.iteam === value.productId.name ||
-            iteam.iteam === value.productId.categoryID.name
-        );
-        if (offer) {
-          return (
-            acc +
-            value.productId.Price * value.quandity -
-            Math.round(
-              (value.productId.Price * value.quandity * offer.offerRate) / 100
-            )
-          );
-        } else {
-          return acc + value.productId.Price * value.quandity;
-        }
-      }, 0);
-    }
-
-    if (id === "Defult Sort") {
-     
-      const productData = await ProductDB.find({
-        is_listed: true,
-        $or: [
-          { name: { $regex: ".*" + search + ".*", $options: "i" } },
-          {
-            "categoryID.name": { $regex: ".*" + search + ".*", $options: "i" },
-          },
-        ],
-      })
-        .populate("categoryID")
-        .lean()
-        .sort(sort);
-      res.render("wcollection", {
-        productData: productData,
-        wishlistData,
-        offerData,
-        cartTotal,
-        cartData,
-      });
-    } else if (id === "Sort by Price: low to high") {
-      
-      sort = { Price: 1 };
-      const productData = await ProductDB.find({
-        is_listed: true,
-        $or: [
-          { name: { $regex: ".*" + search + ".*", $options: "i" } },
-          {
-            "categoryID.name": { $regex: ".*" + search + ".*", $options: "i" },
-          },
-        ],
-      })
-        .populate("categoryID")
-        .lean()
-        .sort(sort)
-        .exec();
-      productData.sort((a, b) => a.Price - b.Price);
-      res.render("wcollection", {
-        productData: productData,
-        wishlistData,
-        offerData,
-        cartTotal,
-        cartData,
-      });
-    } else if (id === "Sort by Price: high to low") {
-      
-      sort = { Price: -1 };
-      const productData = await ProductDB.find({
-        is_listed: true,
-        $or: [
-          { name: { $regex: ".*" + search + ".*", $options: "i" } },
-          {
-            "categoryID.name": { $regex: ".*" + search + ".*", $options: "i" },
-          },
-        ],
-      })
-        .populate("categoryID")
-        .lean()
-        .sort(sort)
-        .exec();
-      productData.sort((a, b) => b.Price - a.Price);
-      res.render("wcollection", {
-        productData: productData,
-        wishlistData,
-        offerData,
-        cartTotal,
-        cartData,
-      });
-    } else if (id === "Sort by Name : A-Z") {
-      
-      sort = { name: 1 };
-
-      const productData = await ProductDB.find({
-        is_listed: true,
-        $or: [
-          { name: { $regex: ".*" + search + ".*", $options: "i" } },
-          {
-            "categoryID.name": { $regex: ".*" + search + ".*", $options: "i" },
-          },
-        ],
-      })
-        .populate("categoryID")
-        .lean()
-        .sort(sort);
-      res.render("wcollection", {
-        productData: productData,
-        wishlistData,
-        offerData,
-        cartTotal,
-        cartData,
-      });
-    } else if (id === "Sort by Name : Z-A") {
-      sort = { name: -1 };
-   
-      const productData = await ProductDB.find({
-        is_listed: true,
-        $or: [
-          { name: { $regex: ".*" + search + ".*", $options: "i" } },
-          {
-            "categoryID.name": { $regex: ".*" + search + ".*", $options: "i" },
-          },
-        ],
-      })
-        .populate("categoryID")
-        .lean()
-        .sort(sort);
-      res.render("wcollection", {
-        productData: productData,
-        wishlistData,
-        offerData,
-        cartTotal,
-        cartData,
-      });
-    } else {
-      const productData = await ProductDB.find({
-        is_listed: true,
-        $or: [
-          { name: { $regex: ".*" + search + ".*", $options: "i" } },
-          {
-            "categoryID.name": { $regex: ".*" + search + ".*", $options: "i" },
-          },
-        ],
-      }).populate("categoryID");
-
-      res.render("wcollection", {
-        productData: productData,
-        wishlistData,
-        offerData,
-        cartTotal,
-        cartData,
-      });
-    }
-  } catch (error) {
-    console.log(error.message);
-  }
-};
-
-const mcollection = async (req, res) => {
-  try {
-
-    // let sort;
-    // const id = req.query.sort;
-    // let search = "";
-    // if (req.query.search) {
-    //   search = req.query.search;
-    // }
-
-    // const cartData = await CartDB.findOne({
-    //   userId: req.session.user_id,
-    // }).populate({
-    //   path: "products.productId",
-    //   populate: { path: "categoryID" },
-    // });
-    // const wishlistData = await WishlistDB.findOne({
-    //   userId: req.session.user_id,
-    // }).populate("products.productId");
-    // const offerData = await OfferDB.find({});
-    // let cartTotal = 0;
-    // if (cartData) {
-    //   cartTotal = cartData.products.reduce((acc, value) => {
-    //     value;
-    //     const offer = offerData.find(
-    //       (iteam) =>
-    //         iteam.iteam === value.productId.name ||
-    //         iteam.iteam === value.productId.categoryID.name
-    //     );
-    //     if (offer) {
-    //       return (
-    //         acc +
-    //         value.productId.Price * value.quandity -
-    //         Math.round(
-    //           (value.productId.Price * value.quandity * offer.offerRate) / 100
-    //         )
-    //       );
-    //     } else {
-    //       return acc + value.productId.Price * value.quandity;
-    //     }
-    //   }, 0);
-    // }
-
-    // if (id === "Defult Sort") {
-    
-    //   const productData = await ProductDB.find({
-    //     is_listed: true,
-    //     $or: [
-    //       { name: { $regex: ".*" + search + ".*", $options: "i" } },
-    //       {
-    //         "categoryID.name": { $regex: ".*" + search + ".*", $options: "i" },
-    //       },
-    //     ],
-    //   }).populate("categoryID");
-    //   res.render("mcollection", {
-    //     productData: productData,
-    //     cartData,
-    //     wishlistData,
-    //     offerData,
-    //     cartTotal,
-    //   });
-    // } else if (id === "Sort by Price: low to high") {
-    //   console.log("2");
-    //   sort = { Price: 1 };
-    //   const productData = await ProductDB.find({
-    //     is_listed: true,
-    //     $or: [
-    //       { name: { $regex: ".*" + search + ".*", $options: "i" } },
-    //       {
-    //         "categoryID.name": { $regex: ".*" + search + ".*", $options: "i" },
-    //       },
-    //     ],
-    //   })
-    //     .populate("categoryID")
-    //     .lean()
-    //     .sort(sort)
-    //     .exec();
-    //   productData.sort((a, b) => a.Price - b.Price);
-    //   res.render("mcollection", {
-    //     productData: productData,
-    //     cartData,
-    //     wishlistData,
-    //     offerData,
-    //     cartTotal,
-    //   });
-    // } else if (id === "Sort by Price: high to low") {
-    //   console.log("3");
-    //   sort = { Price: -1 };
-    //   const productData = await ProductDB.find({
-    //     is_listed: true,
-    //     $or: [
-    //       { name: { $regex: ".*" + search + ".*", $options: "i" } },
-    //       {
-    //         "categoryID.name": { $regex: ".*" + search + ".*", $options: "i" },
-    //       },
-    //     ],
-    //   })
-    //     .populate("categoryID")
-    //     .lean()
-    //     .sort(sort)
-    //     .exec();
-    //   productData.sort((a, b) => b.Price - a.Price);
-    //   res.render("mcollection", {
-    //     productData: productData,
-    //     cartData,
-    //     wishlistData,
-    //     offerData,
-    //     cartTotal,
-    //   });
-    // } else if (id === "Sort by Name : A-Z") {
-    //   console.log("4");
-    //   sort = { name: 1 };
-    //   const productData = await ProductDB.find({
-    //     is_listed: true,
-    //     $or: [
-    //       { name: { $regex: ".*" + search + ".*", $options: "i" } },
-    //       {
-    //         "categoryID.name": { $regex: ".*" + search + ".*", $options: "i" },
-    //       },
-    //     ],
-    //   })
-    //     .populate("categoryID")
-    //     .lean()
-    //     .sort(sort);
-    //   res.render("mcollection", {
-    //     productData: productData,
-    //     cartData,
-    //     wishlistData,
-    //     offerData,
-    //     cartTotal,
-    //   });
-    // } else if (id === "Sort by Name : Z-A") {
-    //   console.log("5");
-    //   sort = { name: -1 };
-    //   const productData = await ProductDB.find({
-    //     is_listed: true,
-    //     $or: [
-    //       { name: { $regex: ".*" + search + ".*", $options: "i" } },
-    //       {
-    //         "categoryID.name": { $regex: ".*" + search + ".*", $options: "i" },
-    //       },
-    //     ],
-    //   })
-    //     .populate("categoryID")
-    //     .lean()
-    //     .sort(sort);
-    //   res.render("mcollection", {
-    //     productData: productData,
-    //     cartData,
-    //     wishlistData,
-    //     offerData,
-    //     cartTotal,
-    //   });
-    // } else {
-    //   const productData = await ProductDB.find({
-    //     is_listed: true,
-    //     $or: [
-    //       { name: { $regex: ".*" + search + ".*", $options: "i" } },
-    //       {
-    //         "categoryID.name": { $regex: ".*" + search + ".*", $options: "i" },
-    //       },
-    //     ],
-    //   }).populate("categoryID");
-
-    //   res.render("mcollection", {
-    //     productData: productData,
-    //     cartData,
-    //     wishlistData,
-    //     offerData,
-    //     cartTotal,
-    //   });
-    // }
-  } catch (error) {
-    console.log(error.message);
-  }
-};
 
 const productsDetailes = async (req, res) => {
   try {
@@ -860,7 +540,7 @@ const productsDetailes = async (req, res) => {
     });
     const wishlistData = await WishlistDB.findOne({
       userId: req.session.user_id,
-    }).populate("products.productId");
+    })
     const offerData = await OfferDB.find({});
     const productData = await ProductDB.findById({
       _id: req.query.id,
@@ -887,7 +567,8 @@ const productsDetailes = async (req, res) => {
         }
       }, 0);
     }
-
+    
+    
     res.render("detailes", {
       productData,
       offerData,
@@ -903,10 +584,10 @@ const productsDetailes = async (req, res) => {
 const sort = async(req,res)=>{
  try {
     const {cartData,wishlistData,offerData} = await getStoreDataForUser(req,res);
-    const {sort,filter,page} = req.query;
+    const {sort,filter,search} = req.query;
     const sortQuery = {};
     const limit = 8;
-    console.log(req.query)
+  
 
     switch (sort) {
       case "Sort by Price: high to low":
@@ -921,23 +602,33 @@ const sort = async(req,res)=>{
       case "Sort by Name : A-Z":
         sortQuery.name=1
         break;
+      case "Old":
+        sortQuery.createdAt = 1
+        break;
       default:
-         sortQuery.name=1
+         sortQuery.createdAt = -1
         break;
     }
+
+   
     
-    let data =  await ProductDB.find({is_listed:true}).sort(sortQuery).populate("categoryID");
+    let data =  await ProductDB.find({$and:[{is_listed:true},{name:{$regex: ".*" + search + ".*", $options: "i"}}]}).sort(sortQuery).populate("categoryID");
     let products =  data.filter((val)=>{
       if(filter == "All" ){
          return val.categoryID.is_listed == true 
+      }else if(filter == "Out Of Stock"){
+        return val.categoryID.is_listed == true && val.stock < 1
+      }else if(filter == "In Stock"){
+        return val.categoryID.is_listed == true && val.stock > 0
       }else{
         return val.categoryID.is_listed == true && val.categoryID.name == filter
       }
     });
   
     const totalPage = Math.ceil(products.length/limit);
-    products =  products.slice((page-1)*limit,(limit*page));
-    res.render('productGrid', { productData:products, offerData, wishlistData, cartData ,currentPage:page,totalPage});
+    products =  products.slice(0,limit);
+   return res.json({productData:products,offerData, wishlistData, cartData ,totalPage})
+
  
 
  } catch (error) {
@@ -945,6 +636,75 @@ const sort = async(req,res)=>{
  }
 }
 
+const paginationProduct = async (req, res) => {
+  try {
+   
+    const {cartData,wishlistData,offerData} = await getStoreDataForUser(req,res);
+    const {sort,filter,page,search} = req.query;
+    const sortQuery = {};
+    const limit = 8;
+  
+
+    switch (sort) {
+      case "Sort by Price: high to low":
+        sortQuery.Price=-1
+        break;
+      case "Sort by Price: low to high":
+        sortQuery.Price=1
+        break;
+      case "Sort by Name : Z-A":
+        sortQuery.name=-1
+        break;
+      case "Sort by Name : A-Z":
+        sortQuery.name=1
+        break;
+      case "Old":
+        sortQuery.createdAt = 1
+        break;
+      default:
+         sortQuery.createdAt = -1
+        break;
+    }
+
+
+    
+    let data =  await ProductDB.find({$and:[{is_listed:true},{name:{$regex: ".*" + search + ".*", $options: "i"}}]}).sort(sortQuery).populate("categoryID");
+    let products =  data.filter((val)=>{
+      if(filter == "All" ){
+         return val.categoryID.is_listed == true 
+      }else if(filter == "Out Of Stock"){
+        return val.categoryID.is_listed == true && val.stock < 1
+      }else if(filter == "In Stock"){
+        return val.categoryID.is_listed == true && val.stock > 0
+      }else{
+        return val.categoryID.is_listed == true && val.categoryID.name == filter
+      }
+    });
+  
+    const totalPage = Math.ceil(products.length/limit);
+    products =  products.slice((page-1)*limit,(limit*page));
+   return res.json({productData:products,offerData, wishlistData, cartData ,totalPage})
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+const searchProduct = async (req, res) => {
+  try {
+    const {search,filter} = req.query;
+    const {cartData,wishlistData,offerData} = await getStoreDataForUser(req,res);
+    const limit = 8;
+
+    
+    let data =  await ProductDB.find({$and:[{is_listed:true},{name:{$regex: ".*" + search + ".*", $options: "i"}}]}).sort({createdAt:-1}).populate("categoryID");
+    let products =  data.filter((val)=>val.categoryID.is_listed == true&& val.categoryID.name == filter );
+  
+    const totalPage = Math.ceil(products.length/limit);
+    products =  products.slice(0,limit);
+    return res.json({productData:products,offerData, wishlistData, cartData ,totalPage})
+  } catch (error) {
+    console.log(error.message);
+  }
+};
 const errorpage = async (req, res) => {
   try {
     res.render("error");
@@ -952,6 +712,7 @@ const errorpage = async (req, res) => {
     console.log(error.message);
   }
 };
+
 //########### profile ##############
 
 const profile = async (req, res) => {
@@ -989,12 +750,17 @@ const profile = async (req, res) => {
       }, 0);
     }
     const userData = await userModel.findById({ _id: req.session.user_id });
+    const referral = await ReferalDB.findOne();
+ 
     res.render("profile", {
       user: userData,
       cartData,
       wishlistData,
+      referral,
       cartTotal,
+      baseUrl:process.env.BASE_URL
     });
+
   } catch (error) {
     console.log(error.message);
   }
@@ -1002,9 +768,10 @@ const profile = async (req, res) => {
 
 const loadedit = async (req, res) => {
   try {
-    const userData = await userModel.findById({ _id: req.query.id });
 
-    res.render("edit", { user: userData });
+    const {name,mobile,email} = await userModel.findById({ _id: req.query._id });
+    res.render("edit", { name,mobile,email });
+
   } catch (error) {
     console.log(error.message);
   }
@@ -1012,73 +779,102 @@ const loadedit = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
-    const data = await userModel.findOne({ _id: req.query.id });
-    const emailCheck = await userModel.findOne({ email: req.body.email });
-    if (!emailCheck) {
-      if (/^[A-Za-z0-9.%+-]+@gmail\.com$/.test(req.body.email)) {
-        if (req.body.mobile.length == 10) {
-          const userData = await userModel.findByIdAndUpdate(
-            { _id: req.query.id },
-            {
-              name: req.body.name,
-              email: req.body.email,
-              mobile: req.body.mobile,
-            }
-          );
+    const {name,mobile} = req.body;
+    const user = await userModel.findById({ _id: req.session.user_id });
 
-          await userData.save();
-          res.redirect("/profile");
-        } else {
-          const userData = await userModel.findById({ _id: req.query.id });
-          res.render("edit", {
-            user: userData,
-            message: "mobile numbe shouldbe 10 digit",
-          });
-        }
-      } else {
-        const userData = await userModel.findById({ _id: req.query.id });
-        res.render("edit", {
-          user: userData,
-          message: "Please Check The Structure Of your Email",
-        });
-      }
-    } else if (data.email == req.body.email) {
-      if (/^[A-Za-z0-9.%+-]+@gmail\.com$/.test(req.body.email)) {
-        if (req.body.mobile.length == 10) {
-          const userData = await userModel.findByIdAndUpdate(
-            { _id: req.query.id },
-            {
-              name: req.body.name,
-              email: req.body.email,
-              mobile: req.body.mobile,
-            }
-          );
-
-          await userData.save();
-          res.redirect("/profile");
-        } else {
-          const userData = await userModel.findById({ _id: req.query.id });
-          res.render("edit", {
-            user: userData,
-            message: "mobile numbe shouldbe 10 digit",
-          });
-        }
-      } else {
-        const userData = await userModel.findById({ _id: req.query.id });
-        res.render("edit", {
-          user: userData,
-          message: "Please Check The Structure Of your Email",
-        });
-      }
-    } else {
-      const userData = await userModel.findById({ _id: req.query.id });
-      res.render("edit", { user: userData, message: "user already exists" });
+    if(!user ){
+      return res.json({success:false,message:'User Not Found!.'});
     }
+    
+    if(!/^[a-zA-Z\s]+$/.test(name) || name.length > 20 ){
+       return res.json({success:false,message:'Invalid Name Provided!.'});
+    }
+
+    if(mobile.length > 10 || mobile.length < 10){
+       return res.json({success:false,message:'Invalid Mobile Number Provided!.'});
+    }
+      await userModel.findByIdAndUpdate(
+            { _id: req.session.user_id  },
+            {
+              name: name,
+              mobile: mobile,
+            }
+          );
+    res.send({success:true,message:'Successfully update the changes!.'})
+
   } catch (error) {
     console.log(error.message);
   }
 };
 
+const changeEmail = async (req, res) => {
+  try {
+     const user = await userModel.findById({ _id: req.session.user_id });
+     res.render("emailChange",{email:user.email});
+    
+
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+
+const verifychangeEmail = async (req, res) => {
+  try {
+    const {email} = req.body;
+    const user = await userModel.findById({ _id: req.session.user_id });
+    if(!user){
+      return res.json({success:false,message:'User Not Found!.'});
+    }
+
+    if(user.email == email){
+      return res.json({success:false,message:'You Cannot make the Old Email Again!.'});
+    }
+    
+
+    if(!/^[A-Za-z0-9.%+-]+@gmail\.com$/.test(req.body.email)){
+      return res.json({success:false,message:'Invalid Email Structure!.'});
+    }
+
+    const checkEmail = await userModel.findOne({email});
+    if(checkEmail && checkEmail._id.toString() !== user._id.toString() ){
+      return res.json({success:false,message:'Email ALready Exists!.'});
+    }
+    await sendOTPverificationEmail(email,res);
+   
+    
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+const verifychangeEmailOtp = async (req, res) => {
+  try {
+      const {email,otp} = req.body;
+      console.log(email,"email to check",otp)
+      const userVerification = await UserOtpVerification.findOne({
+      email: email,
+    });
+    if (!userVerification) {
+      res.json({ success: false, message: "OTP Expird" });
+      return;
+    }
+    const { otp: hashotp } = userVerification;
+    const validOtp = await bcrypt.compare(otp, hashotp);
+    console.log(validOtp, "check otp");
+    if (!validOtp) {
+      res.json({ success: false, message: "Invalid OTP" });
+      return;
+    }
+    
+    await userModel.findByIdAndUpdate({ _id: req.session.user_id },{$set:{email:email}});
+    await UserOtpVerification.findOneAndDelete({email:email});
+
+    res.send({success:true,message:"Successfullyy Updated The Email!."})
+
+
+  } catch (error) {
+    console.log(error.message);
+  }
+};
 const userLogout = async (req, res) => {
   try {
     req.session.destroy();
@@ -1139,108 +935,54 @@ const addAddress = async (req, res) => {
 
 const saveAddress = async (req, res) => {
   try {
-    const exists = await AddressDB.findOne({
+
+
+    const {fname,lname,address,country,mobile,city,pincode,state} = req.body;
+   
+    const addresses = await AddressDB.findOne({
       userID: req.session.user_id,
     }).populate("userID");
-    if (!exists) {
-      const fname = req.body.fname.trim();
-      const lname = req.body.lname.trim();
-      const name = req.body.address.trim();
-      if (/^[a-zA-Z]+$/.test(fname)) {
-        if (/^[a-zA-Z]+$/.test(lname)) {
-          if (/^[a-zA-Z\s]+$/.test(name)) {
-            if (/^[A-Za-z0-9.%+-]+@gmail\.com$/.test(req.body.email)) {
-              const address = await AddressDB({
-                userID: req.session.user_id,
-                address: [
-                  {
-                    fname: req.body.fname,
-                    lname: req.body.lname,
-                    country: req.body.country,
-                    address: req.body.address,
-                    city: req.body.city,
-                    state: req.body.state,
-                    pincode: req.body.pincode,
-                    mobile: req.body.mobile,
-                    email: req.body.email,
-                  },
-                ],
-              });
 
-              await address.save();
 
-              res.redirect("/Addresses");
-            } else {
-              req.flash("msg4", "Check Your Email Structure");
-              res.redirect("/addAddress");
-            }
-          } else {
-            req.flash("msg3", "Invalid Address");
-            res.redirect("/addAddress");
-          }
-        } else {
-          req.flash("msg2", "Invalid Lname");
-          res.redirect("/addAddress");
-        }
-      } else {
-        req.flash("msg1", "Invalid Fname");
-        res.redirect("/addAddress");
-      }
-    } else {
-      const fname = req.body.fname.trim();
-      const lname = req.body.lname.trim();
-      const name = req.body.address.trim();
-      if (/^[a-zA-Z]+$/.test(fname)) {
-        if (/^[a-zA-Z]+$/.test(lname)) {
-          if (/^[a-zA-Z\s]+$/.test(name)) {
-            const checkAddress = exists.address.find(
+    if(!/^[a-zA-Z]+$/.test(fname)){
+      return res.json({success:false,message:'Invalid First Name!.'})
+    }
+    if(!/^[a-zA-Z]+$/.test(fname)){
+     return res.json({success:false,message:'Invalid Second Name!.'})
+    }
+
+    const checkAddress = addresses.address.find(
               (address) =>
                 address.fname == fname &&
                 address.lname == lname &&
-                address.address == name
+                address.address == address
             );
-            if (!checkAddress) {
-              if (/^[A-Za-z0-9.%+-]+@gmail\.com$/.test(req.body.email)) {
-                const data = await AddressDB.findOneAndUpdate(
+
+    if(checkAddress){
+      return res.json({success:false,message:"This Address Already Exist!."})
+    }
+
+    await AddressDB.findOneAndUpdate(
                   { userID: req.session.user_id },
                   {
                     $push: {
                       address: {
-                        fname: req.body.fname,
-                        lname: req.body.lname,
-                        country: req.body.country,
-                        address: req.body.address,
-                        city: req.body.city,
-                        state: req.body.state,
-                        pincode: req.body.pincode,
-                        mobile: req.body.mobile,
-                        email: req.body.email,
+                        fname: fname,
+                        lname: lname,
+                        country: country,
+                        address: address,
+                        city: city,
+                        state: state,
+                        pincode: pincode,
+                        mobile: mobile,
+                        email: addresses.userID.email,
                       },
                     },
                   }
                 );
-                res.redirect("/Addresses");
-              } else {
-                req.flash("msg4", "Check Your Email Structure");
-                res.redirect("/addAddress");
-              }
-            } else {
-              req.flash("msg3", "This Address Already Exist");
-              res.redirect("/addAddress");
-            }
-          } else {
-            req.flash("msg3", "Invalid Address");
-            res.redirect("/addAddress");
-          }
-        } else {
-          req.flash("msg2", "Invalid Lname");
-          res.redirect("/addAddress");
-        }
-      } else {
-        req.flash("msg1", "Invalid Fname");
-        res.redirect("/addAddress");
-      }
-    }
+
+             return   res.json({success:true,message:"Successfully added the Address!."})
+     
   } catch (error) {
     console.log(error.message);
   }
@@ -1248,48 +990,38 @@ const saveAddress = async (req, res) => {
 
 const loadAddress = async (req, res) => {
   try {
-    const cartData = await CartDB.findOne({
-      userId: req.session.user_id,
-    }).populate({
-      path: "products.productId",
-      populate: { path: "categoryID" },
-    });
-    const wishlistData = await WishlistDB.findOne({
-      userId: req.session.user_id,
-    }).populate("products.productId");
-    const offerData = await OfferDB.find({});
-    let cartTotal = 0;
-    if (cartData) {
-      cartTotal = cartData.products.reduce((acc, value) => {
-        value;
-        const offer = offerData.find(
-          (iteam) =>
-            iteam.iteam === value.productId.name ||
-            iteam.iteam === value.productId.categoryID.name
-        );
-        if (offer) {
-          return (
-            acc +
-            value.productId.Price * value.quandity -
-            Math.round(
-              (value.productId.Price * value.quandity * offer.offerRate) / 100
-            )
-          );
-        } else {
-          return acc + value.productId.Price * value.quandity;
-        }
-      }, 0);
-    }
+
+    const {cartData,wishlistData,cartTotal} = await getStoreDataForUser(req,res)
+   
     let page;
-    if (req.query.page) {
-      page = req.query.page;
-    }
+  
     const limit = 2;
     const data = await AddressDB.findOne({ userID: req.session.user_id })
       .populate("userID")
-      .limit(limit * 1)
+      .limit(limit)
+    const count = await AddressDB.findOne({ userID: req.session.user_id })
+      .populate("userID")
+      .countDocuments();
+
+    res.render("address", {
+      addressData: data,
+      totalPage: Math.ceil(count / limit),
+      cartData,
+      wishlistData,
+      cartTotal,
+    });
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+const paginationAddress = async (req, res) => {
+  try {
+    const {page} = req.query;
+    const limit = 2;
+    const data = await AddressDB.findOne({ userID: req.session.user_id })
+      .populate("userID")
       .skip((page - 1) * limit)
-      .exec();
+      .limit(limit * page)
     const count = await AddressDB.findOne({ userID: req.session.user_id })
       .populate("userID")
       .countDocuments();
@@ -1297,11 +1029,6 @@ const loadAddress = async (req, res) => {
     res.render("address", {
       addressData: data,
       totalPages: Math.ceil(count / limit),
-      currentPage: page,
-      cartData,
-      wishlistData,
-      offerData,
-      cartTotal,
     });
   } catch (error) {
     console.log(error.message);
@@ -1342,10 +1069,10 @@ const loadeditAddress = async (req, res) => {
         }
       }, 0);
     }
-    const data = await AddressDB.findOne({ "address._id": req.query.id });
+    const data = await AddressDB.findOne({ "address._id": req.query._id });
 
     const productUpdate = data.address.find((a) => {
-      return a._id.equals(req.query.id);
+      return a._id.equals(req.query._id);
     });
 
     res.render("editAddress", {
@@ -1365,74 +1092,42 @@ const loadeditAddress = async (req, res) => {
 
 const veryfyAddress = async (req, res) => {
   try {
-    const data = await AddressDB.findOne({
+
+    const {fname,lname,address,country,mobile,city,pincode,state} = req.body;
+    console.log('req.query._id',req.query._id,req.body)
+    const addresses = await AddressDB.findOne({
       userID: req.session.user_id,
     }).populate("userID");
 
-    const address = data.address.find((a) => {
-      return a._id.equals(req.query.id);
+    const currentAddress = addresses.address.find((a) => {
+      return a._id.equals(req.query._id);
     });
-    const fname = req.body.fname.trim();
-    const lname = req.body.lname.trim();
-    const name = req.body.address.trim();
-    if (/^[a-zA-Z]+$/.test(fname)) {
-      if (/^[a-zA-Z]+$/.test(lname)) {
-        if (/^[a-zA-Z\s]+$/.test(name)) {
-          const checkAddress = data.address.find(
-            (address) => address.address == req.body.address
-          );
-          if (address.address == req.body.address) {
-            if (/^[A-Za-z0-9.%+-]+@gmail\.com$/.test(req.body.email)) {
-              address.fname = req.body.fname;
-              address.lname = req.body.lname;
-              address.address = req.body.address;
-              address.country = req.body.country;
-              address.state = req.body.state;
-              address.city = req.body.city;
-              address.pincode = req.body.pincode;
-              address.email = req.body.email;
-              address.mobile = req.body.mobile;
 
-              const x = await data.save();
-              res.redirect("/addresses");
-            } else {
-              req.flash("msg4", "Check Your Email Structure");
-              res.redirect(`/editAddress?id=${req.query.id}`);
-            }
-          } else if (!checkAddress) {
-            if (/^[A-Za-z0-9.%+-]+@gmail\.com$/.test(req.body.email)) {
-              address.fname = req.body.fname;
-              address.lname = req.body.lname;
-              address.address = req.body.address;
-              address.country = req.body.country;
-              address.state = req.body.state;
-              address.city = req.body.city;
-              address.pincode = req.body.pincode;
-              address.email = req.body.email;
-              address.mobile = req.body.mobile;
-
-              const x = await data.save();
-              res.redirect("/addresses");
-            } else {
-              req.flash("msg4", "Check Your Email Structure");
-              res.redirect(`/editAddress?id=${req.query.id}`);
-            }
-          } else {
-            req.flash("msg3", "Address Already Exists");
-            res.redirect(`/editAddress?id=${req.query.id}`);
-          }
-        } else {
-          req.flash("msg3", "Invalid Address");
-          res.redirect(`/editAddress?id=${req.query.id}`);
-        }
-      } else {
-        req.flash("msg2", "Invalid Lname");
-        res.redirect(`/editAddress?id=${req.query.id}`);
-      }
-    } else {
-      req.flash("msg1", "Invalid Fname");
-      res.redirect(`/editAddress?id=${req.query.id}`);
+    if(!/^[a-zA-Z]+$/.test(fname)){
+      return res.json({success:false,message:"Invalid First Name"})
     }
+    if(!/^[a-zA-Z]+$/.test(lname)){
+       return res.json({success:false,message:"Invalid Second Name"})
+    }
+ 
+
+    const checkAddress = addresses.address.find((addr) => addr.address == address);
+    console.log('currentAddress',currentAddress)
+    console.log('checkAddress',checkAddress)
+    if(checkAddress && checkAddress._id.toString() !== currentAddress._id.toString()){
+      res.json({success:false,message:"Address Already Exists!."})
+    }
+    
+    currentAddress.fname = fname;
+    currentAddress.lname = lname;
+    currentAddress.address = address;
+    currentAddress.country = country;
+    currentAddress.state = state;
+    currentAddress.city = city;
+    currentAddress.pincode = pincode;
+    currentAddress.mobile = mobile;
+    await addresses.save();
+    return res.json({success:true,message:"Address Edited Successfully!."})
   } catch (error) {
     console.log(error.message);
   }
@@ -1947,8 +1642,8 @@ const test = async (req, res) => {
         {
           quantity: product.quandity,
           description: product.productId.name,
-          // taxRate: 6,
-          price: product.productTotal * product.quandity,
+          price: product.productId.Price,
+          discount:  (product.productId.Price*product.quandity) - product.productTotal,
         },
       ],
       // Settings to customize your invoice
@@ -1978,6 +1673,7 @@ const test = async (req, res) => {
     console.log(error.message);
   }
 };
+
 
 //########### coupens ############3
 
@@ -2019,14 +1715,58 @@ const coupens = async (req, res) => {
         }
       }, 0);
     }
-    const data = await CoupenDB.find({});
+    const limit = 4;
+    const count = await CoupenDB.find({}).countDocuments();
+    const data = await CoupenDB.find({}).limit(limit);
     res.render("coupens", {
       coupens: data,
       user: req.session.user_id,
       cartData,
       wishlistData,
+      totalPage:Math.ceil(count/limit),
       cartTotal,
     });
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+const paginationCoupon = async (req, res) => {
+  try {
+    const {page} = req.query;
+    const limit = 4;
+    const count = await CoupenDB.find({}).countDocuments();
+    const data = await CoupenDB.find({}).skip((page-1)*limit).limit(limit*page);
+    res.json({  coupens: data, user: req.session.user_id,totalPage:Math.ceil(count/limit)})
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+const filterCoupon = async (req, res) => {
+  try {
+    const {filter} = req.query;
+    const limit = 4;
+    const date = new Date();
+    let coupons 
+    switch (filter) {
+      case "All":
+        coupons = await CoupenDB.find({})
+        break
+      case "Active":
+        coupons = await CoupenDB.find({$and:[ { usedUsers: { $nin: [req.session.user_id] } },{expiryDate:{$gte:date}}]})
+        break
+      case "Used":
+         coupons = await CoupenDB.find({ usedUsers: { $in: [req.session.user_id] } })
+        break
+      case "Expired":
+         coupons = await CoupenDB.find({expiryDate:{$lt:date}})
+        break;
+      default:
+        break;
+    }
+    const totalPage =  Math.ceil(coupons.length/limit)
+    coupons = coupons.slice(0,limit)
+    return res.json({  coupens: coupons, user: req.session.user_id,totalPage});
+
   } catch (error) {
     console.log(error.message);
   }
@@ -2081,7 +1821,11 @@ module.exports = {
   loadeditAddress,
   veryfyAddress,
   removeAddress,
-
+  changeEmail,
+  verifychangeEmail,
+  verifychangeEmailOtp,
+  paginationAddress,
+  
   //#### cart ######
 
   handleCart,
@@ -2102,5 +1846,9 @@ module.exports = {
   about,
   contact,
   removeOutofStock,
-  sort
+  sort,
+  paginationProduct,
+  searchProduct,
+  paginationCoupon,
+  filterCoupon,
 };

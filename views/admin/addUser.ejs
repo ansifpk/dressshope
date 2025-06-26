@@ -67,38 +67,30 @@
                 <div class="card mx-auto card-login">
                     <div class="card-body">
                         <h4 class="card-title mb-4">Add User</h4>
-                        <form action="" method="post">
-                            <% 
-
-                            if(typeof message!== "undefined"){
-                               %>
-                               <p style="color:white; background-color:red; text-align: center;"><%= message %> </p>
-                               <%
-                            }
-                            
-                            %>
+                        <form >
+                           
                             <div class="mb-3">
-                                <label class="form-label">Email</label>
-                                <input class="form-control" name="email" required  />
+                                <label id="emailLabel" class="form-label">Enter Email</label>
+                                <input id="email" class="form-control" name="email" required  />
                                 
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Name</label>
-                                <input class="form-control" name="name" required />
+                                <label id="nameLabel" class="form-label">Enter Name</label>
+                                <input id="name" class="form-control" name="name" required />
                               
                             </div>
                             <!-- form-group// -->
                             <div class="mb-3">
-                                <label class="form-label">Phone</label>
+                                <label id="mobileLabel" class="form-label">Enter Phone</label>
                                 <div class="row gx-2">
-                                    <div class="col-4"><input class="form-control" value="+91" /></div>
-                                    <div class="col-8"><input class="form-control" name="mobile" required   /></div>
+                                    <div class="col-4"><input class="form-control" disabled value="+91" /></div>
+                                    <div class="col-8"><input  id="mobile" class="form-control" name="mobile" required   /></div>
                                 </div>
                             </div>
                             <!-- form-group// -->
                             <div class="mb-3">
-                                <label class="form-label">Password</label>
-                                <input class="form-control" name="password" required />
+                                <label id="passwordLabel" class="form-label">Password</label>
+                                <input class="form-control" type="password" id="password" name="password" required />
                               
                             </div>
                             <!-- form-group// -->
@@ -110,8 +102,7 @@
                                 
                                 
                             <div class="mb-4">
-                                <button type="submit" class="btn btn-primary w-100">Add User</button>
-                               
+                                <button type="button" onclick="handleClick()" class="btn btn-primary w-100">Add User</button>
                             </div>
                             <!-- form-group// -->
                         </form>
@@ -129,6 +120,92 @@
                 <p class="font-xs mb-30">All rights reserved</p>
             </footer>
         </main>
+        <script>
+            function handleClick() {
+                const email = document.getElementById("email").value.trim();
+                const emailLabel = document.getElementById("emailLabel");
+                const name = document.getElementById("name").value.trim();
+                const nameLabel = document.getElementById("nameLabel");
+                const password = document.getElementById("password").value.trim();
+                const passwordLabel = document.getElementById("passwordLabel");
+                const mobile = document.getElementById("mobile").value.trim();
+                const Labelmobile = document.getElementById("mobileLabel");
+    
+                if(email.length == 0){
+                    emailLabel.style.color = "red";
+                }else{
+                    emailLabel.style.color = "";
+                }
+                if(name.length == 0){
+                    nameLabel.style.color = "red";
+                }else{
+                    nameLabel.style.color = "";
+                }
+                if(mobile.length == 0){
+                    mobileLabel.style.color = "red";
+                }else{
+                    mobileLabel.style.color = "";
+                }
+                if(password.length == 0){
+                    passwordLabel.style.color = "red";
+                }else{
+                    passwordLabel.style.color = "";
+                }
+
+                if(!email || !name || !password || !mobile){
+                        Swal.fire({
+                            title:"Login Failed!.",
+                            text: "Please fill all the fields!.",
+                            icon: "warning",
+                            draggable: true
+                        });
+                   return;
+                }
+
+                fetch("/admin/addUser",{method:"POST",body:JSON.stringify({email,password,name,mobile}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
+                .then((res)=>{
+                    if(res.success){
+                        Swal.fire({
+                            title:"User Added Successfull!.",
+                            text: res.message,
+                            icon: "success",
+                            draggable: true
+                        });
+                        window.location.href="/admin/viewUser";
+                        return;
+                    }else{
+                     
+                        if(res.field == 'email'){
+                           emailLabel.style.color = "red";
+                        }else{
+                                emailLabel.style.color = "";
+                        }
+                        if(res.field == 'name'){
+                                nameLabel.style.color = "red";
+                        }else{
+                                nameLabel.style.color = "";
+                        }
+                        if(res.field == 'mobile'){
+                                mobileLabel.style.color = "red";
+                        }else{
+                                mobileLabel.style.color = "";
+                        }
+                        if(res.field == 'password'){
+                                passwordLabel.style.color = "red";
+                        }else{
+                                passwordLabel.style.color = "";
+                        }
+                         Swal.fire({
+                            title:"Failed!.",
+                            text: res.message,
+                            icon: "warning",
+                            draggable: true
+                        });
+                    }
+                })
+            }
+        </script>
+         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script src="assets/js/vendors/jquery-3.6.0.min.js"></script>
         <script src="assets/js/vendors/bootstrap.bundle.min.js"></script>
         <script src="assets/js/vendors/jquery.fullscreen.min.js"></script>

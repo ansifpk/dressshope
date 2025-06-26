@@ -1,5 +1,8 @@
 const mongoose = require('mongoose')
 const OfferDB = require("../model/offerModel");
+const CategoryDb = require("../model/categoryModel");
+const ProductDb = require("../model/productModel");
+const RefaralDB = require("../model/referalOfferModel");
 
 const offer = async (req, res) => {
     try {
@@ -12,7 +15,8 @@ const offer = async (req, res) => {
 
 const loadaddOffer = async (req, res) => {
     try {
-        res.render('addOffer')
+        const items = await ProductDb.find({is_listed:true})
+        res.render('addOffer',{items})
     } catch (error) {
         console.log(error.message);
     }
@@ -20,50 +24,45 @@ const loadaddOffer = async (req, res) => {
 
 const verifyOffer = async (req, res) => {
     try {
-        const data = await OfferDB.find({});
-        let value;
-        const today = new Date();
-        const offerPrice = req.body.offerPrice;
-        const expiryDate = new Date(req.body.date);
-        const exist = data.find((p) => p.iteam == req.body.offerIteam)
+        
+        // let value;
 
-        if (!exist) {
-            if (offerPrice >= 20 & offerPrice <= 70) {
-                if (expiryDate.getFullYear() >= today.getFullYear() & expiryDate.getMonth() >= today.getMonth()) {
-                    if(expiryDate.getFullYear() == today.getFullYear() & expiryDate.getMonth() == today.getMonth()){
-                       if(expiryDate.getDate() >= today.getDate() & expiryDate.getDate()<=31 ){
-                    const data = new OfferDB({
-                        name: req.body.title,
-                        iteam: req.body.offerIteam,
-                        offerRate: req.body.offerPrice,
-                        validity: req.body.date
-                    });
-                    await data.save();
-                    res.redirect('/admin/offer');
-                    
-                       } else {
-                           res.render('addOffer', { message: "Invalid Date" })
-                       }
-                    }else{
-                        
-                    const data = new OfferDB({
-                        name: req.body.title,
-                        iteam: req.body.offerIteam,
-                        offerRate: req.body.offerPrice,
-                        validity: req.body.date
-                    });
-                    await data.save();
-                    res.redirect('/admin/offer');
-                    }
-            } else {
-                res.render('addOffer', { message: "Invalid Date" })
-            }
-        }else{
-            res.render('addOffer', { message: " Offer Rate Must Be More Than 20 And Below 70 " })
+        const {offerTitle,iteamName,offerPrice} = req.body
+        const offer = await OfferDB.find({});
+        const expiryDate = new Date(req.body.date);
+        const today = new Date();
+        
+        const checkItemsProduct = await ProductDb.findOne({name:iteamName});
+        const checkItemsCategory = await CategoryDb.findOne({name:iteamName});
+        
+        if(!checkItemsProduct && !checkItemsCategory){
+            return res.json({success:false,message:"This iteam Not Found!."});
         }
-        } else {
-            res.render('addOffer', { message: "this iteam already have offer" })
+
+        const exist = offer.find((p) => p.iteam == iteamName);
+  
+        if(exist){
+           return res.json({success:false,message:"This iteam already have offer"});
         }
+
+        if(offerPrice > 20 || offerPrice < 5 ){
+             return res.json({success:false,message:"Offer Price Must be in Between 5% - 20%"});
+        }
+        
+        if(today>=expiryDate){
+             return res.json({success:false,message:"Invalid Expiry Date!."});
+        }
+ 
+         const data = new OfferDB({
+                        name: offerTitle,
+                        iteam: iteamName,
+                        offerRate: offerPrice,
+                        validity: expiryDate
+                    });
+         await data.save();
+         return res.json({success:true,message:"Successfully Added the Offer!."});
+         
+        
 
 
     } catch (error) {
@@ -75,7 +74,103 @@ const verifyOffer = async (req, res) => {
 const deleteOffer = async (req, res) => {
     try {
         const { offerId } = req.query;
-        await OfferDB.findByIdAndDelete({ _id: offerId });
+        const data = await OfferDB.findByIdAndDelete({ _id: offerId });
+        if(!data){
+          return  res.json({success:false,message:"Offer Not Found!."})
+        }
+        res.json({success:true})
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+const selectOffer = async (req, res) => {
+    try {
+        const { item } = req.query;
+        let datas;
+        if(item == "Category"){
+          datas =  await CategoryDb.find();
+        }else{
+          datas =  await ProductDb.find();
+        }
+
+        return res.json({success:true,data:datas});
+
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
+const referalOffer = async (req, res) => {
+    try {
+      const refaralOffer = await RefaralDB.findOne();
+      res.render("referalOffer",{refaralOffer})
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+const createReferalOffer = async (req, res) => {
+    try {
+     
+      const refaralOffer = await RefaralDB.findOne();
+
+      if(refaralOffer){
+        return res.json({success:false,message:"ALready Have an Refaral Offer"})
+      }
+
+      const {ReferedUserPrice,NewUserPrice} = req.body;
+      if(ReferedUserPrice < 50 || ReferedUserPrice > 300){
+        return res.json({success:false,message:"ReferedUserPrice Must Be In Between 50 - 300"})
+      }
+      if(NewUserPrice < 50 || NewUserPrice > 300){
+        return res.json({success:false,message:"NewUserPrice Must Be In Between 50 - 300"})
+      }
+      const offer = RefaralDB({
+        newUserAmount:NewUserPrice,
+        refaralUserAmount:ReferedUserPrice
+      })
+      await offer.save();
+      
+      return res.json({success:true,offer,message:"Refaral Offer Created Successfully!."})
+
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
+const editReferalOffer = async (req, res) => {
+    try {
+
+      const {ReferedUserPrice,NewUserPrice,refaralId} = req.body;
+      const checkRefaral = await RefaralDB.findOne({_id:refaralId});
+      if(!checkRefaral){
+         return res.json({success:false,message:"Refaral Offer Not Found!"})
+      }
+     
+      if(ReferedUserPrice < 50 || ReferedUserPrice > 300){
+        return res.json({success:false,message:"ReferedUserPrice Must Be In Between 50 - 300"})
+      }
+      if(NewUserPrice < 50 || NewUserPrice > 300){
+        return res.json({success:false,message:"NewUserPrice Must Be In Between 50 - 300"})
+      }
+      await RefaralDB.findByIdAndUpdate({_id:refaralId},{
+        newUserAmount:NewUserPrice,
+        refaralUserAmount:ReferedUserPrice
+      },{new:true});
+      res.json({success:true,message:"SuccessFully Edited The Offer Price"});
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+const deleteReferalOffer = async (req, res) => {
+    try {
+
+      const {_id} = req.query;
+      const checkRefaral = await RefaralDB.findOne({_id:_id});
+      if(!checkRefaral){
+         return res.json({success:false,message:"Refaral Offer Not Found!"})
+      }
+      await RefaralDB.findByIdAndDelete({_id:_id});
+      res.json({success:true,message:"SuccessFully Delted The Refaral Offer"});
 
     } catch (error) {
         console.log(error.message);
@@ -88,4 +183,9 @@ module.exports = {
     loadaddOffer,
     verifyOffer,
     deleteOffer,
+    selectOffer,
+    referalOffer,
+    editReferalOffer,
+    createReferalOffer,
+    deleteReferalOffer,
 }

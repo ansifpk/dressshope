@@ -83,23 +83,23 @@
                         </div>
                     </li>
                     <li class="menu-item has-submenu">
-                        <a class="menu-link" href="/admin/coupens">
+                        <a class="menu-link" href="/admin/coupons">
                             <i class="icon material-icons md-shopping_bag"></i>
-                            <span class="text">Coupens</span>
+                            <span class="text">Coupons</span>
                         </a>
                         <div class="submenu">
-                            <a href="/admin/coupens">Coupens List</a>
+                            <a href="/admin/coupons">Coupons List</a>
                            
                         </div>
                     </li>
                     <li class="menu-item has-submenu">
-                        <a class="menu-link" href="/admin/coupens">
+                        <a class="menu-link" href="">
                             <i class="icon material-icons md-shopping_bag"></i>
                             <span class="text">Offers</span>
                         </a>
                         <div class="submenu">
                             <a href="/admin/offer">Offers List</a>
-                           
+                            <a href="/admin/referalOffer">Referal Offer</a>
                         </div>
                     </li>
                     <li class="menu-item has-submenu">
@@ -128,18 +128,7 @@
         <main class="main-wrap">
             <header class="main-header navbar">
                 <div class="col-search">
-                    <form class="searchform">
-                        <div class="input-group">
-                            <input list="search_terms" type="text" class="form-control" placeholder="Search term" />
-                            <button class="btn btn-light bg" type="button"><i class="material-icons md-search"></i></button>
-                        </div>
-                        <datalist id="search_terms">
-                            <option value="Products"></option>
-                            <option value="New orders"></option>
-                            <option value="Apple iphone"></option>
-                            <option value="Ahmed Hassan"></option>
-                        </datalist>
-                    </form>
+                    
                 </div>
                 <div class="col-nav">
                     <button class="btn btn-icon btn-mobile me-auto" data-trigger="#offcanvas_aside"><i class="material-icons md-apps"></i></button>
@@ -230,7 +219,7 @@
                                                         %>
                                                         <div class="d-flex align-items-center justify-content-between mb-4">
                                                     <div class="d-flex align-items-center">
-                                                        <img src="/admin/assets/productImages/<%=arrayCount[i].image%>" alt="" class="avatar" />
+                                                        <img src="<%=arrayCount[i].image.secure_url%>" alt="" class="avatar" />
                                                         <div>
                                                             <h6><%=arrayCount[i].name%></h6>
                                                           

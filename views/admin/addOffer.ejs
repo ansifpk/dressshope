@@ -17,6 +17,7 @@
     <!-- Favicon -->
     <link rel="shortcut icon" type="image/x-icon" href="assets/imgs/theme/favicon.svg">
     <!-- Template CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
     <link href="assets/css/main.css?v=1.1" rel="stylesheet" type="text/css" />
 </head>
 
@@ -86,17 +87,17 @@
                     </div>
                 </li>
                 <li class="menu-item has-submenu">
-                    <a class="menu-link" href="/admin/coupens">
+                    <a class="menu-link" href="/admin/coupons">
                         <i class="icon material-icons md-shopping_bag"></i>
-                        <span class="text">Coupens</span>
+                        <span class="text">Coupons</span>
                     </a>
                     <div class="submenu">
-                        <a href="/admin/coupens">Coupens List</a>
+                        <a href="/admin/coupons">Coupons List</a>
                        
                     </div>
                 </li>
                 <li class="menu-item has-submenu">
-                    <a class="menu-link" href="/admin/coupens">
+                    <a class="menu-link" href="">
                         <i class="icon material-icons md-shopping_bag"></i>
                         <span class="text">Offers</span>
                     </a>
@@ -198,61 +199,56 @@
                     <div class="card mb-4">
                         <div class="card-body">
                             <div class="row">
-                                <form  action="" method="post" >
+                                <form   >
                                     <h2 class="content-title text-center text-primary">Add New Offer</h2>
-                                    <div class="form-group">
-                                        <% 
-                                        if(typeof message!== "undefined"){
-                                           %>
-                                           <p style="color:white; background-color:green; text-align: center;"><%= message %> </p>
-                                           <%
-                                        }                               
-                                        %>
-                                     </div>   
-                                   
                                     <div class="col-md-12">
-                                       <div class="row gx-2">
-                                          <div class="col-md-6 mb-6">
-                                                <label for="product_sku" class="form-label">Offer Title</label>
-                                                <input type="text" name="title" class="form-control" />                                      
+                                       <div class="row gx-3">
+                                          <div class="col-md-4 mb-4">
+                                                <label for="product_sku" id="titleLabel" class="form-label">Offer Title</label>
+                                                <input id="title" type="text" placeholder="Type here" name="title" class="form-control" />                                      
+                                          </div>
+                                          <div class="col-md-4 mb-4">
+                                            <label  for="product_sku" id="offerIteamLabel" class="form-label">Offer Itme</label>
+                                            <select class="form-control"  id="offerIteam" onchange="handleChange()">
+                                                <option value="Select Offer item..." disabled>Select Offer item...</option>
+                                                <option value="Category">Category</option>
+                                                <option value="Products" selected >Products</option>
+                                            </select>                  
                                           </div>
                                          
-                                          <div class="col-md-6 mb-6">
-                                                <label for="product_sku" class="form-label">Offer Iteam</label>
-                                               <input type="text" placeholder="Type here" name="offerIteam" class="form-control" id="product_sku" />
+                                          <div class="col-md-4 mb-">
+                                            <label for="product_sku" id="iteamNameLabel" class="form-label">Iteam Name </label>
+                                               <select class="form-control"  id="iteamName" >
+                                                  <option value="Select Offer item..." selected disabled>Select Offer item...</option>
+                                                <%
+                                                  items.forEach((itm,index) => {
+                                                     %>
+                                                        <option value="<%=itm.name%>"><%=itm.name%></option>
+                                                     <%
+                                                  });
+                                                %>
+                                              </select>    
                                            </div>
                                     
                                         </div>
                                         <hr class="mb-4 mt-0">
                                         <div class="row gx-2">
                                           <div class="col-md-6 mb-6">
-                                                <label for="product_sku" class="form-label">Validity Date</label>
-                                                <input type="date" name="date" class="form-control" />                                      
+                                                <label for="product_sku" id="dateLabel" class="form-label">Validity Date</label>
+                                                <input type="date" id="date" name="date" class="form-control" />                                      
                                           </div>
                                          
                                           <div class="col-md-6 mb-6">
-                                                <label for="product_sku" class="form-label">Offer Price</label>
-                                               <input type="text" placeholder="Type here" name="offerPrice" class="form-control" id="product_sku" />
-                                           </div>
-                                    
+                                                <label for="product_sku" id="offerPriceLabel" class="form-label">Offer Price</label>
+                                               <input type="number"  id="offerPrice" placeholder="Type here" name="offerPrice" class="form-control"  />
+                                          </div>
                                         </div>                        
                                     </div> <!-- col.// -->
                                     
                                     <hr class="mb-4 mt-0">
-                                   
-                               
-                                    <button type="submit" class="btn btn-primary w-100">Add Offer</button>
-                                
-                            </form>
-                                
-                        </div> <!-- row.// -->
-                               
-                                
-                          
-                               
-                          
-                          
-                            
+                                    <button type="button" onclick="handleSubmition()" class="btn btn-primary w-100">Add Offer</button>
+                            </form>     
+                          </div> <!-- row.// -->
                         </div>
                     </div>
                 </div>
@@ -279,12 +275,100 @@
             
         }
     </script>
+    <script>
+        function handleSubmition() {
+             const offerTitle = document.getElementById("title").value.trim();
+             const offerIteam = document.getElementById("offerIteam").value.trim();
+             const iteamName = document.getElementById("iteamName").value.trim();
+             const date = document.getElementById("date").value.trim();
+             const offerPrice = document.getElementById("offerPrice").value.trim();
+
+             const titleLabel = document.getElementById("titleLabel");
+             const offerIteamLabel = document.getElementById("offerIteamLabel");
+             const iteamNameLabel = document.getElementById("iteamNameLabel");
+             const dateLabel = document.getElementById("dateLabel");
+             const offerPriceLabel = document.getElementById("offerPriceLabel");
+             let error = false;
+             if(offerTitle.length == 0){
+               titleLabel.style.color="red"
+               error = true;
+             }else{
+                 titleLabel.style.color=""
+             }
+             if(offerIteam.length == 0 ){
+               offerIteamLabel.style.color="red";
+               error = true;
+             }else{
+                 offerIteamLabel.style.color=""
+             }
+             if(iteamName.length == 0 || iteamName == "Select Offer item..."){
+               iteamNameLabel.style.color="red";
+               error = true;
+             }else{
+                 iteamNameLabel.style.color=""
+             }
+             if(date.length == 0){
+               dateLabel.style.color="red";
+               error = true;
+             }else{
+                 dateLabel.style.color=""
+             }
+             if(offerPrice.length == 0){
+               offerPriceLabel.style.color="red";
+               error = true;
+             }else{
+                 offerPriceLabel.style.color=""
+             }
+             if(error){
+                return;
+             }
+         
+            fetch("/admin/addOffer",{method:"POST",body:JSON.stringify({offerTitle,date,iteamName,offerPrice}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
+            .then((res)=>{
+
+                if(res.success){
+                    Swal.fire({
+                        title:"Success!.",
+                        text: res.message,
+                        icon: "success",
+                    });
+                    window.location.href="/admin/offer"
+                }else{
+                    Swal.fire({
+                            title:"Failed!.",
+                            text: res.message,
+                            icon: "warning",
+                    });
+                }
+            })
+        }
+
+        
+    </script>
+    <script>
+        function handleChange() {
+            const offerIteam = document.getElementById("offerIteam").value.trim();
+            const iteamName = document.getElementById("iteamName")
+            console.log("hu",offerIteam);
+            fetch(`/admin/selectOffer?item=${offerIteam}`).then((res)=>res.json())
+            .then((res)=>{
+                iteamName.innerHTML = `
+                    <option value="Select Offer item..." selected disabled>Select Offer item...</option>
+                    ${res.data.map(element => `
+                        <option value="${element.name}">${element.name}</option>
+                    `).join('')}
+                 `
+            });
+        }
+    </script>
     <script src="assets/js/vendors/jquery-3.6.0.min.js"></script>
     <script src="assets/js/vendors/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="assets/js/vendors/select2.min.js"></script>
     <script src="assets/js/vendors/perfect-scrollbar.js"></script>
     <script src="assets/js/vendors/jquery.fullscreen.min.js"></script>
     <!-- Main Script -->
+     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
     <script src="assets/js/main.js?v=1.1" type="text/javascript"></script>
 </body>
 

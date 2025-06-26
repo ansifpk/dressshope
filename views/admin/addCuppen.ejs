@@ -189,24 +189,16 @@
                     <div class="card mb-4">
                         <div class="card-body">
                             <div class="row">
-                                <form  action="" method="post" enctype="multipart/form-data">
+                                <form  enctype="multipart/form-data">
                                     <h2 class="content-title text-center text-primary">Add New cuppen</h2>
                                     <div class="form-group">
-                                        <% 
-                                        if(typeof message!== "undefined"){
-                                           %>
-                                           <p style="color:white; background-color:red; text-align: center;"><%= message %> </p>
-                                           <%
-                                        }                               
-                                        %>
+                                        
                                      </div>   
-                                    <div class="col-md-3">
-                                        <h6>1. General info</h6>
-                                    </div>
+                                  
                                     <div class="col-md-9">
                                         <div class="mb-4">
-                                            <label class="form-label">cuppen title</label>
-                                            <input type="text" placeholder="Type here" name="name" class="form-control" required>
+                                            <label id="titleLabel" class="form-label">Cuppen Title</label>
+                                            <input type="text" id="title" placeholder="Type here" name="name" class="form-control" required>
                                         </div>
                                        
                                       
@@ -216,29 +208,25 @@
                                
                                 
                             <hr class="mb-4 mt-0">
-                                <div class="mb-4">
-                                            <label class="form-label">Description</label>
-                                            <input placeholder="Type here" class="form-control" name="Description" rows="4"></input>
-                                </div>
                                 <hr class="mb-4 mt-0">
                                 <div class="mb-4">
-                                            <label class="form-label">Coupen id</label>
-                                            <input id="coupenId" placeholder="Type here" class="form-control" name="coupenId" rows="4"></input>
+                                            <label id="coupenCodeLabel" class="form-label">Coupen Code</label>
+                                            <input id="coupenCode" placeholder="Type here" class="form-control" name="coupenId" rows="4"></input>
                                 </div>
                                 <hr class="mb-4 mt-0">
                                 <div class="row gx-3">
                                     <div class="col-md-4 mb-4">
-                                        <label for="product_sku" class="form-label">Validity Date</label>
-                                              <input type="date" name="date" class="form-control" />
+                                        <label for="product_sku" id="dateLabel" class="form-label">Validity Date</label>
+                                              <input type="date" id="date" name="date" class="form-control" />
                                        
                                     </div>
                                     <div class="col-md-4 mb-4">
-                                        <label for="product_sku" class="form-label">Offer Price</label>
-                                        <input type="text" placeholder="Type here" name="offerPrice" class="form-control" id="product_sku" />
+                                        <label for="product_sku" id="offerPriceLabel" class="form-label">Offer Price</label>
+                                        <input type="text" placeholder="Type here" name="offerPrice" class="form-control" id="offerPrice" />
                                     </div>
                                     <div class="col-md-4 mb-4">
-                                        <label for="product_sku" class="form-label">max Limite</label>
-                                        <input type="text" placeholder="Type here" name="max" class="form-control" id="product_sku" />
+                                        <label for="product_sku" id="minLabel" class="form-label">Min Limite</label>
+                                        <input type="text" placeholder="Type here" name="min" class="form-control" id="minLimit" />
                                     </div>
                                 </div>
                                 <hr class="mb-4 mt-0">
@@ -246,24 +234,24 @@
                                    
                                    <div class="card mb-4">
                                     <div class="card-header d-flex justify-content-between align-items-center">
-                                      <h5 class="mb-0 card-title">Media</h5>
+                                      <h5 class="mb-0 card-title">Choose Coupon Image</h5>
                                       <a href="javascript:void(0);" class="fw-medium">Add media from URL</a>
                                     </div>
                                     <div class="card-body">
-                                     <div class="dz-message needsclick my-5">
-                                          <p class="fs-4 note needsclick my-2">Drag and drop your image here</p>
-                                          <small class="text-muted d-block fs-6 my-2">or</small>
-                                          <span class="note needsclick btn bg-label-primary d-inline" id="btnBrowse">Browse image</span>
-                                        </div>
+                                          <img 
+                                              src="" 
+                                              alt="Coupon image" 
+                                              id="file-preview" 
+                                               class="form-control"
+                                              style="width: 200px; height: 150px; border-radius: 10px; object-fit: cover; border: 1px solid #ccc;" 
+                                          />
                                         <div class="fallback">
-                                          <input name="file"  type="file" class="form-control" />
-                                        </div>
-                                       
-                                      
+                                          <input name="file"  onchange="preview()"  type="file" id="image" accept="image/*" class="form-control" />
+                                        </div>  
                                     </div>
                                   </div>
                                   <div class="mb-4">
-                                    <button type="submit" class="btn btn-primary w-100">Add Cuppen</button>
+                                    <button type="button" onclick="handleSubmit()" class="btn btn-primary w-100">Add Cuppen</button>
                                 </div>
                                 </form>
                                
@@ -294,21 +282,137 @@
     </main>
     <script>
         function generateCouponId(length) {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const charactersLength = characters.length;
-    let couponId = '';
-    for (let i = 0; i < length; i++) {
-        couponId += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return couponId;
-}
-
-// Example usage:
-const couponId = generateCouponId(8); // Generate a coupon ID of length 8
-console.log(couponId); // Output the generated coupon ID
-const id = document.getElementById("coupenId");
-id.value=couponId
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            const charactersLength = characters.length;
+            let couponId = '';
+            for (let i = 0; i < length; i++) {
+                couponId += characters.charAt(Math.floor(Math.random() * charactersLength));
+            }
+            return couponId;
+        }
+            
+            const couponId = generateCouponId(8);
+            const id = document.getElementById("coupenCode");
+            id.value=couponId
     </script>
+    <script>
+      function handleSubmit() {
+         const title = document.getElementById("title").value.trim();
+         const titleLabel = document.getElementById("titleLabel");
+         const coupenCode = document.getElementById("coupenCode").value.trim();
+         const coupenCodeLabel = document.getElementById("coupenCodeLabel")
+         const min = document.getElementById("minLimit").value.trim();
+         const minLabel = document.getElementById("minLabel")
+         const offerPrice = document.getElementById("offerPrice").value.trim();
+         const offerPriceLabel = document.getElementById("offerPriceLabel")
+         const date = document.getElementById("date").value.trim();
+         const dateLabel = document.getElementById("dateLabel")
+
+         const image = document.getElementById("image").files[0]
+        
+         let error  = false;
+
+         if(title.length == 0){
+             titleLabel.style.color="red"
+             error = true;
+         }else{
+            titleLabel.style.color=""
+         }
+       
+         if(coupenCode.length == 0){
+            error = true;
+            coupenCodeLabel.style.color="red"
+         }else{
+           coupenCodeLabel.style.color=""
+         }
+         if(offerPrice.length == 0){
+            error = true;
+            offerPriceLabel.style.color="red"
+         }else{
+            offerPriceLabel.style.color=""
+         }
+         if(date.length == 0){
+             dateLabel.style.color="red"
+             error = true;
+         }else{
+             dateLabel.style.color=""
+         }
+         if(min.length == 0){
+             minLabel.style.color="red"
+             error = true;
+         }else{
+             minLabel.style.color=""
+         }
+
+         if(error){
+             Swal.fire({
+                title:"Error!.",
+                text: "Please Provide All Informations!.",
+                icon: "warning",
+             });
+           return;
+         }
+         if(!image){
+             Swal.fire({
+                title:"Error!.",
+                text: "Please Choose an Image!.",
+                icon: "warning",
+             });
+           return;
+         }
+         
+          const formData = new FormData();;
+
+         formData.append("file",image);
+         formData.append("title",title);
+     
+         formData.append("coupenCode",coupenCode);
+         formData.append("offerPrice",offerPrice);
+         formData.append("date",date);
+         formData.append("min",min);
+     
+         fetch("/admin/addCoupon",{method:"POST",body:formData,"COntent-Type":"multipart/form-data"}).then((res)=>res.json())
+         .then((res)=>{
+      
+            if(res.success){
+              Swal.fire({
+                title:"Success!.",
+                text: res.message,
+                icon: "success",
+             });
+             window.location.href="/admin/coupons";
+            }else{
+             Swal.fire({
+                title:"Error!.",
+                text:res.message,
+                icon: "warning",
+             });
+            }
+         })
+        
+
+      }
+    </script>
+     <script>
+
+       function preview() {
+          const input = document.getElementById(`image`);
+          const file = input.files
+                if (file) {
+                    const fileReader = new FileReader();
+                    const preview = document.getElementById(`file-preview`);
+                    fileReader.onload = function (event) {
+                      
+                        
+                        preview.setAttribute('src', event.target.result);
+                    }
+                    fileReader.readAsDataURL(file[0]);
+                }
+          
+        }
+        
+    </script>
+       <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="assets/js/vendors/jquery-3.6.0.min.js"></script>
     <script src="assets/js/vendors/bootstrap.bundle.min.js"></script>
     <script src="assets/js/vendors/select2.min.js"></script>

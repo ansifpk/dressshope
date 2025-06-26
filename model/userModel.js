@@ -14,7 +14,7 @@ const userSchema= new mongoose.Schema({
      },
      mobile:{
         type:String,
-      //   required:true,
+        required:true,
         
      },
      password:{
@@ -34,6 +34,10 @@ const userSchema= new mongoose.Schema({
      is_verified:{
         type:Boolean,
         default:true,
+     },
+     reffaralCode:{
+        type:String,
+        required:true,
      },
      createdAt:{
          type:Date,
