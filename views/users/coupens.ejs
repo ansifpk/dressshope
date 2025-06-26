@@ -30,13 +30,13 @@
                     <div class="header-left">
                         <div class="header-search header-search-extended header-search-visible d-none d-lg-block">
                             <a href="#" class="search-toggle" role="button"><i class="icon-search"></i></a>
-                            <form action="#" method="get">
+                            <div >
                                 <div class="header-search-wrapper search-wrapper-wide">
                                     <label for="q" class="sr-only">Search</label>
-                                    <button class="btn btn-primary" type="submit"><i class="icon-search"></i></button>
-                                    <input type="search" class="form-control" name="q" id="q" placeholder="Search product ..." required>
+                                    <button  class="btn btn-primary" type="button"><i class="icon-search"></i></button>
+                                    <input type="search" class="form-control" name="q" oninput="handleSearch(this)" id="search" placeholder="Search product ..." required>
                                 </div><!-- End .header-search-wrapper -->
-                            </form>
+                            </div>
                         </div><!-- End .header-search -->
                     </div>
                     <div class="header-center">
@@ -202,7 +202,7 @@
                                                                     <%
                                                                 }else{
                                                                     %>
-                                                                    <p  id="coupencode<%=i%>" class="card-text text-danger">Coupon Code: <span><%=coupens[i].couponCode%></span><span><button class="btn btn-primary"  onclick="copyCoupon('<%=i%>')">copy</button></span></p>
+                                                                    <p  id="coupencode<%=i%>" class="card-text text-danger">Coupon Code: <span><%=coupens[i].couponCode%></span><span><button class="btn btn-primary" <%= coupens[i].expiryDate>=date?"":'disabled' %> onclick="copyCoupon('<%=i%>')">copy</button></span></p>
                                                                     <p class="card-text <%= coupens[i].expiryDate>=date?"text-success":"text-danger" %>">Status: <%= coupens[i].expiryDate>=date?"Active":"expired" %></p>
                                                                     <%
                                                                 }
@@ -366,7 +366,7 @@
             </div>
         </div>
     </div>
-    <!-- Plugins JS File -->
+  
     <script>
 
 function copyCoupon(num) {
@@ -384,11 +384,6 @@ function copyCoupon(num) {
   });
   
 }
-
-
-
-
-
 
         function deleteAddress(id){
 
@@ -455,7 +450,7 @@ function copyCoupon(num) {
                                 `<p  class="card-text text-danger">Coupon Code: <span>${coupen.couponCode}</span><span><button class="btn btn-primary disabled"   >copy</button></span></p>
                                 <p class="card-text text-gray">Status: Used</p>`
                                 :
-                                `<p  id="coupencode${i}" class="card-text text-danger">Coupon Code: <span>${coupen.couponCode}</span><span><button class="btn btn-primary"  onclick="copyCoupon('${i}')">copy</button></span></p>
+                                `<p  id="coupencode${i}" class="card-text text-danger">Coupon Code: <span>${coupen.couponCode}</span><span><button class="btn btn-primary" ${new Date(coupen.expiryDate)>=date?"":"disabled"}  onclick="copyCoupon('${i}')">copy</button></span></p>
                                  <p class="card-text ${new Date(coupen.expiryDate)>=date?"text-success":"text-danger"}">Status: ${new Date(coupen.expiryDate)>=date?"Active":"expired"}</p>
                                 `
                                 }
@@ -507,7 +502,7 @@ function copyCoupon(num) {
                                 `<p  class="card-text text-danger">Coupon Code: <span>${coupen.couponCode}</span><span><button class="btn btn-primary disabled"   >copy</button></span></p>
                                 <p class="card-text text-gray">Status: Used</p>`
                                 :
-                                `<p  id="coupencode${i}" class="card-text text-danger">Coupon Code: <span>${coupen.couponCode}</span><span><button class="btn btn-primary"  onclick="copyCoupon('${i}')">copy</button></span></p>
+                                `<p  id="coupencode${i}" class="card-text text-danger">Coupon Code: <span>${coupen.couponCode}</span><span><button class="btn btn-primary"  ${new Date(coupen.expiryDate)>=date?"":"disabled"}  onclick="copyCoupon('${i}')">copy</button></span></p>
                                  <p class="card-text ${new Date(coupen.expiryDate)>=date?"text-success":"text-danger"}">Status: ${new Date(coupen.expiryDate)>=date?"Active":"expired"}</p>
                                 `
                                 }
@@ -520,6 +515,55 @@ function copyCoupon(num) {
                 }).join("")
             }     
              })
+        }
+    </script>
+    <script>
+        function handleSearch(tag) {
+            
+            let currentPage = document.getElementById("currentPage")
+            let totalPage = document.getElementById("totalPage")
+
+             fetch(`/searchCoupon?search=${tag.value.trim()}`).then((res)=>res.json())
+             .then((res)=>{
+                
+                if(res.coupons.length == 0){
+                    currentPage.innerText = 0;
+                    totalPage.innerText = 0;
+                     document.getElementById("table").innerHTML=  ` <div>
+                            No Coupens
+                        </div>
+                      `
+                }else{
+                     currentPage.innerText = 1;
+                     const date = new Date()
+                    totalPage.innerText = res.totelPage;
+                    document.getElementById("table").innerHTML=  res.coupons.map((coupen,i)=>{
+                    const ab = coupen.usedUsers.find( c =>c === res.user);
+                         
+               return `
+                    <div class="col-md-6 mb-6 col-lg-6">
+                        <div class="card h-100">
+                            <div class="card-body" style="background-image: url('${coupen.image.secure_url}'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+                                <h5 class="card-title text-center text-black">${coupen.name}</h5>
+                                <h6 class="card-subtitle mb-2 text-body-secondary text-danger text-black">Get Extra ${coupen.offer}%</h6>
+                                ${ab?
+                                `<p  class="card-text text-danger">Coupon Code: <span>${coupen.couponCode}</span><span><button class="btn btn-primary disabled"   >copy</button></span></p>
+                                <p class="card-text text-gray">Status: Used</p>`
+                                :
+                                `<p  id="coupencode${i}" class="card-text text-danger">Coupon Code: <span>${coupen.couponCode}</span><span><button class="btn btn-primary"  ${new Date(coupen.expiryDate)>=date?"":"disabled"}  onclick="copyCoupon('${i}')">copy</button></span></p>
+                                 <p class="card-text ${new Date(coupen.expiryDate)>=date?"text-success":"text-danger"}">Status: ${new Date(coupen.expiryDate)>=date?"Active":"expired"}</p>
+                                `
+                                }
+                                <p class="card-text text-danger">On minimum Rs: ${coupen.minLimite}</p>
+                                <p class="card-text text-danger">Valid till: ${new Date(coupen.expiryDate).toLocaleDateString()}</p>
+                                </div>
+                                </div>
+                               </div>
+                    `
+                    }).join("")
+                }
+             })
+             
         }
     </script>
     <script src="assets/js/jquery.min.js"></script>

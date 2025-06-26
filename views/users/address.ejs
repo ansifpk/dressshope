@@ -219,7 +219,7 @@
 	                		<div class="col-md-8 col-lg-9">
 	                			<div  class="tab-content">
 								    <div class="tab-pane fade show active" id="tab-dashboard" >
-								    	<h3   class="card-title">Billing Address</h3><!-- End .card-title -->
+								    	<h3 id="box"  class="card-title">Billing Address</h3><!-- End .card-title -->
                                                   <%
                                                   if(addressData?.address?.length>0){
                                                     for(let i=0;i<addressData.address.length;i++){
@@ -384,7 +384,7 @@
             </div>
         </div>
     </div>
-    <!-- Plugins JS File -->
+   
     <script>
         function deleteAddress(id){
 
@@ -398,14 +398,30 @@
   confirmButtonText: "Yes, delete it!"
 }).then((result) => {
   if (result.isConfirmed) {
-    Swal.fire({
-      title: "Deleted!",
-      text: "Your file has been deleted.",
-      icon: "success"
+   
+    fetch(`/deleteAddress?_id=${id}`).then((res)=>res.json())
+    .then((res)=>{
+        if(res.success){
+            if(res.length == 0){
+                document.getElementById("box").innerHTML =` <p>no address found</p>`
+            }
+           let address = document.getElementById(`address${id}`)
+            address.remove();
+            Swal.fire({
+            title: "Deleted!",
+            text: "Your file has been deleted.",
+            icon: "success"
+            });
+        }else{
+            Swal.fire({
+            title: "Warning!",
+            text: res.message,
+            icon: "warning"
+            });
+        }
+        
     });
-    fetch(`/deleteAddress?id=${id}`);
-            let address = document.getElementById(`address${id}`)
-            address.remove()
+            
   }
 });
            

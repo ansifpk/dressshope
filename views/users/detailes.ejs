@@ -272,23 +272,6 @@
                                     <div class="product-content">
                                         <p><%=productData.Description%> </p>
                                     </div><!-- End .product-content -->
-
-                                    
-
-                                    <div class="details-filter-row details-row-size">
-                                        <label for="size">Size:</label>
-                                        <div class="select-custom">
-                                            <select name="size" id="size" class="form-control">
-                                                <option value="#" selected="selected">Select a size</option>
-                                                <option value="s">Small</option>
-                                                <option value="m">Medium</option>
-                                                <option value="l">Large</option>
-                                                <option value="xl">Extra Large</option>
-                                            </select>
-                                        </div><!-- End .select-custom -->
-
-                                        <a href="#" class="size-guide"><i class="icon-th-list"></i>size guide</a>
-                                    </div><!-- End .details-filter-row -->
                                     <%
                                      if(!cartData?.products?.find((val)=>val.productId._id == productData._id.toString())){
                                         %>
@@ -296,8 +279,8 @@
                                             <label for="qty">Qty:</label>
                                             <div  class="product-details-quantity">
                                                 <input type="number" id="quandity" class="form-control" value="1" min="1" max="4" step="1" data-decimals="0" onchange="limite()" required>
-                                            </div><!-- End .product-details-quantity -->
-                                        </div><!-- End .details-filter-row -->
+                                            </div>
+                                        </div>
                                         <%
                                      }else{
                                         %>
@@ -406,8 +389,7 @@
                                                             <li>Professional dry clean only</li>
                                                         </ul>
 
-                                                        <h3>Size</h3>
-                                                        <p>S, M, L, XL</p>
+            
                                                     </div><!-- End .product-desc-content -->
                                                 </div><!-- End .card-body -->
                                             </div><!-- End .collapse -->

@@ -131,30 +131,37 @@ const loadchangePassword = async (req, res) => {
 };
 const veryfyChangePassword = async (req, res) => {
   try {
+      
       const user = await userModel.findById({_id:req.session.user_id});
-      console.log(req.body,user,req.session.user_id)
-      let checkCurrentPassword = await bcrypt.compare(req.body.oldPassword,user.password);
-
+      console.log(req.body,user)
+      const {newPassword,conPassword,oldPassword} = req.body;
+      let checkCurrentPassword = await bcrypt.compare(oldPassword,user.password);
       if(!checkCurrentPassword){
        return res.json({success:false,message:"Current Password is not Matching!."})
       }
-      if(req.body.newPassword.length < 5  ){
+      if(newPassword.length < 5  ){
        return res.json({success:false,message:"Enter a strong Password!."})
       }
-      if(req.body.oldPassword == req.body.newPassword){
-       return res.json({success:false,message:"You Cannot set the current password to your new Password!."})
-      }
-      if(req.body.oldPassword !== req.body.conPassword){
-       return res.json({success:false,message:"Confirm Password is Not Matching!."})
+      if(newPassword.length > 20  ){
+       return res.json({success:false,message:"Password is Too Strong!."})
       }
 
-    const securepassword = await securePassword(req.body.newPassword);
-    const userData = await userModel.findByIdAndUpdate(
-          { _id: req.session.user_id },
-          { $set: { password: securepassword, token: "" } }
-    );
-    await userData.save();
-    return res.json({success:true,message:"Successfully Changed The Password!"})
+      if(newPassword.length > 20  ){
+       return res.json({success:false,message:"Password is Too Strong!."})
+      }
+
+      if(oldPassword == newPassword){
+       return res.json({success:false,message:"You Cannot set the current password to your new Password!."})
+      }
+      if(newPassword !== conPassword){
+       return res.json({success:false,message:"Confirm Password is Not Matching!."})
+      }
+       const securepassword = await securePassword(req.body.newPassword);
+      const userData = await userModel.findByIdAndUpdate(
+            { _id: req.session.user_id },
+            { $set: { password: securepassword, token: "" } }
+      );
+      return res.json({success:true,message:"Successfuly Updated The Password!."})
       
   } catch (error) {
     console.log(error.message);
@@ -167,26 +174,22 @@ const veryfyForgetPassword = async (req, res) => {
   try {
     const email = req.body.email;
     const userData = await userModel.findOne({ email: email });
+    console.log(userData)
+    if(!userData){
+      return res.json({success:false,message:"Email Not Registerd!."})
+    }
+    if(userData.is_blocked == true){
+       return res.json({success:false,message:"Access Deniedd!."})
+    }
 
-    if (userData) {
-      if (userData.is_verified == true) {
-        if(userData.is_blocked == false){
-        const randomString = randomstring.generate();
-        await userModel.updateOne(
+     const randomString = randomstring.generate();
+        await userModel.findOneAndUpdate(
           { email: email },
           { $set: { token: randomString } }
         );
-        await sendResetPasswordMail(userData.name, userData.email, randomString);
-        return res.json({success:true, message: "Reset Password Link is Sent to Your Mail"})
-        }else{
-         return res.json({success:false,message:"Access Deniedd!."})
-        }
-      } else {
-       return res.json({success:false,message:"Please Verify Your Email"})
-      }
-    } else {
-      res.json({success:false,message:"User Email Not Found"})
-    }
+      await sendResetPasswordMail(userData.name, userData.email, randomString);
+      return res.json({success:true, message: "Reset Password Link is Sent to Your Mail"})
+   
   } catch (error) {
     console.log(error.message);
   }
@@ -224,11 +227,8 @@ const loadnewPassword = async (req, res) => {
   try {
     const token = req.query.token;
     const tokenData = await userModel.findOne({ token: token });
-    if (tokenData) {
-      res.render("newPassword", { user_id: tokenData._id });
-    } else {
-      res.render("newPassword", { message: "token is invalid" });
-    }
+    res.render("newPassword", { user_id: tokenData?._id });
+
   } catch (error) {
     console.log(error.message);
   }
@@ -236,26 +236,37 @@ const loadnewPassword = async (req, res) => {
 
 const veryfynewPassword = async (req, res) => {
   try {
-
-    const user = await userModel.findById({_id:req.body.user_id});
-    let checkCurrentPassword = await bcrypt.compare(req.body.password,user.password);
+    console.log(req.query)
+    console.log(req.body)
+    const {userId} = req.query;
+    const {password,conPassword} = req.body;
+    
+    if(!userId){
+      return res.json({success:false,message:"Invalid Tocken!."})
+    }
+    const user = await userModel.findOne({_id:userId});
+    let checkCurrentPassword = await bcrypt.compare(password,user.password);
     if(checkCurrentPassword){
-       res.render("newPassword", { message: "You cannot set the current password Again!." });
+      return res.json({success:false, message: "You cannot set the current password Again!."})
     }
-    if(req.body.password.length < 5){
-      res.render("newPassword", { message: "Please Enter a Strong Password!." });
+    if(password.length < 5){
+       return res.json({success:false, message: "Please Enter a Strong Password!."})
     }
-    if(req.body.password !== req.body.repassword){
-      res.render("newPassword", { message: "confirm password not match" });
+    if(password.length > 20){
+       return res.json({success:false, message: "Password is Too Strong!."})
     }
-  
-    const securepassword = await securePassword(req.body.password);
+    if(password !== conPassword){
+       return res.json({success:false, message: "confirm password not match"})
+    }
+    const securepassword = await securePassword(password);
+
     const userData = await userModel.findByIdAndUpdate(
-          { _id: req.body.user_id },
+          { _id:userId },
           { $set: { password: securepassword, token: "" } }
     );
-    await userData.save();
-    res.redirect("/");
+
+   
+     return res.json({success:true, message: "Successfully Updated The Password"})
 
   } catch (error) {
     console.log(error.message);
@@ -287,7 +298,7 @@ const insertUser = async (req, res) => {
     } 
       
     req.body.name = req.body.name.trim();
-    if (/^[A-Za-z]+(?:[A-Za-z]+)?$/.test(req.body.name)) {
+    if (/^[A-Za-z]+(?: [A-Za-z]+)*$/.test(req.body.name)) {
       if (/^[A-Za-z0-9.%+-]+@gmail\.com$/.test(req.body.email)) {
         const emailCheck = await userModel.findOne({ email: req.body.email });
         if (emailCheck) {
@@ -938,7 +949,6 @@ const saveAddress = async (req, res) => {
 
 
     const {fname,lname,address,country,mobile,city,pincode,state} = req.body;
-   
     const addresses = await AddressDB.findOne({
       userID: req.session.user_id,
     }).populate("userID");
@@ -950,19 +960,16 @@ const saveAddress = async (req, res) => {
     if(!/^[a-zA-Z]+$/.test(fname)){
      return res.json({success:false,message:'Invalid Second Name!.'})
     }
+    if(mobile.length > 10 || mobile.length < 10){
+     return res.json({success:false,message:'Invalid Mobile Number!.'})
+    }
 
-    const checkAddress = addresses.address.find(
-              (address) =>
-                address.fname == fname &&
-                address.lname == lname &&
-                address.address == address
-            );
-
+    const checkAddress = addresses.address.find( (addr) => addr.fname==fname && addr.lname==lname && addr.address==address) ;
     if(checkAddress){
       return res.json({success:false,message:"This Address Already Exist!."})
     }
 
-    await AddressDB.findOneAndUpdate(
+    const newAddresses = await AddressDB.findOneAndUpdate (
                   { userID: req.session.user_id },
                   {
                     $push: {
@@ -978,10 +985,11 @@ const saveAddress = async (req, res) => {
                         email: addresses.userID.email,
                       },
                     },
-                  }
+                  },
+                  {new:true}
                 );
 
-             return   res.json({success:true,message:"Successfully added the Address!."})
+             return   res.json({success:true,addresses:newAddresses,message:"Successfully added the Address!."})
      
   } catch (error) {
     console.log(error.message);
@@ -1135,14 +1143,13 @@ const veryfyAddress = async (req, res) => {
 
 const removeAddress = async (req, res) => {
   try {
-    const { id } = req.query;
-    console.log("hiii");
-    console.log(id);
+    const { _id } = req.query;
     const data = await AddressDB.findOneAndUpdate(
       { userID: req.session.user_id },
-      { $pull: { address: { _id: id } } }
+      { $pull: { address: { _id: _id } } },
+      {new:true}
     );
-    console.log(data);
+    return res.json({success:true,length:data.address.length,message:"Address Deleted Successfully!."})
   } catch (error) {
     console.log(error.message);
   }
@@ -1362,50 +1369,10 @@ const deleteCart = async (req, res) => {
 //############### checkout ############
 const checkOut = async (req, res) => {
   try {
-    
-    let cartData = await CartDB.findOne({
-      userId: req.session.user_id,
-    }).populate({
-      path: "products.productId",
-      populate: { path: "categoryID" },
-    });
-    
+    const { cartData, wishlistData, offerData, cartTotal } = await getStoreDataForUser(req, res);
     const address = await AddressDB.findOne({
       userID: req.session.user_id,
     }).populate("userID");
-
-    const wishlistData = await WishlistDB.findOne({
-      userId: req.session.user_id,
-    }).populate("products.productId");
-    const offerData = await OfferDB.find({});
-    
-
-    offerData.offerRate / 100;
-    let cartTotal = 0;
-    
-    if (cartData) {
-      cartTotal = cartData.products.reduce((acc, value) => {
-          const offer = offerData.find(
-            (iteam) =>
-              iteam.iteam === value.productId.name ||
-              iteam.iteam === value.productId.categoryID.name
-          );
-          if (offer) {
-            return (
-              acc +
-              value.productId.Price * value.quandity -
-              Math.round(
-                (value.productId.Price * value.quandity * offer.offerRate) / 100
-              )
-            );
-          } else {
-            return acc + value.productId.Price * value.quandity;
-          }
-      }, 0);
-      
-    }
- 
-   
         res.render("checkout", {
           productData: cartData,
           addressData: address,
@@ -1413,6 +1380,7 @@ const checkOut = async (req, res) => {
           offerData: offerData,
           subTotal: cartTotal,
           cartData: cartData,
+          productsLength:cartData.products.length,
           wishlistData: wishlistData,
           cartTotal,
           message1: req.flash("msg1"),
@@ -1730,6 +1698,18 @@ const coupens = async (req, res) => {
     console.log(error.message);
   }
 };
+const searchCoupon = async (req, res) => {
+  try {
+    const {search} = req.query;
+    const limit = 4;
+    console.log(req.query)
+    const count = await CoupenDB.find({name:{$regex: ".*" + search + ".*", $options: "i"}}).countDocuments();
+    const data = await CoupenDB.find({name:{$regex: ".*" + search + ".*", $options: "i"}})
+    return res.json({coupons:data,totelPage:Math.ceil(count/limit)})
+  } catch (error) {
+    console.log(error.message);
+  }
+};
 const paginationCoupon = async (req, res) => {
   try {
     const {page} = req.query;
@@ -1851,4 +1831,5 @@ module.exports = {
   searchProduct,
   paginationCoupon,
   filterCoupon,
+  searchCoupon,
 };

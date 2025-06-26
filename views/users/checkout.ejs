@@ -147,7 +147,7 @@
                             <span class="btn-text">Apply</span>
                             <span class="btn-hover-text">Apply</span>
                         </a>
-            			<form action="" method="post">
+            			<form >
                           
 		                	<div class="row">
 		                		<div class="col-lg-9">
@@ -155,85 +155,55 @@
                                   
 		                				<div class="row">
 		                					<div class="col-sm-6">
-		                						<label>First Name *</label>
-                                                <% 
-                                                if(typeof message1!== "undefined"){
-                                                   %>
-                                                   <label style="color: white; color:red; text-align: center;"><%= message1 %> </label>
+		                						<label id="fnameLabel">First Name *</label>
                                                 
-                                                   <%
-                                                }
-                                                %>
-		                						<input type="text" name="fname" required class="form-control" >
+		                						<input type="text" id="fname" required class="form-control" >
 		                					</div><!-- End .col-sm-6 -->
 
 		                					<div class="col-sm-6">
-		                						<label>Last Name *</label>
-                                                <% 
-                                        if(typeof message2!== "undefined"){
-                                           %>
-                                           <label style="color: white; color:red; text-align: center;"><%= message2 %> </label>
-                                        
-                                           <%
-                                        }
-                                        %>
-		                						<input type="text" name="lname" required class="form-control" >
+		                						<label id="lnameLabel">Last Name *</label>
+                                                
+		                						<input type="text" id="lname" required class="form-control" >
 		                					</div><!-- End .col-sm-6 -->
 		                				</div><!-- End .row -->
 
 	            						
 
-	            						<label>Country *</label>
-	            						<input type="text" class="form-control" name="country" >
+	            						<label id="countryLabel">Country *</label>
+	            						<input type="text" class="form-control" id="country" >
 
-	            						<label>Street address *</label>
-                                        <% 
-                                        if(typeof message3!== "undefined"){
-                                           %>
-                                           <label style="color: white; color:red; text-align: center;"><%= message3 %> </label>
-                                        
-                                           <%
-                                        }
-                                        %>
-	            						<input type="text" class="form-control" required name="address" placeholder="House number and Street name" >
+	            						<label id="addressLabel">Street address *</label>
+                                       
+	            						<input type="text" class="form-control" required id="address" placeholder="House number and Street name" >
 	            						<input type="hidden" id="couponId" value="">
 
 	            						<div class="row">
 		                					<div class="col-sm-6">
-		                						<label>Town / City *</label>
-		                						<input type="text" name="city" required class="form-control" >
+		                						<label id="cityLabel">Town / City *</label>
+		                						<input type="text" id="city" required class="form-control" >
 		                					</div><!-- End .col-sm-6 -->
 
 		                					<div class="col-sm-6">
-		                						<label>State / County *</label>
-		                						<input type="text" name="state" required class="form-control" >
+		                						<label id="stateLabel">State  *</label>
+		                						<input type="text" id="state" required class="form-control" >
 		                					</div><!-- End .col-sm-6 -->
 		                				</div><!-- End .row -->
 
 		                				<div class="row">
 		                					<div class="col-sm-6">
-		                						<label>Postcode / ZIP *</label>
-		                						<input type="text" name="pincode" required class="form-control" >
+		                						<label id="pincodeLabel">Postcode / ZIP *</label>
+		                						<input type="number" id="pincode" required class="form-control" >
 		                					</div><!-- End .col-sm-6 -->
 
 		                					<div class="col-sm-6">
-		                						<label>Phone *</label>
-		                						<input type="tel" name="mobile" class="form-control" >
+		                						<label id="mobileLabel">Phone *</label>
+		                						<input type="number" id="mobile" class="form-control" >
 		                					</div><!-- End .col-sm-6 -->
 		                				</div><!-- End .row -->
 
-	                					<label>Email address *</label>
-                                        <% 
-                                        if(typeof message4!== "undefined"){
-                                           %>
-                                           <label style="color: white; color:red; text-align: center;"><%= message4 %> </label>
+	                					
                                         
-                                           <%
-                                        }
-                                        %>
-	        							<input type="email" name="email" required class="form-control" >
-                                        
-                                        <button type="submit" class="btn btn-outline-primary-2 btn-order btn-block">Save Address</button>
+                                        <button type="button" onclick="handleAddress(this)" class="btn btn-outline-primary-2 btn-order btn-block">Save Address</button>
 	        							
 		                		</div><!-- End .col-lg-9 -->
 		                		<aside class="col-lg-3">
@@ -623,7 +593,23 @@
             </div>
         </div>
     </div>
-   
+     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+      
+        if("<%=productsLength%>" == 0){
+             Swal.fire({
+                    text: "You Dont Have Products On Your Cart!.",
+                    icon: "warning",
+                    confirmButtonText: "ok!"
+                    
+             }).then((result) => {
+                if (result.isConfirmed) {
+                  window.location.href="/products"
+                }
+            });
+  
+        }
+    </script>
     <script>
      
        async function applyCoupon() {
@@ -826,6 +812,143 @@
         }
     }  
     </script>
+    <script>
+        function handleAddress(button) {
+        
+           let fname =  document.getElementById("fname")
+           let lname =  document.getElementById("lname")
+           let country =  document.getElementById("country")
+           let address =   document.getElementById("address")
+           let city =   document.getElementById("city")
+           let state =   document.getElementById("state")
+           let pincode =   document.getElementById("pincode")
+           let mobile =  document.getElementById("mobile")
+          
+           const snameLabel =  document.getElementById("lnameLabel")
+           const fnameLabel =  document.getElementById("fnameLabel")
+           const countryLabel =  document.getElementById("countryLabel")
+           const addressLabel =   document.getElementById("addressLabel")
+           const cityLabel =   document.getElementById("cityLabel")
+           const stateLabel =   document.getElementById("stateLabel")
+           const pincodeLabel =   document.getElementById("pincodeLabel")
+           const mobileLabel =  document.getElementById("mobileLabel")
+           
+           let error = false;
+
+           if(fname.value.trim().length == 0 ){
+              fnameLabel.style.color = "red";
+              error = true;
+            }else{
+               fnameLabel.style.color = "";
+           }
+           if(lname.value.trim().length == 0 ){
+              snameLabel.style.color = "red";
+              error = true;
+            }else{
+               snameLabel.style.color = "";
+           }
+
+           if(address.value.trim().length == 0 ){
+              addressLabel.style.color = "red";
+              error = true;
+            }else{
+               addressLabel.style.color = "";
+           }
+
+           if(country.value.trim().length == 0 ){
+              countryLabel.style.color = "red";
+              error = true;
+            }else{
+               countryLabel.style.color = "";
+           }
+
+           if(city.value.trim().length == 0 ){
+              cityLabel.style.color = "red";
+              error = true;
+            }else{
+               cityLabel.style.color = "";
+           }
+           if(state.value.trim().length == 0 ){
+              stateLabel.style.color = "red";
+              error = true;
+            }else{
+               stateLabel.style.color = "";
+           }
+
+           if(pincode.value.trim().length == 0 ){
+              pincodeLabel.style.color = "red";
+              error = true;
+            }else{
+               pincodeLabel.style.color = "";
+           }
+
+           if(mobile.value.trim().length == 0 ){
+              mobileLabel.style.color = "red";
+              error = true;
+            }else{
+               mobileLabel.style.color = "";
+           }
+
+         
+           
+           if(error){
+            Swal.fire({
+                 title:"Warning!.",
+                text:"Please Provide All Information!.",
+                icon: "warning",
+            });
+            return;
+           }
+
+           Swal.fire({
+                title: "Do you want to save the changes?",
+                showCancelButton: true,
+                confirmButtonText: "Save",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                       button.disabled = true;
+                        button.innerHTML =  `<div class="spinner-border spinner-border-sm me-2" role="status">
+                                        <span class="visually-hidden"></span>
+                                    </div>
+                                    Loading...
+                                    `;
+                        fetch("/addAddress",{method:"PATCH",body:JSON.stringify({fname:fname.value.trim(),lname:lname.value.trim(),country:country.value.trim(),address:address.value.trim(),city:city.value.trim(),pincode:pincode.value.trim(),state:state.value.trim(),mobile:mobile.value.trim()}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
+                        .then((res)=>{
+                            button.disabled = false;
+                             button.innerText = `Save Address`
+                            if(res.success){
+                                fname.value  =""
+                                lname.value  =""
+                                country.value  =""
+                                address.value  =""
+                                city.value  =""
+                                pincode.value  =""
+                                state.value  =""
+                                mobile.value  =""
+                              Swal.fire({
+                                title:"Success!.",
+                                text:res.message,
+                                icon: "success",
+                              });
+                         
+                              document.getElementById("chooseAddress").innerHTML= res.addAddress.address.map((address)=>`<option value="${address._id}"> ${address.address}</option> `)
+                              
+                            }else{
+                               
+                              Swal.fire({
+                                title:"Warning!.",
+                                text:res.message,
+                                icon: "warning",
+                              });
+                            }
+                        })
+                    }
+                })
+
+
+            
+        }
+    </script>
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/jquery.hoverIntent.min.js"></script>
@@ -836,7 +959,7 @@
     <!-- Main JS File -->
     <script src="assets/js/main.js"></script>
     <script src="assets/js/demos/demo-16.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+   
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </body>
 

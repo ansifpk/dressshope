@@ -72,7 +72,6 @@ user_route.get("/forget",userControll.loadforgetPassword);
 user_route.post("/forget",userControll.veryfyForgetPassword);
 user_route.get("/forgetpassword",userControll.loadnewPassword);
 user_route.post("/forgetpassword",userControll.veryfynewPassword);
-
 user_route.get('/logout',auth.loginUser,authBlock.blockUser,userControll.userLogout);
 user_route.get('/error',auth.loginUser,authBlock.blockUser,userControll.errorpage);
 
@@ -127,6 +126,7 @@ user_route.get('/paginationOrder',auth.loginUser,authBlock.blockUser,orderContro
 user_route.get('/wishlist',auth.loginUser,authBlock.blockUser,wishlistController.wishlist);
 user_route.patch('/wishlist',auth.loginUser,authBlock.blockUser,wishlistController.handleWishlist);
 user_route.get('/coupens',auth.loginUser,authBlock.blockUser,userControll.coupens);
+user_route.get('/searchCoupon',auth.loginUser,authBlock.blockUser,userControll.searchCoupon);
 user_route.get('/filterCoupon',auth.loginUser,authBlock.blockUser,userControll.filterCoupon);
 user_route.get('/paginationCoupon',auth.loginUser,authBlock.blockUser,userControll.paginationCoupon);
 user_route.post('/applyCoupon',auth.loginUser,authBlock.blockUser,couponController.applyCoupon);

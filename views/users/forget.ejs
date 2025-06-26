@@ -149,7 +149,7 @@
 
                                         <div class="form-footer">
                                             
-                                            <button onclick="handleSubmit()" type="button" class="btn btn-outline-primary-2">
+                                            <button onclick="handleSubmit()" type="button" id="button" class="btn btn-outline-primary-2">
 			                					<span>Send Mail</span>
 			            						<i class="icon-long-arrow-right"></i>
 			                				</button>
@@ -307,6 +307,7 @@
 <script>
     function handleSubmit() {
          const email = document.getElementById("singin-email").value
+         const button = document.getElementById("button")
 
          fetch("/forget",{method:"POST",body:JSON.stringify({email}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
          .then((res)=>{

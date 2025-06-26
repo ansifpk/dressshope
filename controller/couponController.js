@@ -49,7 +49,7 @@ const applyCoupon = async (req, res) => {
             if(checkCoupon.usedUsers.includes(req.session.user_id)){
                 return res.json({success:false,message:`Coupon Already used!.`})
             }
-             const offerPrice = Math.floor(cartTotal*40/100);
+             const offerPrice = Math.floor(cartTotal*checkCoupon.offer/100);
              return res.json({success:true,offerPrice,total:cartTotal-offerPrice,couponId:checkCoupon._id,message:"Successfully Applied Coupon"})
         }else{
             return res.json({success:false,message:"Coupon Expired!."})
