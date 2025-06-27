@@ -101,8 +101,9 @@
                            
                                 
                                 
-                            <div class="mb-4">
-                                <button type="button" onclick="handleClick()" class="btn btn-primary w-100">Add User</button>
+                            <div class="mb-4 d-flex gap-2">
+                                <button type="button" onclick="handleClick(this)" class="btn btn-primary w-50">Add User</button>
+                               <a href="/admin/viewUser" class="btn btn-primary w-50">Back</button></a>
                             </div>
                             <!-- form-group// -->
                         </form>
@@ -121,7 +122,7 @@
             </footer>
         </main>
         <script>
-            function handleClick() {
+            function handleClick(button) {
                 const email = document.getElementById("email").value.trim();
                 const emailLabel = document.getElementById("emailLabel");
                 const name = document.getElementById("name").value.trim();
@@ -162,8 +163,15 @@
                    return;
                 }
 
+                button.disabled=true
+                button.innerHTML= `<div class="spinner-border spinner-border-sm me-2" role="status">
+                                    </div>
+                                    Loading...
+                                    `;
+                
                 fetch("/admin/addUser",{method:"POST",body:JSON.stringify({email,password,name,mobile}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
                 .then((res)=>{
+                   
                     if(res.success){
                         Swal.fire({
                             title:"User Added Successfull!.",
@@ -174,7 +182,8 @@
                         window.location.href="/admin/viewUser";
                         return;
                     }else{
-                     
+                        button.disabled=false;
+                       button.innerText= `Add User`;
                         if(res.field == 'email'){
                            emailLabel.style.color = "red";
                         }else{

@@ -239,14 +239,15 @@
                                           </div>
                                          
                                           <div class="col-md-6 mb-6">
-                                                <label for="product_sku" id="offerPriceLabel" class="form-label">Offer Price</label>
+                                                <label for="product_sku" id="offerPriceLabel" class="form-label">Offer Price In Percentage(%)</label>
                                                <input type="number"  id="offerPrice" placeholder="Type here" name="offerPrice" class="form-control"  />
                                           </div>
                                         </div>                        
                                     </div> <!-- col.// -->
                                     
                                     <hr class="mb-4 mt-0">
-                                    <button type="button" onclick="handleSubmition()" class="btn btn-primary w-100">Add Offer</button>
+                                    <button type="button" onclick="handleSubmition(this)" class="btn btn-primary w-50">Add Offer</button>
+                                    <a href="/admin/offer" class="btn btn-primary w-25">Back</a>
                             </form>     
                           </div> <!-- row.// -->
                         </div>
@@ -276,7 +277,7 @@
         }
     </script>
     <script>
-        function handleSubmition() {
+        function handleSubmition(button) {
              const offerTitle = document.getElementById("title").value.trim();
              const offerIteam = document.getElementById("offerIteam").value.trim();
              const iteamName = document.getElementById("iteamName").value.trim();
@@ -320,27 +321,55 @@
                  offerPriceLabel.style.color=""
              }
              if(error){
-                return;
-             }
-         
-            fetch("/admin/addOffer",{method:"POST",body:JSON.stringify({offerTitle,date,iteamName,offerPrice}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
-            .then((res)=>{
-
-                if(res.success){
-                    Swal.fire({
-                        title:"Success!.",
-                        text: res.message,
-                        icon: "success",
-                    });
-                    window.location.href="/admin/offer"
-                }else{
-                    Swal.fire({
+                 Swal.fire({
                             title:"Failed!.",
-                            text: res.message,
+                            text: "Please Provide All Informations!.",
                             icon: "warning",
                     });
-                }
-            })
+                return;
+             }
+
+             Swal.fire({
+                    title: "Are you sure?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: `Yes`
+                    }).then((result)=>{
+                        if(result.isConfirmed){
+                             button.disabled = true;
+                              button.innerHTML =button.innerHTML = `
+                                    <div class="spinner-border spinner-border-sm me-2" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    Loading...
+                                    `;
+                             fetch("/admin/addOffer",{method:"POST",body:JSON.stringify({offerTitle,date,iteamName,offerPrice}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
+                            .then((res)=>{
+
+                                if(res.success){
+                                    Swal.fire({
+                                        title:"Success!.",
+                                        text: res.message,
+                                        icon: "success",
+                                    });
+                                    window.location.href="/admin/offer"
+                                }else{
+                                     button.disabled = false;
+                                      button.innerHTML =button.innerText = `Add Offer`;
+                                    Swal.fire({
+                                            title:"Failed!.",
+                                            text: res.message,
+                                            icon: "warning",
+                                    });
+                                }
+                            })
+
+                        }
+                    })
+         
+           
         }
 
         

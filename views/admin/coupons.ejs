@@ -228,7 +228,7 @@
                 </div>
                 <a href="/admin/editCoupon?id=<%=data[i]._id%>">Edit</a>
                 
-                <a class=" text-danger " onclick="remove('<%=data[i]._id%>','<%=i%>')">delete</a>
+                <a class=" text-danger " onclick="removeCoupon('<%=data[i]._id%>','<%=i%>')">delete</a>
                     </div>
                     <%
                 }
@@ -267,7 +267,9 @@
         </footer>
     </main>
     <script>
-        function remove(id,num){
+        function removeCoupon(id,num){
+           
+            
             Swal.fire({
                 title: "Do You Want To Delete This coupon ?",
                 text: "You won't be able to revert this!",
@@ -279,23 +281,42 @@
             }).then((result) => {
             if (result.isConfirmed) {
                 
-                const ddd = document.getElementById(`gone${num}`)
-                fetch(`/admin/coupon`,{method:"DELETE",body:JSON.stringify({couponId:id})}).then((res)=>res.json())
+                fetch(`/admin/coupon`,{method:"DELETE",body:JSON.stringify({couponId:id}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
                 .then((res)=>{
                     console.log(res);
-                    if(res.success){
-                     Swal.fire({
-                        title: "Success!",
-                        text: res.message,
-                        icon: "success"
-                     });
-                     ddd.remove()
+                    if(res.coupons.length == 0){
+                        document.getElementById("page").innerText=0
+                         document.getElementById("totalPage").innerText=0
+                        document.getElementById("table").innerHTML=
+                    `
+                                       <tr>
+                                            <td colspan="3">Coupons Not Found</td>
+                                        </tr>
+                    `
                     }else{
-                     Swal.fire({
-                        title: "Failed!",
-                        text: res.message,
-                        icon: "warning"
-                     });
+                         document.getElementById("page").innerText=1;
+                         document.getElementById("totalPage").innerText=res.totalPage;
+                         const date = new Date()
+                         document.getElementById("table").innerHTML=
+                         res.coupons.map((coupon,i) => {
+                           return `
+                              <div id="gone${i}" class="card col-4" style="width: 18rem; background-image: url('${coupon.image.secure_url}'); background-size: cover; background-position: center; background-repeat: no-repeat; padding: 20px;">
+                                <div class="card-body">
+                                <h5 class="card-title text-center">${coupon.name}</h5>
+                                <h6 class="card-subtitle mb-2 text-body-secondary text-center">Get Extra ${coupon.offer}%</h6>
+                                <p class="card-text">Coupon Code: ${coupon.couponCode}</p>
+                                <p  class="card-link">on minimum Rs: ${coupon.minLimite}</p>
+                                <p class="card-link ${new Date(coupon.expiryDate) >= date ? "text-success" : "text-danger"}">status: ${new Date(coupon.expiryDate) >= date ? "Active" : "Expired"}</p>
+                                <p class="card-link text-end">Valid till:${new Date(coupon.expiryDate).toLocaleDateString()}</p>
+                               
+                                </div>
+                                <a href="/admin/editCoupon?id= ${coupon._id} ">Edit</a>
+                                
+                                <a class=" text-danger " onclick="removeCoupon('${coupon._id} ','${i}')">delete</a>
+                              </div>
+                           `
+                        }).join("");
+                       
                     }
                     
                     
@@ -341,7 +362,7 @@
                                 </div>
                                 <a href="/admin/editCoupon?id= ${coupon._id} ">Edit</a>
                                 
-                                <a class=" text-danger " onclick="remove('${coupon._id} ','${i}')">delete</a>
+                                <a class=" text-danger " onclick="removeCoupon('${coupon._id} ','${i}')">delete</a>
                               </div>
                            `
                         }).join("");
@@ -389,9 +410,9 @@
                                 <p class="card-link text-end">Valid till:${new Date(coupon.expiryDate).toLocaleDateString()}</p>
                  
                                 </div>
-                                <a href="/admin/editCoupon?id= ${coupon._id} ">Edit</a>
+                                <a href="/admin/editCoupon?id=${coupon._id} ">Edit</a>
                                 
-                                <a class=" text-danger " onclick="remove('${coupon._id} ','${i}')">delete</a>
+                                <a class=" text-danger " onclick="removeCoupon('${coupon._id} ','${i}')">delete</a>
                               </div>
                            `
                         }).join("");
@@ -436,9 +457,9 @@
                                 <p class="card-link text-end">Valid till:${new Date(coupon.expiryDate).toLocaleDateString()}</p>
                  
                                 </div>
-                                <a href="/admin/editCoupon?id= ${coupon._id} ">Edit</a>
+                                <a href="/admin/editCoupon?id=${coupon._id} ">Edit</a>
                                 
-                                <a class=" text-danger " onclick="remove('${coupon._id} ','${i}')">delete</a>
+                                <a class=" text-danger " onclick="removeCoupon('${coupon._id} ','${i}')">delete</a>
                               </div>
                            `
                         }).join("");

@@ -43,12 +43,15 @@ const addProducts = async (req, res) => {
   try {
 
          const { title, category, stock, price, description } = req.body;
+        
          let array = [];
          const nameCheck = await ProductDb.findOne({ name: { $regex: new RegExp(title, "i") } })
-         const categoryCheck = await CategoryDb.findOne({ name:category })
+         const categoryCheck = await CategoryDb.findOne({ _id:category });
+      
          if(nameCheck){
           return res.json({success:false,message:"This Product Name Already Exists!."})
          }
+         
          if(description < 10){
           return res.json({success:false,message:"Description should be more than 10 word!."})
          }
@@ -58,6 +61,7 @@ const addProducts = async (req, res) => {
          if(stock < 1){
           return res.json({success:false,message:"Stock should be more than 1!."})
          }
+         
          if(!categoryCheck){
           return res.json({success:false,message:"Category Not Found!."})
          }

@@ -375,7 +375,7 @@ const verifyOtp = async (req, res) => {
     }
     await UserOtpVerification.findOneAndDelete({email: email});
 
-     function generateCouponId(email,length) {
+     function generateRefferalCode(email,length) {
             const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
             const charactersLength = characters.length;
             const emi = email.split("@")[0]
@@ -386,7 +386,7 @@ const verifyOtp = async (req, res) => {
             return couponId;
       }
             
-      const reffaralCode = generateCouponId(req.session.user.email,4);
+      const reffaralCode = generateRefferalCode(req.session.user.email,4);
     // creating user
 
     const userData = new userModel({

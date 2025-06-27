@@ -190,7 +190,7 @@
                         <div class="card-body">
                             <div class="row">
                                 <form  action="" method="post" enctype="multipart/form-data">
-                                    <h2 class="content-title text-center text-primary">Add New cuppen</h2>
+                                    <h2 class="content-title text-center text-primary">Edit Coupon</h2>
                                     <div class="form-group">
                                      </div>   
                                    
@@ -218,11 +218,11 @@
                                         <input type="date" placeholder="Type here" value="<%=data.expiryDate.toISOString().split('T')[0]%>" name="validity" class="form-control" id="date" />
                                     </div>
                                     <div class="col-md-4 mb-4">
-                                        <label id="offerPriceLabel" for="product_sku" class="form-label">Offer Price</label>
+                                        <label id="offerPriceLabel" for="product_sku" class="form-label">Offer Price in %</label>
                                         <input type="text" placeholder="Type here" value="<%=data.offer%>" name="offerPrice" class="form-control" id="offerPrice" />
                                     </div>
                                     <div class="col-md-4 mb-4">
-                                        <label id="minLabel" for="product_sku" class="form-label">min Limite</label>
+                                        <label id="minLabel" for="product_sku" class="form-label">min Limite In Rupies (RS)</label>
                                         <input type="text" placeholder="Type here" name="min" value="<%=data.minLimite%>" class="form-control" id="min" />
                                     </div>
                                 </div>
@@ -252,7 +252,8 @@
                                     </div>
                                   </div>
                                   <div class="mb-4">
-                                    <button type="button" id="button"  onclick="handleClick('<%=data._id%>')" class="btn btn-primary w-100">Edit Cuppen</button>
+                                    <button type="button" id="button"  onclick="handleClick('<%=data._id%>')" class="btn btn-primary w-50">Edit Coupon</button>
+                                    <a href="/admin/coupons"  class="btn btn-primary ">Back</a>
                                 </div>
                                 </form>
                                
@@ -358,45 +359,47 @@
              });
            return;
          }
-        //  if(!image){
-        //      Swal.fire({
-        //         title:"Error!.",
-        //         text: "Please Choose an Image!.",
-        //         icon: "warning",
-        //      });
-        //    return;
-        //  }
-
+     
          const formData = new FormData();
-
-         formData.append("file",image);
+         
+         formData.append("file",image); 
          formData.append("title",title);
          formData.append("couponCode",coupenCode);
          formData.append("offerPrice",offerPrice);
          formData.append("date",date);
          formData.append("min",min);
-         button.disabled = true;
 
-          fetch(`/admin/editCoupon?couponId=${id}`,{method:"PATCH",body:formData,"Content-Type":"multipart/form-data"}).then((res)=>res.json())
-         .then((res)=>{
-      
-            if(res.success){
-              Swal.fire({
-                title:"Success!.",
-                text: res.message,
-                icon: "success",
-             });
-             window.location.href="/admin/coupons";
-            }else{
-                button.disabled = false;
-             Swal.fire({
-                title:"Error!.",
-                text:res.message,
-                icon: "warning",
-             });
-            }
-         })
-            
+          Swal.fire({
+                    title: "Are you sure?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: `Yes`
+                    }).then((result)=>{
+                        if(result.isConfirmed){
+                           button.disabled = true;
+                              fetch(`/admin/editCoupon?couponId=${id}`,{method:"PATCH",body:formData}).then((res)=>res.json())
+                            .then((res)=>{
+                        
+                                if(res.success){
+                                Swal.fire({
+                                    title:"Success!.",
+                                    text: res.message,
+                                    icon: "success",
+                                });
+                                window.location.href="/admin/coupons";
+                                }else{
+                                    button.disabled = false;
+                                Swal.fire({
+                                    title:"Error!.",
+                                    text:res.message,
+                                    icon: "warning",
+                                });
+                                }
+                            })
+                        }
+                    })
         }
     </script>
     <script src="assets/js/vendors/jquery-3.6.0.min.js"></script>

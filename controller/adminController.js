@@ -1,10 +1,11 @@
 const mongoose = require('mongoose')
 const UserDb = require("../model/userModel");
-const ProductDb = require("../model/productModel");
+const WishlistDB = require("../model/wishlist");
 const CategoryDb = require("../model/categoryModel");
 const OrderDB = require('../model/orderModel');
-const CupenDB = require('../model/cuppenModel');
-const OfferDB = require('../model/offerModel');
+const CartDB = require('../model/cartModel');
+const AddressDB = require('../model/addressModel');
+const WalletDB = require('../model/walletModel');
 const bcrypt = require('bcrypt');
 const exceljs = require('exceljs');
 const pdf = require('html-pdf');
@@ -66,7 +67,7 @@ const viewUser = async (req, res) => {
          
         const limit = 4;
 
-        const userData = await UserDb.find({is_admin: false,}).limit(limit * 1)
+        const userData = await UserDb.find({is_admin: false,}).limit(limit * 1).sort({createdAt:-1})
 
         const count = await UserDb.find({
             is_admin: false
@@ -75,7 +76,7 @@ const viewUser = async (req, res) => {
 
         res.render('usersList', {
             userData: userData,
-            totalPages: Math.ceil(count / limit),
+            totalPage: Math.ceil(count / limit),
         })
     } catch (error) {
         console.log(error.message)
@@ -153,15 +154,14 @@ const chart = async (req, res) => {
 
 const blockUser = async (req, res) => {
     try {
-        const { userId } = req.query
+        const { userId } = req.body
 
         const data = await UserDb.findOne({ _id: userId });
         if(!data){
           return res.json({success:false,message:"User Not Found!."});
         }
 
-        data.is_blocked = !data.is_blocked;
-        await data.save();
+        await UserDb.findByIdAndUpdate({_id:userId},{$set:{is_blocked:!data.is_blocked}});
         res.json({success:true})
 
     } catch (error) {
@@ -200,20 +200,72 @@ const addUser = async (req, res) => {
           if(emailCheck){
             return res.json({success:false,field:'email',message:"Email Already Registerd!."});
           }
-          if(mobile.length >10){
+          if(mobile.length >10 || mobile.length < 10){
            return  res.json({success:false,field:'mobile',message:"Mobile number mustbe 10 digits numbes!."});
           }
           if (password.length < 8 || password.length > 20) {
           return res.json({success:false,field:'password', message: "Password Should be in between 8 - 20" });
           }
+
+           function generateRefferalCode(email,length) {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            const charactersLength = characters.length;
+            const emi = email.split("@")[0]
+            let couponId = `${emi}`
+            for (let i = 0; i < length; i++) {
+                couponId += characters.charAt(Math.floor(Math.random() * charactersLength));
+            }
+            return couponId;
+      }
+            
+      const reffaralCode = generateRefferalCode(email,4);
           
           const userData = new UserDb({
                name: name,
                email: email,
                password: password,
-               mobile: mobile
+               mobile: mobile,
+               reffaralCode,
              });
            await userData.save();
+
+           const cart = new CartDB({
+                 userId: userData._id,
+                 products: [],
+               });
+            await cart.save();
+           
+            const wallet = new WalletDB({
+                  userId: userData._id,
+                  Balance: 0,
+                  walletHistery: [],
+                });
+                
+                await wallet.save();
+                
+                // creating 
+               
+                const wishlist = new WishlistDB({
+                  userId: userData._id,
+                  products: [],
+                });
+                await wishlist.save();
+                
+                // crete address
+                const address = await AddressDB({
+                    userID: userData._id,
+                    address: [],
+                  });
+                  await address.save();
+            
+                const order = await OrderDB({
+                    userId: userData._id,
+                    products: [],
+                  });
+                
+                 await order.save();
+            
+
            res.json({success:true,message:"User created Successfully!."});
            return;
 
@@ -267,7 +319,7 @@ const searchrUser = async (req, res) => {
         const limit = 4;
         const count = await UserDb.find({$or: [{ name: { $regex: ".*" + search + ".*", $options: "i" } }]}).countDocuments()
         const users = await UserDb.find({$or: [{ name: { $regex: ".*" + search + ".*", $options: "i" } }]}).limit(limit)
-         res.json({users,totelPage:Math.ceil(count/limit)});
+         res.json({users,totalPage:Math.ceil(count/limit)});
        
     } catch (error) {
         console.log(error.message);
@@ -275,7 +327,7 @@ const searchrUser = async (req, res) => {
 }
 const userPagination = async (req, res) => {
     try {
-        const { page,search,sort,} = req.query;
+        const { page,search,sort} = req.query;
         const limit = 4;
 
         const query = {};

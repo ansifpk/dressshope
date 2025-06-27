@@ -280,8 +280,9 @@ const searchOrders = async(req,res)=>{
                 }
             }
           array = array.filter((product)=>product.productId.name.toLowerCase().includes(search.toLowerCase()))
+          const totalPage = Math.ceil(array.length/limit);
           array = array.slice(0,limit)
-          return res.send({orders:array,totelPage:Math.ceil(array.length/limit)})
+          return res.send({orders:array,totalPage})
    } catch (error) {
        console.error(error.message)
    }
@@ -317,9 +318,8 @@ const paginationOrders = async(req,res)=>{
                     }
                 })
             }
-
             const totalPage =  Math.ceil(array.length/limit) ;
-            
+        
              switch (sort) {
                 case "Name Z - A":
                 array =array.sort((a,b) => b.productId.name.toLowerCase().localeCompare(a.productId.name.toLowerCase()))

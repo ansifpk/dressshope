@@ -201,9 +201,11 @@
                                         <label id="descriptionLabel" class="form-label">Description</label>
                                         <input placeholder="Type here" id="description" value="<%=categoryData.Description%>" class="form-control"></input>
                                     </div>
-                                    <div class="d-grid">
-                                        <button id="button" class="btn btn-primary" type="button" onclick="handleClick('<%= categoryData._id %>')">Edit category</button>
+                                    <div class="d-flex gap-2">
+                                        <button type="button" onclick="handleClick(this,'<%= categoryData._id %>')" class="btn btn-primary w-25">Edit category</button>
+                                        <a href="/admin/category"  class="btn btn-primary w-25">Back</a>
                                     </div>
+                                    
                                 </form>
                             </div>
                           
@@ -231,13 +233,13 @@
             </footer>
         </main>
         <script>
-          function handleClick(_id) {
+          function handleClick(button,_id) {
 
             const name = document.getElementById("name").value.trim()
             const description = document.getElementById("description").value.trim()
             const descriptionLabel = document.getElementById("descriptionLabel")
             const nameLabel = document.getElementById("nameLabel")
-            const button = document.getElementById("button")
+          
             let error = false;
             console.log(_id);
             
@@ -287,9 +289,13 @@
                                         title:"Success!.",
                                         text:res.message,
                                         icon: "success",
+                                    }).then((res)=>{
+                                        if(res.isConfirmed){
+                                           button.disabled =true;
+                                            window.location.href="/admin/category";
+                                        }
                                     });
-                                    button.disabled =true;
-                                    window.location.href="/admin/category";
+                                    
                                     }else{
                                     button.disabled =false
                                     button.innerText="Edit Category"

@@ -225,7 +225,7 @@
                                     <div class="col-md-9">
                                         <div class="mb-4">
                                             <label id="priceLabel" class="form-label">Cost in Rs</label>
-                                            <input type="text" placeholder="Rs.00.0" id="price" class="form-control" required>
+                                            <input type="number" min="50" max="9999" placeholder="Rs.00.0" id="price" class="form-control" required>
                                         </div>
                                     </div> 
                                 </div> 
@@ -272,6 +272,7 @@
                                   </div>
                                   <div class="mb-4">
                                     <button type="button" id="button" onclick="handleClick()" class="btn btn-primary w-25">Add Product</button>
+                                    <a href="/admin/viewProducts" class="btn btn-primary w-25">Back</button></a>
                                 </div>
                                 </form>
                             </div> 

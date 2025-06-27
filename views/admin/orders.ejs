@@ -347,23 +347,22 @@
                 
                 const sort = document.getElementById("sort").value;
                 const filter = document.getElementById("filter").value;
-                const totalPages = document.getElementById("totalPage").value;
+                const totalPage = document.getElementById("totalPage").value;
                 const search = document.getElementById("search").value;
                 let table = document.getElementById("table");
                 let page = document.getElementById("page");
-
-                 if(action == "increment" && page.innerText*1<totalPages){
+                  
+                 if(action == "increment" && page.innerText*1<totalPage){
                   page.innerText++
                  }else if(action == "decrement" && page.innerText*1 >1){
                   page.innerText--
                  }else{
                     return;
                  }
-                 console.log('search',search,'page.innerText',page.innerText,'sort',sort,'filter',filter);
-                 
+                
                 fetch(`/admin/ordersPagination?search=${search}&&page=${page.innerText}&&sort=${sort}&&filter=${filter}`).then((res)=>res.json())
                 .then((res)=>{
-                  console.log(res,"res");
+                  console.log(res,"res4");
                   
                     table.innerHTML=
                         res.orders.map((order) => {
@@ -389,14 +388,15 @@
 
          <script>
             function handlSearch(tag) {
+                console.log(tag.value);
                 
-                let totalPages = document.getElementById("totalPage");
-                fetch(`/admin/searchOrders?search=${tag.value}`).then((res)=>res.json())
+                let totalPage = document.getElementById("totalPage");
+                fetch(`/admin/searchOrders?search=${tag.value.trim()}`).then((res)=>res.json())
                 .then((res)=>{
                     console.log(res,"ress");
                     document.getElementById("sort").value = ""
                     document.getElementById("filter").value = ""
-                    totalPages.value = res.totelPage 
+                    totalPage.value = res.totalPage 
                     if(res.orders.length == 0){
                         document.getElementById("page").innerText=0
                         document.getElementById("table").innerHTML=

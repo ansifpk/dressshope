@@ -58,7 +58,7 @@ adminRouter.get('/logout',authadmin.loginAdmin,adminController.adminLogout);
 //################### user ##########################
 
 adminRouter.get('/viewUser',authadmin.loginAdmin,adminController.viewUser);
-adminRouter.get('/blockUser',authadmin.loginAdmin,adminController.blockUser);
+adminRouter.patch('/blockUser',authadmin.loginAdmin,adminController.blockUser);
 adminRouter.get('/addUser',authadmin.loginAdmin,adminController.loadaddUser)
 adminRouter.post('/addUser',adminController.addUser);
 adminRouter.get('/sortUser',adminController.sortUser);
@@ -130,6 +130,7 @@ adminRouter.delete('/referalOffer',authadmin.loginAdmin,offerController.deleteRe
 adminRouter.get('/createReport',reportController.createReport)
 adminRouter.get('/createReportPdf',reportController.createReportPdf)
 adminRouter.get('/weaklyReport',authadmin.loginAdmin,reportController.weaklyReport)
+adminRouter.get('/dateChange',authadmin.loginAdmin,reportController.dateChange)
 adminRouter.get('/monthlyReport',authadmin.loginAdmin,reportController.monthlyReport)
 adminRouter.get('/yearlyReport',authadmin.loginAdmin,reportController.yearlyReport)
 module.exports=adminRouter;

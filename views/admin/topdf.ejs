@@ -19,35 +19,23 @@
             </thead>
             <tbody>
                 <%
-                if(orderData?.length>0){
-                for(let i=0;i<orderData.length;i++){
-                    for(let j=0;j<orderData[i].products.length;j++){
-                        if(orderData[i].products[j].orderDate >=start && orderData[i].products[j].orderDate<=end){
-                        %>
-                    <tr>                              
-                        <td><%=orderData[i].userId.name%></td>
-                        <td><%=orderData[i].products[j].productId.name%></td>
-                        <td><%=orderData[i].products[j].orderDate%></td>
-                        <td><span class="badge rounded-pill alert-warning"><%=orderData[i].products[j].productStatus%></span></td>
-                        <td><%=orderData[i].products[j].productId.Price%></td>
-                        <td><%=orderData[i].products[j].productTotal/orderData[i].products[j].quandity%></td>
-                        <td><%=orderData[i].products[j].quandity%></td>
-                        <td><%=orderData[i].products[j].productId.Price-orderData[i].products[j].productTotal/orderData[i].products[j].quandity%></td>
-                        <td><%=orderData[i].products[j].productTotal%></td> 
+                  orderData.map((order)=>{
+                     %>
+                       <tr>                              
+                        <td><%=order.deliveryAddress.fname%></td>
+                        <td><%=order.productId.name%></td>
+                        <td><%=new Date(order.orderDate).toLocaleDateString() %></td>
+                        <td><span class="badge rounded-pill alert-warning"><%=order.productStatus%></span></td>
+                        <td><%=order.productId.Price%></td>
+                        <td><%=Math.ceil(order.productTotal/order.quandity)%></td>
+                        <td><%=order.quandity%></td>
+                        <td><%=order.productId.Price-Math.ceil(order.productTotal/order.quandity)%></td>
+                        <td><%=order.productTotal%></td> 
                     </tr>
-                        <%
-                    }
-                    
-                }
-            }
-            }else{
-%>
-<tr>
-<td colspan="3">No Orders Found</td>
-</tr>
-<%
-}
-%>
+                     <%
+                  })
+                %>
+              
             </tbody>
         </table>
     </div>

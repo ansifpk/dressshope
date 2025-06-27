@@ -5,23 +5,14 @@ const pdf = require('html-pdf');
 const fs = require('fs');
 const path = require('path');
 const ejs = require('ejs');
+const getPastDays = require('../helperfunctions/getPastDays');
 
 const createReport = async (req, res) => {
     try {
         const {endYearly,startYearly,startWeekly,endWeekly,startMonth,endMonth} = req.query;
         const workbook = new exceljs.Workbook();
         const worksheet = workbook.addWorksheet("Orders");
-        function getPastDays(date, numberOfDays) {
-            const pastDays = [];
-            for (let i = 0; i < numberOfDays; i++) {
-                const pastDay = new Date(date);
-                pastDay.setDate(date.getDate() - i);
-                pastDays.push(pastDay.toISOString().slice(0, 10));
-            }
-            return pastDays.reverse(); // Reverse the array to have the days in chronological order
-        }
         
-        const currentDate = new Date()
         let start ;
         let end ;
         if(endWeekly&&startWeekly){
@@ -53,30 +44,36 @@ const createReport = async (req, res) => {
         ];
 
         let counter = 1;
-        const data = await OrderDB.find({ }).populate('userId').populate('products.productId');
-        data.forEach((order) => {
-            for (let i = 0; i < order.products.length; i++) {
-                if(order.products[i].orderDate >= start & order.products[i].orderDate <= end){
+        const orderData = await OrderDB.find({ }).populate('userId').populate('products.productId');
+     
+         let array = []
+        for(let i=0;i<orderData.length;i++){
+            for(let j=0;j<orderData[i].products.length;j++){
+                if(new Date(orderData[i].products[j].orderDate).toISOString().split("T")[0] >=new Date(start).toISOString().split("T")[0] && new Date(orderData[i].products[j].orderDate).toISOString().split("T")[0] <=new Date(end).toISOString().split("T")[0] ){
+                  array.push(orderData[i].products[j])
+                }
+            }
+        }
+
+        array.forEach((order) => {
+            
                 order.s_no = counter;
                 counter++;
-                order.usersname = order.userId.name;
-                order.productsname = order.products[i].productId.name;
-                order.orderStatus = order.products[i].productStatus;
-                order.orderDate = order.products[i].orderDate ;
-                order.productprice = order.products[i].productTotal/order.products[i].quandity;
-                order.actualprice = order.products[i].productId.Price
-                order.productQuandity = order.products[i].quandity;
-                if (order.products[i].productId.Price == order.products[i].productTotal / order.products[i].quandity) {
+                order.usersname = `${order.deliveryAddress.fname} ${order.deliveryAddress.lname}`;
+                order.productsname = order.productId.name;
+                order.orderStatus = order.productStatus;
+                order.orderDate = order.orderDate ;
+                order.productprice = Math.ceil(order.productTotal/order.quandity);
+                order.actualprice = order.productId.Price
+                order.productQuandity = order.quandity;
+                if (order.productId.Price == Math.ceil(order.productTotal / order.quandity)) {
                     order.offerPrice = 0;   
                 } else {
-                   order.offerPrice = order.products[i].productId.Price - order.products[i].productTotal / order.products[i].quandity
+                   order.offerPrice = order.productId.Price -  Math.ceil(order.productTotal / order.quandity)
                 }
-                order.total = order.products[i].productTotal*order.products[i].quandity;
+                order.total = order.productTotal*order.quandity;
                 worksheet.addRow(order);
-            }
-
-            }
-
+        
 
         });
        
@@ -104,17 +101,9 @@ const createReportPdf = async (req, res) => {
     try {
 
         const {endYearly,startYearly,startWeekly,endWeekly,startMonth,endMonth} = req.query;
-        const order = await OrderDB.find({}).populate('userId').populate('products.productId');
-
-        function getPastDays(date, numberOfDays) {
-            const pastDays = [];
-            for (let i = 0; i < numberOfDays; i++) {
-                const pastDay = new Date(date);
-                pastDay.setDate(date.getDate() - i);
-                pastDays.push(pastDay.toISOString().slice(0, 10));
-            }
-            return pastDays.reverse(); // Reverse the array to have the days in chronological order
-        }
+        let orderData = await OrderDB.find({}).populate('userId').populate('products.productId');
+         console.log(req.query)
+       
         
         const currentDate = new Date()
 
@@ -132,9 +121,17 @@ const createReportPdf = async (req, res) => {
             start = startYearly
             end = endYearly
         }
-        console.log(start,end)
+        let array = []
+        for(let i=0;i<orderData.length;i++){
+            for(let j=0;j<orderData[i].products.length;j++){
+                if(new Date(orderData[i].products[j].orderDate).toISOString().split("T")[0] >=new Date(start).toISOString().split("T")[0] && new Date(orderData[i].products[j].orderDate).toISOString().split("T")[0] <=new Date(end).toISOString().split("T")[0] ){
+                  array.push(orderData[i].products[j])
+                }
+            }
+        }
+       
         const data = {
-            orderData: order,
+            orderData: array,
             start:start,
             end:end,
         };
@@ -171,54 +168,76 @@ const createReportPdf = async (req, res) => {
 
 const weaklyReport = async(req,res)=>{
    try {
-    const {eDate} = req.query;
-      function getPastDays(date, numberOfDays) {
-        console.log(date)
-        const pastDays = [];
-        for (let i = 0; i < numberOfDays; i++) {
-            const pastDay = new Date(date);
-            pastDay.setDate(date.getDate() - i);
-            pastDays.push(pastDay.toISOString().slice(0, 10));
+
+    const today = new Date()
+    const pastDays = getPastDays(today, 7);
+   
+    const start = pastDays[0]
+    const end = pastDays[pastDays.length-1]
+    const orderData = await OrderDB.find({}).populate("userId").populate({path:"products.productId",populate:{path:"categoryID"}})
+
+     const array =[];
+        for(let i=0;i<orderData.length;i++){
+            for(let j=0;j<orderData[i].products.length;j++){
+                if(new Date(orderData[i].products[j].orderDate).toISOString().split("T")[0] >=new Date(start).toISOString().split("T")[0] && new Date(orderData[i].products[j].orderDate).toISOString().split("T")[0] <=new Date(end).toISOString().split("T")[0] ){
+                    array.push(orderData[i].products[j])
+                }
+            }
         }
-        return pastDays.reverse(); // Reverse the array to have the days in chronological order
-    }
+   
+        res.render("weeklyReport",{orderData,start,end,array,today})
+    return;
     
-    const currentDate = new Date()
-    // const pastDays = getPastDays(currentDate, 7);
-   
-    if(!eDate){  
-        const pastDays = getPastDays(currentDate, 7);
-        const start = pastDays[0]
-        const end = pastDays[pastDays.length-1]
-        const orderData = await OrderDB.find({}).populate("userId").populate({path:"products.productId",populate:{path:"categoryID"}})
-        const array =[];
-        for(let i=0;i<orderData.length;i++){
-            for(let j=0;j<orderData[i].products.length;j++){
-                if(orderData[i].products[j].orderDate >=start & orderData[i].products[j].orderDate <=end ){
-                    array.push(orderData[i].products[j])
-                }
-            }
-        }
-        console.log("1",start,end,array.length)
-   
-    res.render("weeklyReport",{orderData,start,end,array})
-    }else{
-        const orderData = await OrderDB.find({}).populate("userId").populate({path:"products.productId",populate:{path:"categoryID"}})
-        const pastDays = getPastDays(new Date(eDate), 7);
-        const start = pastDays[0]
-        const end = pastDays[pastDays.length-1]
-        const array =[];
-        for(let i=0;i<orderData.length;i++){
-            for(let j=0;j<orderData[i].products.length;j++){
-                if(orderData[i].products[j].orderDate >=start & orderData[i].products[j].orderDate <=end ){
-                    array.push(orderData[i].products[j])
-                }
-            }
-        }
-        console.log("2",start,end,array.length)
-        res.render("weeklyReport",{orderData,start,end,array})
+} catch (error) {
+    console.log(error.message);
+   }
+}
+const dateChange = async(req,res)=>{
+   try {
+
+  
+    const {eDate,type,sDate,year}  = req.query;
+ 
+    console.log(req.query)
+     let end;
+     let start;
+
+     
+
+    switch (type) {
+        case "monthly":
+             start =sDate
+             end = eDate
+            break;
+        case "yearly":
+             start =`${year}-01-01` ;
+             end = `${year}-12-30`;
+            break;
+    
+        default:
+             const pastDays = getPastDays(new Date(eDate), 7);
+             start = pastDays[0]
+             end = pastDays[pastDays.length-1];
+            
+            break;
     }
+
+    const orderData = await OrderDB.find({}).populate("userId").populate({path:"products.productId",populate:{path:"categoryID"}})
+
+     const array =[];
+        for(let i=0;i<orderData.length;i++){
+            for(let j=0;j<orderData[i].products.length;j++){
+                if(new Date(orderData[i].products[j].orderDate).toISOString().split("T")[0] >=new Date(start).toISOString().split("T")[0] && new Date(orderData[i].products[j].orderDate).toISOString().split("T")[0] <=new Date(end).toISOString().split("T")[0] ){
+                    array.push(orderData[i].products[j])
+                }
+            }
+        }
+
+    
+
+        res.json({start,end,array})
    
+    return;
     
 } catch (error) {
     console.log(error.message);
@@ -229,48 +248,23 @@ const monthlyReport = async(req,res)=>{
     try {
         const orderData = await OrderDB.find({}).populate("userId").populate({path:"products.productId",populate:{path:"categoryID"}})
         const {sDate,eDate} = req.query;
-        function getPastDays(date, numberOfDays) {
-            const pastDays = [];
-            for (let i = 0; i < numberOfDays; i++) {
-                const pastDay = new Date(date);
-                pastDay.setDate(date.getDate() - i);
-                pastDays.push(pastDay.toISOString().slice(0, 10));
-            }
-            return pastDays.reverse(); // Reverse the array to have the days in chronological order
-        }
-        
-        const currentDate = new Date()
-        const pastDays = getPastDays(currentDate, 31);
-        if(!eDate&!sDate){
-            const start = pastDays[0]
-            const end = pastDays[pastDays.length-1]
-            let array=[]
-            for(let i=0;i<orderData.length;i++){
-                for(let j=0;j<orderData[i].products.length;j++){
-                  if(orderData[i].products[j].orderDate >=start & orderData[i].products[j].orderDate <=end){
-                      array.push(orderData[i].products[j])
-                  }
-                }
-            }
+        const today = new Date()
+        const pastDays = getPastDays(today, 31);
+        const array = [];
+        const start = pastDays[0]
+        const end = pastDays[pastDays.length-1]
 
-          
-            res.render("monthlyReport",{orderData,array,start,end})
-        }else{
-            const start =sDate
-            const end = eDate
-            let array=[]
-            for(let i=0;i<orderData.length;i++){
-                for(let j=0;j<orderData[i].products.length;j++){
-                  if(orderData[i].products[j].orderDate >=start & orderData[i].products[j].orderDate <=end){
+         for(let i=0;i<orderData.length;i++){
+            for(let j=0;j<orderData[i].products.length;j++){
+                if(new Date(orderData[i].products[j].orderDate).toISOString().split("T")[0] >=new Date(start).toISOString().split("T")[0] && new Date(orderData[i].products[j].orderDate).toISOString().split("T")[0] <=new Date(end).toISOString().split("T")[0] ){
                     array.push(orderData[i].products[j])
-                  }
                 }
             }
-
-           
-            res.render("monthlyReport",{orderData,array,start,end})
         }
-        
+
+         res.render("monthlyReport",{array,start,end})
+
+      
        
     } catch (error) {
         console.log(error.message);
@@ -280,37 +274,25 @@ const monthlyReport = async(req,res)=>{
 const yearlyReport = async(req,res)=>{
     try {
         const {year} = req.query;
-        if(year){
-            const currentYear =year
+
+        const today = new Date()
+
+            const currentYear =today.getFullYear()
             const start =`${currentYear}-01-01` ;
             const end = `${currentYear}-12-30`;
             const orderData = await OrderDB.find({}).populate("userId").populate({path:"products.productId",populate:{path:"categoryID"}})
             let array =[];
-            for(let i=0;i<orderData.length;i++){
-                for(let j=0;j<orderData[i].products.length;j++){
-                  if(orderData[i].products[j].orderDate >=start & orderData[i].products[j].orderDate <=end){
-                      array.push(orderData[i].products[j])
-                  }
+
+        for(let i=0;i<orderData.length;i++){
+            for(let j=0;j<orderData[i].products.length;j++){
+                if(new Date(orderData[i].products[j].orderDate).toISOString().split("T")[0] >=new Date(start).toISOString().split("T")[0] && new Date(orderData[i].products[j].orderDate).toISOString().split("T")[0] <=new Date(end).toISOString().split("T")[0] ){
+                    array.push(orderData[i].products[j])
                 }
             }
-          
-            res.render("yearlyReport",{orderData,array,start,end,currentYear})
-        }else{
-            const currentYear = new Date().getFullYear();
-            const start =`${currentYear}-01-01` ;
-            const end = `${currentYear}-12-30`;
-            const orderData = await OrderDB.find({}).populate("userId").populate({path:"products.productId",populate:{path:"categoryID"}})
-           let array =[];
-            for(let i=0;i<orderData.length;i++){
-                for(let j=0;j<orderData[i].products.length;j++){
-                  if(orderData[i].products[j].orderDate >=start & orderData[i].products[j].orderDate <=end){
-                      array.push(orderData[i].products[j])
-                  }
-                }
-            }
-            console.log(array.length)
-            res.render("yearlyReport",{orderData,array,start,end,currentYear})
         }
+
+        res.render("yearlyReport",{array,start,end,currentYear})
+  
        
     } catch (error) {
         console.log(error.message);
@@ -324,5 +306,6 @@ module.exports = {
     weaklyReport,
     monthlyReport,
     yearlyReport,
+    dateChange,
 
 }

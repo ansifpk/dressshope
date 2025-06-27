@@ -186,20 +186,11 @@
                         <h2 class="content-title card-title">Weekly Sales Report</h2>
                         <p>Whole data about your business here</p>
                     </div>
-                    <div>
-                        <%
-                        if(array.length>0){
-                            %>
-                            <a href="/admin/createReport?startWeekly=<%=start%>&endWeekly=<%=end%>" class="btn btn-primary"><i class="text-muted material-icons md-post_add"></i>Create report</a>
-                            <a href="/admin/createReportPdf?startWeekly=<%=start%>&endWeekly=<%=end%>" class="btn btn-primary"><i class="text-muted material-icons md-post_add"></i>Create report in pdf</a>
-                            <%
-                        }else{
-                            %>
-                            <a href="/admin/createReport" class="btn btn-primary disabled"><i class="text-muted material-icons md-post_add"></i>Create report</a>
-                            <a href="/admin/createReportPdf" class="btn btn-primary disabled"><i class="text-muted material-icons md-post_add"></i>Create report in pdf</a>
-                            <%
-                        }
-                        %>
+                    <div id="reports">
+                        <a href="/admin/createReport?startYearly=<%=start%>&endYearly=<%=end%>" class="btn btn-primary <%=array.length > 0?"":"disabled"%>"><i class="text-muted material-icons md-post_add"></i>Create report</a>
+                        <a href="/admin/createReportPdf?startYearly=<%=start%>&endYearly=<%=end%>" class="btn btn-primary <%=array.length > 0?"":"disabled"%>"><i class="text-muted material-icons md-post_add"></i>Create report in pdf</a>
+                       
+                       
                     </div>
                 </div>
                
@@ -213,7 +204,7 @@
                         <div class="row align-items-center">
                             <div class="col-md-4 col-6">
                                 <label>Choose Ending Date</label>
-                                <input id="eDate" type="date" name="eDate" value="02.05.2021" class="form-control" />
+                                <input id="eDate" type="date" name="eDate" value="<%=today.toISOString().split('T')[0]%>" class="form-control" />
                                 
                             </div>
                             <div class="col-md-4 mt-3 col-6">
@@ -237,65 +228,32 @@
                                             <th class="align-middle" scope="col">Payment Method</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody id="table">
+                                        
                                         <%
-                                         let c=0;
-                                         let b=0;
-                                         for(let i=0;i<orderData.length;i++){
-                                              for(let j=0;j<orderData[i].products.length;j++){
-                                                  if(orderData[i].products[j].orderDate >=start & orderData[i].products[j].orderDate <=end ){
-                                                    %>
-                                                    <tr>
-                                            <td class="text-center"><%=orderData[i].userId.name%></td>
-                                            <td class="text-center"><%= orderData[i].products[j].productId.name%></td>
-                                            <td class="text-center"><%= orderData[i].products[j].orderDate%></td>
-                                            <td class="text-center">Rs.<%=orderData[i].products[j].productId.Price%></td>
-                                            <%
-                                            if(orderData[i].products[j].productStatus == "return"){%>
-                                            <td class="text-center">
-                                                <span class="badge badge-pill badge-soft-danger "><%=orderData[i].products[j].productStatus%></span>
-                                            </td>
-                                            <%}else if(orderData[i].products[j].productStatus == "pending"){%>
-                                            <td class="text-center">
-                                                <span class="badge badge-pill badge-soft-secondary "><%=orderData[i].products[j].productStatus%></span>
-                                            </td>
-                                            <%}else if(orderData[i].products[j].productStatus == "canceled"){%>
-                                            <td class="text-center">
-                                                <span class="badge badge-pill badge-soft-warning "><%=orderData[i].products[j].productStatus%></span>
-                                            </td>
-                                            <%}else if(orderData[i].products[j].productStatus == "Failed"){%>
-                                            <td class="text-center">
-                                                <span class="badge badge-pill badge-soft-warning "><%=orderData[i].products[j].productStatus%></span>
-                                            </td>
-                                            <%}else{%>
-                                            <td class="text-center">
-                                                <span class="badge badge-pill badge-soft-success "><%=orderData[i].products[j].productStatus%></span>
-                                            </td>
-                                            <%}
+                                         if(array.length > 0){
+                                             array.map((product)=>{
+                                                %>
+                                                <tr>
+                                                    
+                                                    <td class="text-center"><%=product.deliveryAddress.fname%> <%=product.deliveryAddress.lname%></td>
+                                                    <td class="text-center"><%= product.productId.name%></td>
+                                                    <td class="text-center"><%= new Date(product.orderDate).toLocaleDateString() %></td>
+                                                    <td class="text-center">Rs.<%=product.productId.Price%></td>
+                                                    <td class="text-center <%=product.paymentStatus == "Not Paid"?"badge-soft-warning":product.paymentStatus == "Paid"?"badge-soft-success":"badge-soft-danger"%>"><%=product.paymentStatus%></td>
+                                                    <td class="text-center <%=product.productStatus == "pending" || product.productStatus == "Delivered" ?"badge-soft-success":"badge-soft-danger"%>"><%=product.productStatus%></td>
+                                                    <td class="text-center"><%=product.paymentMethod%></td>
+                                                    
+                                                </tr>
+                                                <%
+                                             })
+                                         }else{
                                             %>
+                                              <tr>
+                                                <td>No Order Made In This Weak</td>
+                                              </tr>
                                             <%
-                                            if(orderData[i].products[j].paymentStatus == "Not paid"){%>
-                                            <td class="text-center" >
-                                                <span class="badge badge-pill badge-soft-warning"><%=orderData[i].products[j].paymentStatus%></span>
-                                            </td>
-                                            <%}else if(orderData[i].products[j].paymentStatus == "Failed"){%>
-                                            <td class="text-center">
-                                                <span class="badge badge-pill badge-soft-danger"><%=orderData[i].products[j].paymentStatus%></span>
-                                            </td>
-                                            <%}else{%>
-                                            <td class="text-center" >
-                                                <span class="badge badge-pill badge-soft-success"><%=orderData[i].products[j].paymentStatus%></span>
-                                            </td>
-                                            <%}
-                                            %>
-                                            <td class="text-center"><%=orderData[i].products[j].paymentMethod%> </td>
-                                          
-                                        </tr>
-                                                    <%
-                                    }
-                                }
-                                                }
-                                           
+                                         }
                                         %>
                                     </tbody>
                                 </table>
@@ -330,27 +288,46 @@
         </main>
        <script>
    
-    function change(){
-        const status = document.getElementById("select")
-        
-
-        fetch(`/admin/changeChart?status=${status.value}`).then((res=>res.json()))
-        .then((data)=>{
-           if(data.status=="Monthly"){
-             const  myChart =  document.getElementById("select");
-             myChart.setAttribute('data-another-value', JSON.stringify(data.dataSend))
-             console.log("ji")
-            
-             
-           }
-        })
-      
-      
-    }
-    
+   
     function dateChange(){
       const eDate = document.getElementById("eDate").value
-      window.location.href=`/admin/weaklyReport?eDate=${eDate}`
+      const reports = document.getElementById("reports")
+      fetch(`/admin/dateChange?eDate=${eDate}&&type=weekly`).then((res)=>res.json())
+      .then((data)=>{
+
+         reports.innerHTML = ` <a href="/admin/createReport?startYearly=${data.start}&endYearly=${data.end}" class="btn btn-primary ${data.array.length > 0?"":"disabled"} "><i class="text-muted material-icons md-post_add"></i>Create report</a>
+                        <a href="/admin/createReportPdf?startYearly=${data.start}&endYearly=${data.end}" class="btn btn-primary  ${data.array.length > 0?"":"disabled"}"><i class="text-muted material-icons md-post_add"></i>Create report in pdf</a>
+                       `
+       
+        if(data.array.length == 0){
+                
+                document.getElementById("table").innerHTML = ` <tr>
+                                                <td>No Order Made In This Weak</td>
+                                              </tr>`
+                
+            }else{
+               
+                document.getElementById("table").innerHTML = 
+                data.array.map((product)=>{
+                   return  `
+                      <tr>
+                                                    
+                                                    <td class="text-center">${product.deliveryAddress.fname} ${product.deliveryAddress.lname}</td>
+                                                    <td class="text-center">${product.productId.name}</td>
+                                                    <td class="text-center">${new Date(product.orderDate).toLocaleDateString() }</td>
+                                                    <td class="text-center">Rs.${product.productId.Price}</td>
+                                                    <td class="text-center ${product.paymentStatus == "Not Paid"?"badge-soft-warning":product.paymentStatus == "Paid"?"badge-soft-success":"badge-soft-danger"}">${product.paymentStatus}</td>
+                                                    <td class="text-center ${product.productStatus == "pending" || product.productStatus == "Delivered" ?"badge-soft-success":"badge-soft-danger"}">${product.productStatus}</td>
+                                                    <td class="text-center">${product.paymentMethod}</td>
+                                                    
+                                                </tr>
+
+                     `
+
+    
+                }).join("")
+            }
+      })
     }
         
    

@@ -6,7 +6,7 @@ const RefaralDB = require("../model/referalOfferModel");
 
 const offer = async (req, res) => {
     try {
-        const data = await OfferDB.find({});
+        const data = await OfferDB.find({}).sort({createdAt:-1});
         res.render('offer', { offer: data });
     } catch (error) {
         console.log(error.message);

@@ -219,7 +219,7 @@ if(offer.length > 0){
         <td><%= offer[i].name %></td>
         <td><%= offer[i].iteam %></td>
         <td><%= offer[i].offerRate %></td>
-        <td><%= offer[i].validity %></td>
+        <td><%= new Date(offer[i].validity).toLocaleDateString() %></td>
         <td><button class="btn btn-sm font-sm rounded btn-danger text-white" onclick="deleteOffer('<%=offer[i]._id%>','<%=i%>')">Delete</button></td>
         
     </tr>

@@ -120,13 +120,13 @@ const loadeditCuppen = async (req, res) => {
             const today = new Date();
             const offerPrice = req.body.offerPrice*1
             const expiryDate = new Date(date);
-
+            
              const coupon = await CoupenDB.findById({ _id: couponId});
-
+             let couponImage = {};
              if(!coupon){
                 return res.json({success:false,message: " Coupon Not Found!. "});
              }
-
+               couponImage = coupon.image;
               if(offerPrice < 5 && offerPrice > 20){
                return res.json({success:false,message: " Offer Rate Must Be In Between 5 And 20 "});
              }
@@ -134,17 +134,21 @@ const loadeditCuppen = async (req, res) => {
             if(today>=expiryDate){
               return res.json({success:false,message: " Invalid Date "});
             }
-             const {secure_url,public_id} = await cloudineryHelper(req.file.path,"ecommerceCouponImages");
+
+            if(req.file){
+              const {secure_url,public_id} = await cloudineryHelper(req.file.path,"ecommerceCouponImages");
+              couponImage.secure_url = secure_url
+              couponImage.public_id = public_id
+            }
+
+             
                           await CoupenDB.findByIdAndUpdate({ _id: couponId }, {
                             $set: {
                                 name: title,
                                 expiryDate: date,
                                 offer: offerPrice,
                                 minLimite: min,
-                                image:  {
-                                    secure_url,
-                                    public_id
-                                },
+                                image:  couponImage,
                                 couponCode: couponCode,
                             }
                            });
@@ -160,12 +164,17 @@ const deleteCoupen = async (req, res) => {
     try {
 
         const { couponId } = req.body;
+        const limit = 3;
         const coupon = await CoupenDB.findByIdAndDelete({ _id: couponId });
         if(!coupon){
             res.json({success:false,message:"Coupon Not Found!."});
         }
+
+        const count = await CoupenDB.find()
+        const totalPage = Math.ceil(count/limit)
+        const coupons = await CoupenDB.find().sort({createdAt:-1}).limit(limit)
         
-        res.json({success:true,message:"Coupon Deleted Successfully!."});
+        res.json({success:true,coupons,totalPage,message:"Coupon Deleted Successfully!."});
 
         
 
