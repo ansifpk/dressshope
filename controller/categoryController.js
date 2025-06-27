@@ -71,7 +71,7 @@ const editcategory = async (req, res) => {
             return res.json({success:false,message:"Category Not Found!."});
         }
 
-        if(!/^[A-Z]+(?:[A-Z]+)?$/.test(name)){
+        if(!/^[A-Za-z]+(?:\s+[A-Za-z]+)*$/.test(name)){
             return res.json({success:false,message:"Invalid Category Name!."});
         }
 
