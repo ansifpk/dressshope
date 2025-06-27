@@ -78,6 +78,7 @@ const addProducts = async (req, res) => {
             name: title,
             Price: price,
             stock: stock,
+            image:array,
             Description: description,
             categoryID:category,
           });
