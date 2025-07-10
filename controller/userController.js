@@ -444,13 +444,6 @@ const verifyOtp = async (req, res) => {
       });
       await address.save();
 
-    const order = await OrderDB({
-        userId: userData._id,
-        products: [],
-      });
-    
-     await order.save();
-
     req.session.user_id = userData._id;
     res.json({ success: true });
   } catch (error) {
