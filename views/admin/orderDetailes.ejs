@@ -64,7 +64,7 @@
                   
                   
                     <li class="menu-item has-submenu active">
-                        <a class="menu-link" href="/admin/viewOrders">
+                        <a class="menu-link" href="/adminordersList">
                             <i class="icon material-icons md-monetization_on"></i>
                             <span class="text">View Orders</span>
                         </a>
@@ -104,15 +104,14 @@
                            
                         </div>
                     </li>
-                    <li class="menu-item has-submenu">
-                        <a class="menu-link" href="/admin/weaklyReport">
+                   <li class="menu-item has-submenu">
+                        <a class="menu-link" href="/admin/orderReport">
                             <i class="icon material-icons md-post_add"></i>
                             <span class="text">Report</span>
                         </a>
                         <div class="submenu">
-                            <a href="/admin/weaklyReport">weakly Report</a>
-                            <a href="/admin/monthlyReport">Monthly Report</a>
-                            <a href="/admin/yearlyReport">Yearly Report</a>
+                            <a href="/admin/orderReport">Sales Report</a>
+                           
                         </div>
                     </li>
                     <li class="menu-item">
@@ -183,6 +182,7 @@
                         <div class="row align-items-center">
                             <div class="col-lg-6 col-md-6 mb-lg-0 mb-15">
                                 <span> <i class="material-icons md-calendar_today"></i> <b>Order Details </b> </span> <br />
+                                <span></i> <b> Order Id : <%=orderData._id%> </b> </span> <br />
                         
                             </div> 
                         </div>
@@ -198,9 +198,9 @@
                                     <div class="text">
                                         <h6 class="mb-1">Customer</h6>
                                         <p class="mb-1">
-                                            <%=userData.name%> <br />
-                                            <%=userData.email%> <br />
-                                            <%=userData.mobile%>
+                                            <%=orderData.userId.name%> <br />
+                                            <%=orderData.userId.email%> <br />
+                                            <%=orderData.userId.mobile%>
                                         </p>
                                        
                                     </div>
@@ -216,8 +216,8 @@
                                         <h6 class="mb-1">Order info</h6>
                                         <p class="mb-1">
                                             Shipping: Fargo express <br />
-                                            Pay method: <%=productData.paymentMethod%> <br />
-                                            Status: new
+                                            Pay method: <%=orderData.products[0].paymentMethod%> <br />
+                                            <!-- Status: new -->
                                         </p>
                                         <!-- <a href="#">Download info</a> -->
                                     </div>
@@ -232,8 +232,8 @@
                                     <div class="text">
                                         <h6 class="mb-1">Deliver to</h6>
                                         <p class="mb-1">
-                                            <%=productData.deliveryAddress.address%> <br /><%=productData.deliveryAddress.city%>, <%=productData.deliveryAddress.state%>, <%=productData.deliveryAddress.country%> <br />
-                                            <%=productData.deliveryAddress.pincode%>
+                                            <%=orderData.products[0].deliveryAddress.address%> <br /><%=orderData.products[0].deliveryAddress.city%>, <%=orderData.products[0].deliveryAddress.state%>, <%=orderData.products[0].deliveryAddress.country%> <br />
+                                            <%=orderData.products[0].deliveryAddress.pincode%>
                                         </p>
                                         <!-- <a href="#">View profile</a> -->
                                     </div>
@@ -249,15 +249,15 @@
                                         <div class="col-lg-6 col-md-6 ms-auto text-md-end">
                                             <select id="changeStatus" class="form-select d-inline-block mb-lg-0 mr-5 mw-200">
                                                 <option disabled selected>Change status</option>
-                                                <option>pending</option>
                                                 <option>canceled</option>
                                                 <option>Delivered</option>
                                             </select>
-                                            <a class="btn btn-primary" onclick="orderStatus('<%=productData._id%>')">Save</a>
+                                            <a class="btn btn-primary" onclick="orderStatus('<%=orderData._id%>')">Save</a>
                                             
                                         </div>
                                         <thead>
                                             <tr>
+                                                <th >Si.No</th>
                                                 <th >Product</th>
                                                 <th >Name</th>
                                                 <th >Unit Price</th>
@@ -266,37 +266,82 @@
                                                 <th >Date</th>
                                                 <th >Payment Status</th>
                                                 <th >Delivery Status</th>
-                                            
                                             </tr>
                                         </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>
-                                                    <a class="itemside">
-                                                        <div class="left">
-                                                            <img src="<%=productData.productId.image[0].secure_url%>" width="40" height="40" class="img-xs" alt="Item" />
-                                                        </div>
-                                                    </a>
-                                                </td>
-                                                <td><%=productData.productId.name%></td>
-                                                
-                                                <td><%=productData.productTotal/productData.quandity%></td>
-                                                <td><%=productData.quandity%></td>
-                                
-                                                <td ><%=productData.productTotal%></td>
-                                                <td id="date"><%= new Date(productData.orderDate).toLocaleDateString()%></td>
-                                                
-                                                <td><span id="paymentBadge" class="badge rounded-pill <%=productData.paymentStatus == "Failed" || productData.paymentStatus == "Not Paid" ?"btn-danger":"btn-success" %>  text-black "><%=productData.paymentStatus%></span></td>
-                                                <td><span id="badge" class="badge rounded-pill <%=productData.productStatus == "pending" || productData.productStatus == "Delivered" ?"btn-success":"btn-danger" %>  text-black "><%=productData.productStatus%></span></td>
-                                                <%
-                                                  if(productData.productStatus == "return"){%>
-                                                    <td><button onclick="reason()" class="btnn btn-danger rounded text-white">show reason</button></td>
-                                                    <td><input id="reason" type="hidden" value="<%=productData.cancellationReason%>"></inpute></td>
-                                                  <%} 
-                                                %>
-                                               
-                                            </tr>
-                                        
+                                        <tbody id="table">
+                                            <%
+                                               let showDiscount = false;
+                                               const productTotal = orderData.products.reduce((acc,cur)=>{
+                                                if (cur.productStatus == "pending" || cur.productStatus == "Delivered" || cur.productStatus == "returnPending") {
+                                                     showDiscount = false;
+                                                   return acc+cur.productTotal
+                                                } else {
+                                                    return acc
+                                                }
+                                               },0)
+                                               orderData.products.forEach((order,i) => {
+                                                  %>
+                                                    <tr>
+                                                        <td><%=i+1%></td>
+                                                        <td>
+                                                            <a class="itemside">
+                                                                <div class="left">
+                                                                    <img src="<%=order.productId.image[0].secure_url%>" width="40" height="40" class="img-xs" alt="Item" />
+                                                                </div>
+                                                            </a>
+                                                        </td>
+                                                        <td><%=order.productId.name%></td>
+                                                        
+                                                        <td><%=order.productTotal/order.quandity%></td>
+                                                        <td><%=order.quandity%></td>
+                                                        <td ><%=order.productTotal%></td>
+                                                        <td id="date"><%= new Date(orderData.createdAt).toLocaleDateString() %></td>
+                                                        <td><span id="paymentBadge" class="badge rounded-pill <%=order.paymentStatus == "Failed" || order.paymentStatus == "Not Paid" ?"btn-danger":"btn-success" %>  text-black "><%=order.paymentStatus%></span></td>
+                                                        <td><span id="badge<%=order._id%>" class="badge rounded-pill <%=order.productStatus == "pending" || order.productStatus == "Delivered" ?"btn-success":"btn-danger" %>  text-black "><%=order.productStatus%></span></td>
+                                                        <%
+                                                        if(order.productStatus == "returnPending"){%>
+                                                            <td id="remove<%=order._id%>"><button onclick="reason('<%=order.cancellationReason%>','<%=order._id%>','<%=orderData._id%>')" class="btnn btn-danger rounded text-white">show reason</button></td>
+                                                        <%} 
+                                                        %>
+                                                    </tr>
+                                                  <%
+                                               });
+                                            %>
+                                                <tr >
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td class="border-bottom">Total</td>
+                                                    <td class="border-bottom" id="Total"><%=productTotal%></td>
+                                                </tr>
+                                                <tr>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td class="border-bottom">Coupon Discount</td>
+                                                    <td class="border-bottom" id="Coupon Discount"><%=showDiscount?orderData.couponOfferPrice:0%></td>
+                                                </tr>
+                                                <tr>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td class="border-bottom">Grand Total</td>
+                                                    <td class="border-bottom" id="Grand Total"><%=showDiscount ? productTotal - orderData.couponOfferPrice : productTotal%></td>
+                                                </tr>
+                                        </tbody>
+                                    </table>
                             <!-- col// -->
                         </div>
                     </div>
@@ -325,45 +370,151 @@
 
 
 
-function orderStatus(productId){
+function orderStatus(orderId){
     const  changeStatus = document.getElementById("changeStatus");
+    const  table = document.getElementById("table");
     const status =  document.getElementById("badge");
    
+   const total = document.getElementById("Total");
+   const discount = document.getElementById("Coupon Discount");
+   const gtotal = document.getElementById("Grand Total");
+   console.log(total.innerText,discount.innerText,gtotal.innerText);
    
    if(changeStatus.value == 'Change status') {
     return ;
-   }else if(changeStatus.value == status.innerText){
-       Swal.fire({
-            title: "Warning!.",
-            text: "You Cannot Set The Current Status Again!.",
-            icon: "warning"
-        });
-        return;
    }
-    fetch(`/admin/orderStatus?changeStatus=${changeStatus.value}&productId=${productId}`).then((res)=>res.json())
-    .then((res)=>{
-    
-        
-        if(res.success){
-            status.innerText=changeStatus.value;
-            if(status.innerText==="canceled"){
-                status.style.backgroundColor="red";
-            }else{
-                status.style.backgroundColor="green";
+    Swal.fire({
+        title: "Are you sure?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, cancel it!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/admin/orderStatus?_id=${orderId}`,{method:"PATCH",body:JSON.stringify({changeStatus:changeStatus.value}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
+                .then((res)=>{
+                    
+                    if(res.success){
+                       
+                       table.innerHTML =  res.orderData.products.map((order,i)=>{
+                             if(res.orderData.products.length -1 == i){
+
+                                 return ` 
+                                    <tr>
+                                      <td>${i+1}</td>
+                                      <td>
+                                         <a class="itemside">
+                                             <div class="left">
+                                                 <img src="${order.productId.image[0].secure_url}" width="40" height="40" class="img-xs" alt="Item" />
+                                             </div>
+                                         </a>
+                                      </td>
+                                      <td>${order.productId.name}</td>                  
+                                      <td>${order.productTotal/order.quandity}</td>
+                                      <td>${order.quandity}</td>
+                                      <td >${order.productTotal}</td>
+                                      <td id="date">${ new Date(res.orderData.createdAt).toLocaleDateString()}</td>
+                                      <td><span id="paymentBadge" class="badge rounded-pill ${order.paymentStatus == "Failed" || order.paymentStatus == "Not Paid" ?"btn-danger":"btn-success"}  text-black ">${order.paymentStatus}</span></td>
+                                      <td><span id="badge" class="badge rounded-pill ${order.productStatus == "pending" || order.productStatus == "Delivered" ?"btn-success":"btn-danger"}  text-black ">${order.productStatus}</span></td>
+                                      ${                                   
+                                      order.productStatus == "returnPending"?
+                                         `<td><button onclick="reason()" class="btnn btn-danger rounded text-white">show reason</button></td>
+                                         <td><input id="reason" type="hidden" value="${order.cancellationReason}"></inpute></td>`:""
+                                      } 
+                                     </tr>
+                                     <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>Total</td>
+                                        <td id="Total">${changeStatus.value == "canceled"?0:total.innerText}</td>
+                                </tr>
+                                <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>Coupon Discount</td>
+                                        <td id="Coupon Discount">${changeStatus.value == "canceled"?0:discount.innerText}</td>
+                                </tr>
+                                <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>Grand Total</td>
+                                        <td id="Grand Total">${changeStatus.value == "canceled"?0:gtotal.innerText}</td>
+                                </tr>
+                                  `
+                             }else{
+
+                            return ` 
+                               <tr>
+                                 <td>${i+1}</td>
+                                 <td>
+                                    <a class="itemside">
+                                        <div class="left">
+                                            <img src="${order.productId.image[0].secure_url}" width="40" height="40" class="img-xs" alt="Item" />
+                                        </div>
+                                    </a>
+                                 </td>
+                                 <td>${order.productId.name}</td>                  
+                                 <td>${order.productTotal/order.quandity}</td>
+                                 <td>${order.quandity}</td>
+                                 <td >${order.productTotal}</td>
+                                 <td id="date">${ new Date(res.orderData.createdAt).toLocaleDateString()}</td>
+                                 <td><span id="paymentBadge" class="badge rounded-pill ${order.paymentStatus == "Failed" || order.paymentStatus == "Not Paid" ?"btn-danger":"btn-success"}  text-black ">${order.paymentStatus}</span></td>
+                                 <td><span id="badge" class="badge rounded-pill ${order.productStatus == "pending" || order.productStatus == "Delivered" ?"btn-success":"btn-danger"}  text-black ">${order.productStatus}</span></td>
+                                 ${                                   
+                                 order.productStatus == "returnPending"?
+                                    `<td><button onclick="reason()" class="btnn btn-danger rounded text-white">show reason</button></td>
+                                    <td><input id="reason" type="hidden" value="${order.cancellationReason}"></inpute></td>`:""
+                                 } 
+                                </tr>
+                             `
+                            }
+                        }).join("")
+                         
+                    
+                         Swal.fire({
+                        title: "Success!.",
+                        text: res.message,
+                        icon: "success"
+                        });
+                        return;
+
+                        status.innerText=changeStatus.value;
+                        if(status.innerText==="canceled"){
+                            status.style.backgroundColor="red";
+                        }else{
+                            status.style.backgroundColor="green";
+                        }
+                        Swal.fire({
+                        title: "Success!.",
+                        text: res.message,
+                        icon: "success"
+                        });
+                    }else{
+                        Swal.fire({
+                        title: "Warning!.",
+                        text: res.message,
+                        icon: "warning"
+                        });
+                    }
+                });  
             }
-            Swal.fire({
-            title: "Success!.",
-            text: res.message,
-            icon: "success"
-            });
-        }else{
-            Swal.fire({
-            title: "Warning!.",
-            text: res.message,
-            icon: "warning"
-            });
-        }
-    });  
+        })
 }
   
 
@@ -400,20 +551,71 @@ function orderStatus(productId){
 
 
 
-function reason(){
-   const  reason = document.getElementById("reason");
-   Swal.fire({
-  position: "center",
-  title:reason.value ,
-  showConfirmButton: true,
-});
-}
+    function reason(reason,productId,orderId){
+        const  tag = document.getElementById(`remove${productId}`);
+        const  badge = document.getElementById(`badge${productId}`);
+        const  total = document.getElementById(`Total`);
+        const  coupon = document.getElementById(`Coupon Discount`);
+        const  gTotal = document.getElementById(`Grand Total`);
+       
+        
+        Swal.fire({
+            title: "Do you Accept This Request?",
+            showDenyButton: true,
+            showCancelButton: true,
+            confirmButtonText: "Accept",
+            denyButtonText: `Don't Accept`,
+            text:reason
+        }).then((result) => {
+            let status = ""
+         
+            if(result.isDismissed){
+                return
+            }
+
+            if (result.isConfirmed) {
+                status = "return"
+            } else {
+                status = "Delivered"
+            }
+
+            fetch(`/admin/returnOrder?orderId=${orderId}`,{method:"PATCH",body:JSON.stringify({status,productId}),headers:{"Content-Type":"application/json"}}).then((res) =>res.json())
+            .then((res)=>{
+             
+               if(res.success){
+                
+                   
+                   tag.remove()
+                    if (result.isConfirmed) {
+                        Swal.fire("Accepted The Request", "", "success");
+                        badge.innerText = 'return'
+                        total.innerText = total.innerText - res.returnAmount
+                        if(total.innerText == 0){
+                            gTotal.innerText = 0
+                            coupon.innerText = 0
+                        }
+                        
+                    } else if (result.isDenied) {
+                        Swal.fire("Declained The Request", "", "success");
+                        badge.classList.remove("btn-danger")
+                        badge.classList.add("btn-success")
+                        badge.innerText = 'Delivered'
+                    }
+               } else {
+                   Swal.fire({
+                     title: "Warning",
+                     text:res.message,
+                     icon: "warning",
+                   })
+               }
+            })
+        });
+    }       
 
 
 
    const button = document.querySelector('.button');
    if(button){
-
        button.disabled = true;
    }
 

@@ -1,61 +1,238 @@
+<% include("../layout/header.ejs") %>
 
-<!DOCTYPE html>
-<!-- Coding By CodingNepal - codingnepalweb.com -->
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-   <title>OTP Verification Form</title>
-    <link rel="stylesheet" href="assets/css/otp.css">
-    <!-- Boxicons CSS -->
-    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/images/icons/apple-touch-icon.png">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>E-commers Website</title>
+    <meta name="keywords" content="HTML5 Template">
+    <meta name="description" content="Molla - Bootstrap eCommerce Template">
+    <meta name="author" content="p-themes">
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href=assets/images/icons/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/images/icons/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/images/icons/favicon-16x16.png">
     <link rel="manifest" href="assets/images/icons/site.html">
     <link rel="mask-icon" href="assets/images/icons/safari-pinned-tab.svg" color="#666666">
     <link rel="shortcut icon" href="assets/images/icons/favicon.ico">
-  </head>
-  <body>
-    <div class="container">
-      <header>
-        <i class="bx bxs-check-shield"></i>
-      </header>
-      <h4>Enter OTP Code</h4>
-      <form >
-        
-        <div class="input-field">
-          <input id="number1" type="number" name="num1" />
-          <input id="number2" type="number" name="num2"  disabled />
-          <input id="number3" type="number"  name="num3" disabled />
-          <input id="number4" type="number" name="num4"  disabled />
-          <%if(email){%><input type="hidden" name="<%=email%>" value="<%= email %>" disabled><%}%>
-          
-        </div>
-         <p id="error" class="error"></p>
-        <button onclick="handleClick('<%=email%>')" type="button" class="btn btn-outline-primary">
-          <span>SIGN UP</span>
-        <i class="icon-long-arrow-right"></i>
-        </button>
-       
-        
+    <meta name="apple-mobile-web-app-title" content="Molla">
+    <meta name="application-name" content="Molla">
+    <meta name="msapplication-TileColor" content="#cc9966">
+    <meta name="msapplication-config" content="assets/images/icons/browserconfig.xml">
+    <meta name="theme-color" content="#ffffff">
+    <!-- Plugins CSS File -->
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <!-- Main CSS File -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/main.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
 
-        
-      </form>
-         <p>The OTP exipre in <span id="expire">60</span>s</p>
-         <%if(email){%> <button id="disable" onclick="resend('<%=email%>')" class="btn btn-danger"><%}%>
-       
-        <span>resend</span>
-        <i class="icon-long-arrow-right"></i>
-      </button>
-     
-     
-    </div>
-  
-    <script>
+
+<body>
+    <div class="page-wrapper">
+        <header class="header">
+            <div class="header-middle sticky-header">
+                <div class="container">
+                    <div class="header-left">
+                        
+
+                        <a href="index.html" class="logo">
+                            <img src="assets/images/logo.png" alt="Molla Logo" width="105" height="25">
+                        </a>
+
+                       
+                    </div><!-- End .header-left -->
+                </div><!-- End .container -->
+            </div><!-- End .header-middle -->
+        </header><!-- End .header -->
+
+        <main class="main">
+            
+
+            <div class="login-page bg-image pt-8 pb-8 pt-md-12 pb-md-12 pt-lg-17 pb-lg-17" style="background-image: url('assets/images/backgrounds/login-bg.jpg')">
+            	<div class="container">
+            		<div class="form-box">
+            			<div class="form-tab">
+	            			<ul class="nav nav-pills nav-fill" role="tablist">
+							   
+							    <li class="nav-item">
+							        <h3 class="nav-link active" id="register-tab-2" data-toggle="tab"  aria-controls="register-2" aria-selected="true">VERIFY OTP</h3>
+							    </li>
+                                
+							</ul>
+                            <div class="tab-content" id="tab-content-5">
+                                <div class="tab-pane fade show active" id="signin" role="tabpanel" aria-labelledby="signin-tab">
+                                    <form>
+                                      
+                                        <div class="form-group">  
+                                            <label for="singin-email" id="otpLabel" >Enter OTP *</label>
+                                            <input type="number" placeholder="Enter OTP here..." class="form-control" id="otp" required>
+                                        </div><!-- End .form-group -->
+
+                                        
+                                        <div class="form-footer">
+                                            <!-- <a href="" class="btn btn-primary text-white">Sign in</a> -->
+                                            <button onclick="handleClick()" type="button" class="btn btn-outline-primary-2">
+			                					<span>VERIFY</span>
+			            						<i class="icon-long-arrow-right"></i>
+			                				</button>
+                                            <p>The OTP exipre in <span id="expire">60</span>s</p>
+                                            <a  style="cursor: pointer;"  class="forgot-link"><button  type="button" onclick="resend('<%=email%>')" id="disable" class="btn btn-outline-primary-2">
+			                					<span>Resend OTP</span>
+			            						<i class="icon-long-arrow-right"></i>
+			                				</button></a>
+                                            
+                                        </div><!-- End .form-footer -->
+                                    </form>
+                                   
+                                </div><!-- .End .tab-pane -->
+                               
+                            </div><!-- End .tab-content -->
+						</div><!-- End .form-tab -->
+            		</div><!-- End .form-box -->
+            	</div><!-- End .container -->
+            </div><!-- End .login-page section-bg -->
+        </main><!-- End .main -->
+
+        <footer class="footer">
+        	<div class="footer-middle">
+	            <div class="container">
+	            	<div class="row">
+	            		<div class="col-sm-6 col-lg-3">
+	            			<div class="widget widget-about">
+	            				
+	            				<div class="social-icons">
+	            					<a href="#" class="social-icon" target="_blank" title="Facebook"><i class="icon-facebook-f"></i></a>
+	            					<a href="#" class="social-icon" target="_blank" title="Twitter"><i class="icon-twitter"></i></a>
+	            					<a href="#" class="social-icon" target="_blank" title="Instagram"><i class="icon-instagram"></i></a>
+	            					<a href="#" class="social-icon" target="_blank" title="Youtube"><i class="icon-youtube"></i></a>
+	            					<a href="#" class="social-icon" target="_blank" title="Pinterest"><i class="icon-pinterest"></i></a>
+	            				</div><!-- End .soial-icons -->
+	            			</div><!-- End .widget about-widget -->
+	            		</div><!-- End .col-sm-6 col-lg-3 -->
+
+	            		<div class="col-sm-6 col-lg-3">
+	            			<div class="widget">
+	            				<h4 class="widget-title">Useful Links</h4><!-- End .widget-title -->
+
+	            				<ul class="widget-list">
+	            					<li><a href="about.html">About Molla</a></li>
+	            					<li><a href="#">How to shop on Molla</a></li>
+	            					<li><a href="#">FAQ</a></li>
+	            					<li><a href="contact.html">Contact us</a></li>
+	            					<li><a href="login.html">Log in</a></li>
+	            				</ul><!-- End .widget-list -->
+	            			</div><!-- End .widget -->
+	            		</div><!-- End .col-sm-6 col-lg-3 -->
+
+	            		<div class="col-sm-6 col-lg-3">
+	            			<div class="widget">
+	            				<h4 class="widget-title">Customer Service</h4><!-- End .widget-title -->
+
+	            				<ul class="widget-list">
+	            					<li><a href="#">Payment Methods</a></li>
+	            					<li><a href="#">Money-back guarantee!</a></li>
+	            					<li><a href="#">Returns</a></li>
+	            					<li><a href="#">Shipping</a></li>
+	            					<li><a href="#">Terms and conditions</a></li>
+	            					<li><a href="#">Privacy Policy</a></li>
+	            				</ul><!-- End .widget-list -->
+	            			</div><!-- End .widget -->
+	            		</div><!-- End .col-sm-6 col-lg-3 -->
+
+	            		<div class="col-sm-6 col-lg-3">
+	            			<div class="widget">
+	            				<h4 class="widget-title">My Account</h4><!-- End .widget-title -->
+
+	            				<ul class="widget-list">
+	            					<li><a href="#">Sign In</a></li>
+	            					<li><a href="cart.html">View Cart</a></li>
+	            					<li><a href="#">My Wishlist</a></li>
+	            					<li><a href="#">Track My Order</a></li>
+	            					<li><a href="#">Help</a></li>
+	            				</ul><!-- End .widget-list -->
+	            			</div><!-- End .widget -->
+	            		</div><!-- End .col-sm-6 col-lg-3 -->
+	            	</div><!-- End .row -->
+	            </div><!-- End .container -->
+	        </div><!-- End .footer-middle -->
+
+	        <div class="footer-bottom">
+	        	<div class="container">
+	        		<p class="footer-copyright">Copyright © 2019 Molla Store. All Rights Reserved.</p><!-- End .footer-copyright -->
+	        		<figure class="footer-payments">
+	        			<img src="assets/images/payments.png" alt="Payment methods" width="272" height="20">
+	        		</figure><!-- End .footer-payments -->
+	        	</div><!-- End .container -->
+	        </div><!-- End .footer-bottom -->
+        </footer><!-- End .footer -->
+    </div><!-- End .page-wrapper -->
+    <button id="scroll-top" title="Back to Top"><i class="icon-arrow-up"></i></button>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu-overlay"></div><!-- End .mobil-menu-overlay -->
+
+    <div class="mobile-menu-container">
+        <div class="mobile-menu-wrapper">
+            <span class="mobile-menu-close"><i class="icon-close"></i></span>
+
+            <form action="#" method="get" class="mobile-search">
+                <label for="mobile-search" class="sr-only">Search</label>
+                <input type="search" class="form-control" name="mobile-search" id="mobile-search" placeholder="Search in..." required>
+                <button class="btn btn-primary" type="submit"><i class="icon-search"></i></button>
+            </form>
+            
+            <nav class="mobile-nav">
+                <ul class="mobile-menu">
+                    <li class="active">
+                        <a href="index.html">Home</a>
+
+                        
+                    </li>
+                   
+                    <li>
+                        <a href="product.html" class="sf-with-ul">Product</a>
+                       
+                    </li>
+                    
+                    <li>
+                        <a href="blog.html">About</a>
+
+                        
+                    </li>
+                    <li>
+                        <a href="elements-list.html">Contact</a>
+                       
+                    </li>
+                </ul>
+            </nav><!-- End .mobile-nav -->
+
+            <div class="social-icons">
+                <a href="#" class="social-icon" target="_blank" title="Facebook"><i class="icon-facebook-f"></i></a>
+                <a href="#" class="social-icon" target="_blank" title="Twitter"><i class="icon-twitter"></i></a>
+                <a href="#" class="social-icon" target="_blank" title="Instagram"><i class="icon-instagram"></i></a>
+                <a href="#" class="social-icon" target="_blank" title="Youtube"><i class="icon-youtube"></i></a>
+            </div><!-- End .social-icons -->
+        </div><!-- End .mobile-menu-wrapper -->
+    </div><!-- End .mobile-menu-container -->
+
+    <!-- Sign in / Register Modal -->
+    <div class="modal fade" id="signin-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true"><i class="icon-close"></i></span>
+                    </button>
+
+                    
+                </div><!-- End .modal-body -->
+            </div><!-- End .modal-content -->
+        </div><!-- End .modal-dialog -->
+    </div><!-- End .modal -->
+
+     <script>
       // timer
-
+       
       const disable = document.getElementById("disable");
       disable.disabled=true;
       const expire = document.getElementById('expire');
@@ -70,33 +247,75 @@
 
       // resend otp
       function resend(email){
-        fetch(`/resend?email=${email}`);
+    
+        fetch(`/resend?email=${email}`).then((res)=>res.json())
+        .then((res)=>{
+            if(res.success){
+                const expire = document.getElementById('expire');
+                expire.innerText=60;
+              Swal.fire({
+                title:"New OTP Sented To Your Email",
+                icon: "success",
+                draggable: true
+              });
+            }else{
+                Swal.fire({
+                title: res.message,
+                icon: "warning",
+                draggable: true
+                })
+            }
+        });
+
       }
 
       // handle submit
 
       async function handleClick(email){
-        const otp = document.getElementById("number1").value+document.getElementById("number2").value+document.getElementById("number3").value+document.getElementById("number4").value;
-        const response = await  fetch("/otp",{method:"post",
+        const otp = document.getElementById("otp").value.trim()
+        const label = document.getElementById("otpLabel")
+ 
+        if(otp.length == 0){
+           label.style.color= "red"
+            Swal.fire({
+                title:"Please Enter Your OTP",
+                icon: "warning",
+                draggable: true
+            });
+            return;
+        }else{
+           label.style.color= ""
+        }
+
+        const response = await  fetch("/otp",{method:"POST",
         headers:
          {
           "Content-Type": "application/json"
          },
-        body:JSON.stringify({otp,email})});
-
-        const res = await response.json();
-        console.log(res);
-        if(res.success){
-          window.location.href="/home"
-        }else{
-          const error = document.getElementById("error")
-          error.style.display= "block"
-          error.textContent = res.message
-        }
-      
+        body:JSON.stringify({otp,email})}).then((res)=>res.json())
+        .then((res)=>{
+            if(res.success){
+              window.location.href="/home"
+            }else{
+                
+                if(res.success){
+                     Swal.fire({
+                        title:res.message,
+                        icon: "success",
+                        draggable: true
+                    });
+                }else{
+                    Swal.fire({
+                        title:res.message,
+                        icon: "warning",
+                        draggable: true
+                    });
+                }
+        
+            }
+        });
       }
 
     </script>
-    <script src="assets/js/otp.js" defer></script>
-  </body>
-</html>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <% include("../layout/footer.ejs") %>

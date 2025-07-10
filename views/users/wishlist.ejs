@@ -179,7 +179,6 @@
 								<th>Price</th>
 								<th>Stock Status</th>
 								<th style="text-align: center;">Action</th>
-								
 							</tr>
 						</thead>
 
@@ -196,55 +195,52 @@
 												<img src="<%=wishlistData.products[i].productId.image[0].secure_url%>" alt="Product image">
 											</a>
 										</figure>
-
-										
-									</div><!-- End .product -->
+									</div>
 								</td>
                                 <td ><h6><%=wishlistData.products[i].productId.name%></h6></td>
-								<td class="price-col"><%=wishlistData.products[i].productId.Price%></td>
-                                <%
-                                if(wishlistData.products[i].productId.stock>0){
-                                    if(cartData){
-                                    const cartDataProducts = new Map(cartData.products.map(product => [product.productId._id.toString(), true]));
-                                    if (cartData && cartDataProducts.has(wishlistData.products[i].productId._id.toString())){
-                                        %>
-                                    
-                                    <td class="stock-col"><span class="in-stock text-danger">In Stock</span></td>
-                                    <td class="action-col">
-									<button class="btn btn-block btn-outline-primary-2 disabled ">iteam in Cart</button>
-								</td>
-                                <%
-                                    }else{
-                                        %>
-                                   
-                                    <td class="stock-col"><span class="in-stock text-danger">In Stock</span></td>
-                                    <td class="action-col">
-									<button id="wishlist<%=i%>" class="btn btn-block btn-outline-primary-2"  onclick="addtoCart('<%=wishlistData.products[i].productId._id%>','<%=i%>')">Add to Cart</button>
-								</td>
+								<%
+                                            if(offerData.length>0){
+                                       
+                                               const productOffer = offerData.find(offer => offer.iteam === wishlistData.products[i].productId.name|| offer.iteam===wishlistData.products[i].productId.categoryID.name);
+                                              
+                                               if(productOffer){
+                                                %>
+                                              
+                                                <td class="price-col">Rs.<%=wishlistData.products[i].productId.Price-Math.round(wishlistData.products[i].productId.Price*productOffer.offerRate/100)%>.00</td>
+                                                <%
+                                               }else{
+                                               
+                                                %>
+                                                 <td class="price-col">Rs.<%=wishlistData.products[i].productId.Price%>.00</td>
+                                                <%
+                                               }
+                                              
+                                            }else{
+                                                 %>
+                                                
+                                                 <td class="price-col">Rs.<%=wishlistData.products[i].productId.Price%>.00</td>
+                                               
+                                                <%
+                                            }
+                                            %>    
+                                <td class="stock-col"><span class="in-stock <%=wishlistData.products[i].productId.stock>0?"text-success":"text-danger"%>"><%=wishlistData.products[i].productId.stock>0?"In Stock":"Out of Stock"%></span></td>
+                                <td class="action-col">
                                     <%
-                                    }
-                                  } 
-                                   
-                                  
-                                  
-                                 
-                                }else{
+                                     if (cartData.products.some((pro)=>pro.productId._id.toString() == wishlistData.products[i].productId._id.toString())) {
+                                         %>
+                                          <button  class="btn btn-block btn-outline-primary-2 disabled">iteam in Cart</button>
+                                         <%
+                                     } else {
+                                        %>
+                                          <button  onclick="addtoCart(this,'<%= wishlistData.products[i].productId._id%>','<%=i%>')" class="btn btn-block btn-outline-primary-2" >Add to Cart</button>
+                                        <%
+                                     }
                                     %>
-                                    <td class="stock-col"><span class="in-stock text-danger">Out Of Stock</span></td>
-                                    <td class="action-col">
-									<button class="btn btn-block btn-outline-primary-2 disabled ">Out Of Stock</button>
 								</td>
-                                    <%
-                                }
-                                %>
-                                
-                            
-								
-								<td  class="remove-col"><button class="btn-remove" onclick="handlewishlist('<%=wishlistData.products[i].productId._id%>','<%=i%>')"><i class="icon-close"></i></button></td>
-							</tr>
+                                <td  class="remove-col"><button class="btn-remove" onclick="handlewishlist('<%=wishlistData.products[i].productId._id%>','<%=i%>')"><i class="icon-close"></i></button></td>
                                 <%
-                               }
-                             }else{
+                                }
+                            }else{
                                 %>
                                 <tr>
                                     <td>No iteams in your wishlist</td>
@@ -252,14 +248,10 @@
                                 <%
                              }
                             %>
-                           
-                          
-							
 						</tbody>
-					</table><!-- End .table table-wishlist -->
-	            	
-            	</div><!-- End .container -
-            </div><!-- End .page-content --
+					</table>
+            	</div>
+            </div>
            
                   
                 
@@ -361,7 +353,7 @@
     <script>
         
        
-        async function addtoCart(productId,num){
+        async function addtoCart(tag,productId,num){
 
             Swal.fire({
   title: "Are you sure?",
@@ -377,10 +369,10 @@
       text: "Iteam added to your Cart.",
       icon: "success"
     });
-    const data = document.getElementById(`wishlist${num}`)
+    
        
-            data.innerText="Iteam in Cart";
-            data.disabled=true
+            tag.innerText="Iteam in Cart";
+            tag.disabled=true
              fetch(`/cart?productId=${productId}`,{method:"PATCH"})
             .then((res)=>res.json())
             .then((res)=>{

@@ -40,8 +40,8 @@ const applyCoupon = async (req, res) => {
         if(new Date(checkCoupon.expiryDate).getFullYear()==today.getFullYear()&&new Date(checkCoupon.expiryDate).getMonth()==today.getMonth()&&new Date(checkCoupon.expiryDate).getDate()<today.getDate()){
             return res.json({success:false,message:"Coupon Expired!."})
         }
-
-        if(new Date(checkCoupon.expiryDate).getFullYear()>=today.getFullYear()&&new Date(checkCoupon.expiryDate).getMonth()>=today.getMonth()){
+        
+        if(today<checkCoupon.expiryDate){
             
             if(checkCoupon.minLimite>cartTotal){
                 return res.json({success:false,message:`You need to purchase more than ${checkCoupon.minLimite} to use this coupon!.`})

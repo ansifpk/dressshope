@@ -80,7 +80,7 @@ user_route.get('/error',auth.loginUser,authBlock.blockUser,userControll.errorpag
 user_route.patch('/cart',auth.loginUser,authBlock.blockUser,userControll.handleCart);
 user_route.patch('/removeOutofStock',auth.loginUser,authBlock.blockUser,userControll.removeOutofStock);
 user_route.get('/cartt',auth.loginUser,authBlock.blockUser,userControll.loadCartt);
-user_route.get('/updateCart',auth.loginUser,authBlock.blockUser,userControll.updateCart);
+user_route.patch('/updateCart',auth.loginUser,authBlock.blockUser,userControll.updateCart);
 user_route.get('/deleteCart',auth.loginUser,authBlock.blockUser,userControll.deleteCart);
 
 // ########################checkout##############################
@@ -111,10 +111,14 @@ user_route.delete('/verifychangeEmailOtp',auth.loginUser,authBlock.blockUser,use
 user_route.get('/orders',auth.loginUser,authBlock.blockUser,orderController.order);
 user_route.post('/orders',auth.loginUser,authBlock.blockUser,orderController.placeOrder);
 user_route.get('/orderDetailes',auth.loginUser,authBlock.blockUser,orderController.orderUserDetailes);
-user_route.get('/cancelOrder',auth.loginUser,authBlock.blockUser,orderController.cancelUserOrder);
-user_route.get('/returnOrder',auth.loginUser,authBlock.blockUser,orderController.returnOrder);
+user_route.patch('/cancelOrder',auth.loginUser,authBlock.blockUser,orderController.cancelUserOrder);
+user_route.patch('/cancelAllOrder',auth.loginUser,authBlock.blockUser,orderController.cancelAllProductInOrder);
+user_route.patch('/returnOrder',auth.loginUser,authBlock.blockUser,orderController.returnOrder);
+user_route.patch('/returnAllOrder',auth.loginUser,authBlock.blockUser,orderController.returnAllOrder);
 user_route.get('/payAgain',auth.loginUser,authBlock.blockUser,orderController.payAgain);
-user_route.patch('/repay',auth.loginUser,authBlock.blockUser,orderController.repay);
+user_route.get('/payAgainAll',auth.loginUser,authBlock.blockUser,orderController.payAgainAll);
+user_route.post('/savePayAgain',orderController.savePayAgain);
+user_route.post('/savePayAgainAll',auth.loginUser,authBlock.blockUser,orderController.savePayAgainAll);
 user_route.get('/wallet',auth.loginUser,authBlock.blockUser,orderController.wallet);
 user_route.get('/successPage',auth.loginUser,authBlock.blockUser,orderController.successPage);
 user_route.post('/saveOrder',auth.loginUser,authBlock.blockUser,orderController.saveOrder);

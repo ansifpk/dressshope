@@ -63,7 +63,7 @@
                   
                   
                     <li class="menu-item has-submenu">
-                        <a class="menu-link" href="/admin/viewOrders">
+                        <a class="menu-link" href="/adminordersList">
                             <i class="icon material-icons md-monetization_on"></i>
                             <span class="text">View Orders</span>
                         </a>
@@ -102,15 +102,14 @@
                             <a href="/admin/referalOffer">Referal Offer</a>
                         </div>
                     </li>
-                    <li class="menu-item has-submenu">
-                        <a class="menu-link" href="/admin/weaklyReport">
+                   <li class="menu-item has-submenu">
+                        <a class="menu-link" href="/admin/orderReport">
                             <i class="icon material-icons md-post_add"></i>
                             <span class="text">Report</span>
                         </a>
                         <div class="submenu">
-                            <a href="/admin/weaklyReport">weakly Report</a>
-                            <a href="/admin/monthlyReport">Monthly Report</a>
-                            <a href="/admin/yearlyReport">Yearly Report</a>
+                            <a href="/admin/orderReport">Sales Report</a>
+                           
                         </div>
                     </li>
                     <li class="menu-item">
@@ -182,18 +181,20 @@
                         <div class="card mb-4">
                             <article class="card-body">
                                 <h5 class="card-title">Sale statistics</h5>
-                                <div class="col-lg-6 col-md-6 ms-auto text-md-end">
-                                    <input id="date" type="hidden" value="<%=date%>">
-                                    <input id="data" type="hidden" value="<%=data%>">
-                                    <select   id="select" class="form-select d-inline-block mb-lg-0 mr-5 mw-200">
-                                      
-                                        <option >Yearly</option>
-                                        <option >Monthly</option>
-   
-                                    </select>
-                                    <a class="btn btn-primary" onclick="change()"  >Save</a>
-                                   
-                                </div>
+                                    <div class="row align-items-center">
+                            <div class="col-md-4 col-6">
+                                <label>Choose Starting Date</label>
+                                <input id="eDate" type="date" name="eDate" value="<%=year%>-01-01" class="form-control" />   
+                            </div>
+                            <div class="col-md-4 col-6">
+                                <label>Choose Ending Date</label>
+                                <input id="sDate" type="date" name="eDate" value="<%=sDate.toISOString().split('T')[0]%>" class="form-control" />   
+                            </div>
+                            <div class="col-md-4 mt-3 col-6">
+                            <button class="btn btn-sm font-sm rounded btn-brand" onclick="dateChange()">  Save </button>
+                            </div>
+                        </div>
+                               
                                 <div class="col-md-2 col-6 mt-2">
                                    
 
@@ -219,7 +220,7 @@
                                                         %>
                                                         <div class="d-flex align-items-center justify-content-between mb-4">
                                                     <div class="d-flex align-items-center">
-                                                        <img src="<%=arrayCount[i].image.secure_url%>" alt="" class="avatar" />
+                                                        <img src="<%=arrayCount[i].image[0].secure_url%>" alt="" class="avatar" />
                                                         <div>
                                                             <h6><%=arrayCount[i].name%></h6>
                                                           
@@ -313,30 +314,22 @@
     addEventListener("DOMContentLoaded",function(){
         var ctx = document.getElementById('myChart').getContext('2d');
         var canvas = document.getElementById('myChart');
-        var select = document.getElementById('select').value;
         // Retrieving the data attribute
         var dbDataString = canvas.getAttribute('data-db-data');
         var dbData = JSON.parse(dbDataString);
         const today =new Date();
-        var monthData = document.getElementById('date').value;
-        var dataData = document.getElementById('data').value;
+        var eDate = document.getElementById('eDate').value;
+        var sDate = document.getElementById('sDate').value;
+      
+        
         const  months =  ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        let labels = [];
+        let labels = months
 
-        if(!monthData||dataData=="Yearly"){
-           labels = months;
-        }else{
-            labels = months.slice(0,monthData)
-        }
+    
         
         let date=0;
         let month = 0;
-        
-        let slicedMonths =0;
-        let coundDelivered =0;
-        let coundReturn = 0;
-        let coundCanceled = 0;
-        let coundPending = 0;
+ 
         const arrayDelivered = Array(12).fill(0);
         const arrayreturn = Array(12).fill(0);
         const arraycanceled = Array(12).fill(0);
@@ -344,9 +337,9 @@
         for (let i = 0; i < dbData.length; i++) {
             for (let j = 0; j < dbData[i].products.length; j++) {
                 const product = dbData[i].products[j];
-                const orderMonth = new Date(product.orderDate).getMonth(); // Get the month index (zero-based)
+                const orderMonth = new Date(dbData[i].createdAt).getMonth(); // Get the month index (zero-based)
                 const status = product.productStatus; 
-
+               
                 // Update the count for the corresponding month and status
                 switch (status) {
                     case "Delivered":
@@ -366,8 +359,8 @@
                 }
             }
         }
-       
-
+    
+        
         var chart = new Chart(ctx, {
             // The type of chart we want to create
             type: 'line',

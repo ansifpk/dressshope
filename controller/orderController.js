@@ -10,6 +10,7 @@ const CartDB = require('../model/cartModel');
 const AddressDB = require('../model/addressModel');
 const CoupenDB = require('../model/cuppenModel');
 const razorPay = require('razorpay');
+const nodemailer = require("nodemailer");
 const getStoreDataForUser  = require('../helperfunctions/helper') ;
 
 const instance = new razorPay({
@@ -18,37 +19,54 @@ const instance = new razorPay({
 });
 
 
-const viewOrders = async (req, res) => {
-    try {
-        const id = req.query.id
-        const data = await OrderDB.findById({ _id: id }).populate('userId').populate('products.productId')
-        
-        res.render('viewOrders', { orderData: data })
-    } catch (error) {
-        console.log(error.message);
-    }
-}
 
+
+const sendReturnProductEmail = async (product,user,status) => {
+  try {
+    
+    let transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.MY_EMAIL,
+        pass: process.env.MY_PASSWORD,
+      },
+    });
+     let message = ``
+    if( status == "return" ){
+     message = `Hi ${user.name}
+      Your product ${product.productId.name} has been succsfully Returned And Money will be credited to Your Wallet Account`
+    }else{
+        message = `Hi ${user.name}
+         Your Request to Return The product Name ${product.productId.name} has been Declained becouse of The reason That you provide is Not Eligble for Retarning This product!.`
+    }
+
+    
+    // mail options
+    const mailOptions = {
+      from: process.env.MY_EMAIL,
+      to: process.env.MY_EMAIL,
+      subject: message,
+      
+    };
+
+    await transporter.sendMail(mailOptions);
+
+   
+  } catch (error) {
+    console.log(error.message);
+  }
+
+}
 
 const ordersList = async (req, res) => {
     try {
       
        const limit = 4 ;
       
-        let orders = await OrderDB.find({}).sort({orderDate:-1}).populate('userId').populate("products.productId");
+        let orderData = await OrderDB.find({}).populate('userId').populate("products.productId").sort({createdAt:-1});
+        const totalPage =  Math.ceil(orderData.length/limit) ;
         
-        let array=[];
-        for(let i=0;i<orders.length;i++){
-            for(let j=0;j<orders[i].products.length;j++){
-              
-                array.push(orders[i].products[j])
-            }
-        }
-        const totalPage =  Math.ceil(array.length/limit) ;
-        const arrayNew = array.sort((a,b) => new Date(b.orderDate) - new Date(a.orderDate) ).slice(0,limit)
-        
-       
-        res.render('orders', { orderData: arrayNew,totalPage });
+        res.render('orders', { orderData:orderData.slice(0,limit),totalPage });
 
     } catch (error) {
         console.log(error.message);
@@ -59,21 +77,11 @@ const ordersList = async (req, res) => {
 const orderDetailes = async (req, res) => {
     try {
  
-        const id = req.query._id
+        const {_id} = req.query
         
-        const Data = await OrderDB.find({}).populate('userId').populate('products.productId');
-        let product;
-        let user;
-        for(let i=0;i<Data.length;i++){
-            for(let j=0;j<Data[i].products.length;j++){
-               if(Data[i].products[j].equals(id)){
-                  product = Data[i].products[j] ; 
-                  user = Data[i].userId
-               }
-            }
-        }
+        const orderData = await OrderDB.findOne({_id}).populate('userId').populate('products.productId');
         
-        res.render('orderDetailes', { userData: user, productData: product });
+        res.render('orderDetailes', { orderData });
     } catch (error) {
         console.log(error.message);
     }
@@ -81,17 +89,30 @@ const orderDetailes = async (req, res) => {
 
 
 
-const cancelOrder = async (req, res) => {
+
+const adminReturnOrder = async (req, res) => {
     try {
 
         const { orderId } = req.query;
-        const data = await OrderDB.findOne({ 'products._id': orderId }).populate('userId').populate('products.productId')
-        const product = data.products.find((p) => {
-            return p._id.equals(orderId)
-        });
-        product.productStatus = "canceled";
-        await data.save()
+        const { status,productId } = req.body;
+ 
+         const orderData = await OrderDB.findById({ _id:orderId }).populate('userId').populate('products.productId')
+        if(!orderData){
+            return res.json({success:false,message:"Order Not Fount!."})
+        }
+      
+        const product = orderData.products.find((value) =>value._id == productId);
+        product.productStatus = status;
 
+        if(status == "return"){
+            await ProductDb.findByIdAndUpdate({_id:product.productId._id},{$inc:{stock:product.quandity,orderCount:-product.quandity}});
+            await WalletDB.findOneAndUpdate({ userId:orderData.userId},{$inc:{Balance:product.productTotal},$push:{ walletHistery:`Credit : ${product.productId.name} refunded amount of Rs.${product.productTotal}.00`}});
+          }
+         
+         await orderData.save()
+        await sendReturnProductEmail(product,orderData.userId,status)
+        return res.json({success:true,returnAmount:product.productTotal})
+          
     } catch (error) {
         console.log(error.message);
     }
@@ -100,112 +121,104 @@ const cancelOrder = async (req, res) => {
 const orderStatus = async (req, res) => {
     try {
 
-        const { changeStatus, productId } = req.query;
-        const data = await OrderDB.findOne({ 'products._id': productId }).populate('userId').populate('products.productId')
-         const order = data.products.find((p) => {
-            return p._id.equals(productId)
-        });
-       
-        const product = await ProductDb.findOne({ _id: order.productId._id }).populate("categoryID");
-        if(order.productStatus == "Delivered"){
-           res.json({success:false,message:"This order is deliverd!."})
-           return
-        }
+        const { _id } = req.query;
+        const { changeStatus } = req.body;
 
-        if(order.productStatus == "return"){
-           res.json({success:false,message:"This order is Returned!."})
-           return
-        }
-
-        if(order.productStatus == changeStatus){
-           res.json({success:false,message:"You Cannot Set The Same Status Again!."})
-           return
-        }
-   
-        switch (changeStatus) {
-            case "pending":
-                if(product.stock < 1){
-                    return  res.json({success:false,message:"Product is Out of Stock!."})
-                }
-
-                if(order.paymentMethod == "COD"){
-                   order.productStatus = changeStatus;
-                   await data.save();
-                }else{
-                    const userWallet = await WalletDB.findOne({userId:data.userId})
-                    if(userWallet.Balance<order.productTotal){
-                      return  res.json({success:false,message:"This User Dont Have The Enough Money In His Wallat!."})
-                    }
-                    order.productStatus = changeStatus;
-                    product.orderCount++;
-                    product.stock--;
-                    await data.save();
-                    await product.save();
-                    await WalletDB.findOneAndUpdate({ userId:data.userId},{$inc:{Balance: -order.productTotal},$push:{ walletHistery:`Debit : Amount of Rs.${order.productTotal}.00 is Debited for This Product Order ${order.productId.name}`}});
-                    const category = await CategoryDb.find({});
-                    const checkCategory = category.find((value) => {
-                        return value.name == product.categoryID.name
-                    });
-                    
-                    checkCategory.orderCount++;
-                    await checkCategory.save();
-                }
-                break;
-        
+        const orderData = await OrderDB.findOne({ _id }).populate('userId').populate('products.productId')
+        const products = orderData.products
+        products.forEach((order)=>{
+           if( order.productStatus == "Delivered"){
+                res.json({success:false,message:"This order is deliverd!."})
+                return
+           }else if(order.productStatus == "return"){
+                res.json({success:false,message:"This order is Returned!."})
+                return
+           }
+        })
+        let check;
+        let updated;
+        switch(changeStatus){
             case "canceled":
                 
-                if(order.paymentMethod == "COD"){
-                   
-                    order.productStatus = changeStatus;
-                    await data.save();
-                }else{
-                    await WalletDB.findOneAndUpdate({ userId:data.userId},{$inc:{Balance:order.productTotal},$push:{ walletHistery:`Credit : ${order.productId.name} refunded amount of Rs.${order.productTotal}.00`}});
-                    order.productStatus = changeStatus;
-                    product.orderCount--;
-                    product.stock++;
-                    await data.save();
-                    await product.save();
-                
-                    const category = await CategoryDb.find({});
-                    const checkCategory = category.find((value) => {
-                        return value.name == product.categoryID.name
-                    });
-                    
-                    checkCategory.orderCount--;
-                    await checkCategory.save();
-                }
-                break;
-            case "Delivered":
-                if(order.paymentMethod == "COD"){
-                    order.productStatus = changeStatus;
-                    product.orderCount++;
-                    product.stock--;
-                    if(product.stock < 0){
-                     product.stock = 0;
+                check = false
+                products.forEach((order)=>{
+                    if( order.productStatus == "pending"){
+                        check = true
                     }
-                    await data.save();
-                    await product.save();
-                
-                    const category = await CategoryDb.find({});
-                    const checkCategory = category.find((value) => {
-                        return value.name == product.categoryID.name
-                    });
-                    
-                    checkCategory.orderCount++;
-                    await checkCategory.save();
-                }else{
-                    order.productStatus = changeStatus;
-                    await data.save();
+                })
+               
+                if(!check){
+                     res.json({success:false,message:"You Can Only Cancell The Pending Orders!."})
+                     return
                 }
-                break;
-        
+                
+                  updated = false
+                 for (let i = 0; i < products.length; i++) {
+                    if(products[i].productStatus == "pending"){
+                       products[i].productStatus = 'canceled';
+                       updated = true
+                     
+                        await ProductDb.findByIdAndUpdate({_id:products[i].productId._id},{$inc:{stock:products[i].quandity}});
+                       if(products[i].paymentMethod !== "COD"){
+                        await WalletDB.findOneAndUpdate({ userId:orderData.userId},{$inc:{Balance:products[i].productTotal},$push:{ walletHistery:`Credit : ${products[i].productId.name} refunded amount of Rs.${products[i].productTotal}.00`}});
+                       }
+
+                    }
+                 }
+                 if(updated){
+             
+                  await orderData.save();
+                 }
+              break
+            case "Delivered":
+                
+                check = false
+                products.forEach((order)=>{
+                    if( order.productStatus == "pending"){
+                        check = true
+                    }
+                })
+                if(!check){
+                     res.json({success:false,message:"You Can Only Delivered The Pending Orders!."})
+                     return
+                }
+                updated = false
+                 for (let i = 0; i < products.length; i++) {
+                    if(products[i].productStatus == "pending"){
+                       products[i].productStatus = 'Delivered';
+                       updated = true
+                       if(products[i].paymentMethod !== "COD"){
+                
+                         products[i].paymentStatus = "Paid";
+                        }else{
+                            await WalletDB.findOneAndUpdate({ userId:orderData.userId},{$inc:{Balance:products[i].productTotal},$push:{ walletHistery:`Credit : ${products[i].productId.name} refunded amount of Rs.${products[i].productTotal}.00`}});
+                          
+                        }
+                        const product = await ProductDb.findOne({ _id: products[i].productId._id }).populate("categoryID");
+                      
+                        product.orderCount++;
+
+                        const category = await CategoryDb.find({});
+                        const checkCategory = category.find((value) => {
+                            return value.name == product.categoryID.name
+                        });
+                        
+                        checkCategory.orderCount++;
+                        await checkCategory.save()
+                        await product.save()
+                    }
+                 }
+                 if(updated){
+                      await orderData.save();
+                 }
+              break
             default:
-                break;
+              break
         }
 
-       
-        res.json({success:true,message:"Successfully change the order status!."})
-
+        return res.json({success:true,message:"Successfully change the order status!.",orderData})
+        
+        
     } catch (error) {
         console.log(error.message);
     }
@@ -213,55 +226,31 @@ const orderStatus = async (req, res) => {
 
 const filterAndsortOrders = async(req,res) => {
     try {
-         const { filter,sort,search} = req.query;
+         const { sort,search} = req.query;
           
              const limit = 4;
        
-             let orders = await OrderDB.find({}).populate('userId').populate("products.productId");
-            
-              let array=[];
-            for(let i=0;i<orders.length;i++){
-                for(let j=0;j<orders[i].products.length;j++){
-                    array.push(orders[i].products[j])
-                }
-            }
-
-            if(filter == "Paid" || filter == "Not Paid"){
-                array =  array.filter((pro)=>{
-                    if(pro.paymentStatus == filter && pro.productId.name.toLowerCase().includes(search.toLowerCase())){
-                      return pro
-                    }
-                })
-            }else if(filter == "Show all" || filter == ""){
-                array =  array.filter((pro)=>pro.productId.name.toLowerCase().includes(search.toLowerCase()))
-            }else{
-                 array =  array.filter((pro)=>{
-                    if(pro.productStatus == filter && pro.productId.name.toLowerCase().includes(search.toLowerCase())){
-                      return pro
-                    }
-                })
-            }
-
-           
-           
-            
-             switch (sort) {
+             let orders = await OrderDB.find().populate('userId').populate("products.productId");
+             orders = orders.filter((order)=>order.userId.name.toLowerCase().includes(search.toLowerCase()))
+              switch (sort) {
                 case "Name Z - A":
-                array =array.sort((a,b) => b.productId.name.toLowerCase().localeCompare(a.productId.name.toLowerCase()))
+                orders =orders.sort((a,b) => b.userId.name.toLowerCase().localeCompare(a.userId.name.toLowerCase()))
                 break;
                 case "Name A - Z":
-                array = array.sort((a,b) => a.productId.name.toLowerCase().localeCompare(b.productId.name.toLowerCase()) )
+                orders = orders.sort((a,b) => a.userId.name.toLowerCase().localeCompare(b.userId.name.toLowerCase()) )
                 break;
                 case "Old":
-                array = array = array.sort((a,b) => new Date(a.orderDate) - new Date(b.orderDate) )
+                orders = orders.sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt) )
                 break;
                 default:
-                array = array.sort((a,b) => new Date(b.orderDate) - new Date(a.orderDate) )
+                orders = orders.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt) )
                 break;
             }
-            const totalPage =  Math.ceil(array.length/limit) ;
-            array = array.slice(0,limit);
-            return res.json({products:array,totalPage})
+           
+            const totalPage =  Math.ceil(orders.length/limit) ;
+             orders = orders.slice(0,limit)
+            return res.json({products:orders,totalPage})
+
 
     } catch (error) {
          console.log(error.message);
@@ -272,71 +261,41 @@ const searchOrders = async(req,res)=>{
    try {
           const { search } = req.query;
           let limit = 4;
-          const orders = await OrderDB.find({}).populate("products.productId");
-           let array=[];
-            for(let i=0;i<orders.length;i++){
-                for(let j=0;j<orders[i].products.length;j++){
-                    array.push(orders[i].products[j])
-                }
-            }
-          array = array.filter((product)=>product.productId.name.toLowerCase().includes(search.toLowerCase()))
-          const totalPage = Math.ceil(array.length/limit);
-          array = array.slice(0,limit)
-          return res.send({orders:array,totalPage})
+          let orders = await OrderDB.find({}).populate("userId").populate("products.productId");
+      
+          orders = orders.filter((product)=>product.userId.name.toLowerCase().includes(search.toLowerCase()))
+          const totalPage = Math.ceil(orders.length/limit);
+          orders = orders.slice(0,limit)
+          return res.send({orders:orders,totalPage})
    } catch (error) {
        console.error(error.message)
    }
 }
 const paginationOrders = async(req,res)=>{
    try {
-      const { search,filter,sort,page} = req.query;
+      const { search,sort,page} = req.query;
  
          const limit = 4;
        
-             let orders = await OrderDB.find({}).populate('userId').populate("products.productId");
-            
-              let array=[];
-            for(let i=0;i<orders.length;i++){
-                for(let j=0;j<orders[i].products.length;j++){
-                    array.push(orders[i].products[j])
-                }
-            }
-          
-            if(filter == "Paid" || filter == "Not Paid"){
-                array =  array.filter((pro)=>{
-                    if(pro.paymentStatus == filter && pro.productId.name.toLowerCase().includes(search.toLowerCase())){
-                      return pro
-                    }
-                })
-            }else if(filter == "Show all" || filter == ""){
-                array =  array.filter((pro)=>pro.productId.name.toLowerCase().includes(search.toLowerCase()))
-            }else{
-               
-                 array =  array.filter((pro)=>{
-                    if(pro.productStatus == filter && pro.productId.name.toLowerCase().includes(search.toLowerCase())){
-                      return pro
-                    }
-                })
-            }
-            const totalPage =  Math.ceil(array.length/limit) ;
-        
-             switch (sort) {
+             let orders = await OrderDB.find().populate('userId').populate("products.productId");
+             orders = orders.filter((order)=>order.userId.name.toLowerCase().includes(search.toLowerCase()))
+              switch (sort) {
                 case "Name Z - A":
-                array =array.sort((a,b) => b.productId.name.toLowerCase().localeCompare(a.productId.name.toLowerCase()))
+                orders =orders.sort((a,b) => b.userId.name.toLowerCase().localeCompare(a.userId.name.toLowerCase()))
                 break;
                 case "Name A - Z":
-                array = array.sort((a,b) => a.productId.name.toLowerCase().localeCompare(b.productId.name.toLowerCase()) )
+                orders = orders.sort((a,b) => a.userId.name.toLowerCase().localeCompare(b.userId.name.toLowerCase()) )
                 break;
                 case "Old":
-                array = array = array.sort((a,b) => new Date(a.orderDate) - new Date(b.orderDate) )
+                orders = orders.sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt) )
                 break;
                 default:
-                array = array.sort((a,b) => new Date(b.orderDate) - new Date(a.orderDate) )
+                orders = orders.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt) )
                 break;
             }
-             
-            array = array.slice((page-1)*limit,page*limit)
-            return res.json({orders:array,totalPage})
+            const totalPage = Math.floor(orders.length/limit)
+            orders = orders.slice((page-1)*limit,page*limit)
+            return res.json({orders,totalPage})
 
           
    } catch (error) {
@@ -352,12 +311,12 @@ const order = async (req,res)=>{
 
         const {cartData,wishlistData,cartTotal} = await getStoreDataForUser(req,res)
         const limit = 4;
-        let data =  await OrderDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId') 
-        data = data.products
-        data.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+        let data =  await OrderDB.find({userId:req.session.user_id}).populate('userId').populate('products.productId').sort({createdAt:-1}) 
+       
+       
         const totalPage = Math.ceil(data.length/limit);
-        data = data.slice(0,limit);
-        res.render('order',{orderData:data,cartData,wishlistData,cartTotal,totalPage})
+       
+        res.render('order',{orderData:data.slice(0,limit),cartData,wishlistData,cartTotal,totalPage})
     } catch (error) {
         console.log(error.message);
     }
@@ -367,11 +326,9 @@ const paginationUserOrder = async (req,res)=>{
     try {
         const {page} = req.query;
         const limit = 4;
-        let data =  await OrderDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId') 
-        data = data.products
-        data.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+        console.log(page)
+        let data =  await OrderDB.find({userId:req.session.user_id}).skip((page-1)*limit).limit(page*limit).sort({createdAt:-1}).populate('userId').populate('products.productId') 
         const totalPage = Math.ceil(data.length/limit);
-        data = data.slice((page-1)*limit,page*limit);
         return res.json({orderData:data,totalPage});
     } catch (error) {
         console.log(error.message);
@@ -434,10 +391,10 @@ const placeOrder = async (req,res)=>{
                  receipt: process.env.MY_EMAIL
             }
 
-            instance.orders.create(options, 
+           instance.orders.create(options, 
                 (err, order)=>{
                     if(!err){
-                    
+                        req.session.orderId = order.id
                         res.send({
                            success:true,
                            msg:'Order Created',
@@ -457,6 +414,7 @@ const placeOrder = async (req,res)=>{
                     }
                     });
 
+
         }else{
             //* COD payment method
             res.send({success:true})
@@ -471,14 +429,21 @@ const placeOrder = async (req,res)=>{
 
 const saveOrder = async(req,res)=>{
    try { 
-       const {addressId,coupen,paymentMethod,paymentStatus,productStatus} = req.body;
+       const {addressId,coupen,paymentMethod,paymentStatus,productStatus,orderId} = req.body;
+     console.log("hi")
+       if(!req.session.orderId || req.session.orderId !== orderId){
+        return res.json({success:false,message:"Session Ended!."})
+       }
       
+       req.session.orderId = null;
+
        const products = await CartDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId').populate('products.productId.categoryID')
         let productsData = products.products;
-        
+        console.log("12")
         if(productsData.length == 0){
-           return;
+            return;
         }
+        console.log("1233")
        
        const offerData = await OfferDB.find({});
        const addressdb = await AddressDB.findOne({userID:req.session.user_id}).populate('userID');
@@ -486,81 +451,73 @@ const saveOrder = async(req,res)=>{
         return a.equals(addressId);
        });
       
-       const  date =  new Date()
-      
        let coupenData=null;
-       let money = productsData.reduce((acc,value)=>{                      
-        const offerProduct = offerData.find( offer => offer.iteam === value.productId.name || offer.iteam === value.productId.categoryID.name)
-        if(offerProduct){
-            acc + value.productId.Price*value.quandity - parseInt(value.productId.Price)*offerProduct.offerRate/100*value.quandity;
-            value.productId.Price =  value.productId.Price*value.quandity - parseInt(value.productId.Price)*offerProduct.offerRate/100*value.quandity; 
-            return acc; 
-        }else{
-            return acc + parseInt(value.productId.Price)*value.quandity
-        }
-       },0);
+ 
      
-       if(coupen && paymentStatus !== 'Failed'){
-        coupenData = await CoupenDB.findOne({_id:coupen});
-        if(coupenData){
-            money = money - Math.round(money*coupenData.offer/100);
-    
-            await CoupenDB.findByIdAndUpdate({_id:coupen},{$push:{usedUsers:req.session.user_id}})
-        }
-       }
-  
+ 
+
+       const array = []
+       let calculatingMoney = 0;
       for(let i=0;i<productsData.length;i++){
              let product = await ProductDb.findOne({_id:productsData[i].productId._id});
-             let category = await CategoryDb.findOne({_id:productsData[i].productId.categoryID._id});
+             let category = await CategoryDb.findById({_id:productsData[i].productId.categoryID._id});
+              
              if(productsData[i].productId.stock > 0 && paymentStatus !== "Failed"){
                 product.stock = product.stock - productsData[i].quandity;
-                if(paymentMethod !== "COD"){
-                  product.orderCount = product.orderCount + productsData[i].quandity;
-                  category.orderCount = category.orderCount + productsData[i].quandity;
-                  await category.save();
-                }
-               
                 await product.save();
                
              }
-             const exist = await OrderDB.findOne({userId:req.session.user_id});
-            
-             if(exist){
-               await OrderDB.findByIdAndUpdate({_id:exist._id},{$push:{
-                     products:{
-                        productId:productsData[i].productId._id,
-                        productStatus,
-                        paymentStatus,
-                         orderDate:date,
-                        quandity:productsData[i].quandity,
-                        paymentMethod:paymentMethod,
-                        deliveryAddress:address,
-                        productTotal:money
-                    }
-                }})
-             }else{
+             let money = 0;
+             const offerProduct = offerData.find( offer => offer.iteam === product.name || offer.iteam === category.name)
+      
+            if(offerProduct){
+                money = product.Price*productsData[i].quandity -  Math.floor((product.Price*productsData[i].quandity)*offerProduct.offerRate/100),"money",product.Price*productsData[i].quandity - Math.floor(product.Price); 
+                calculatingMoney += product.Price*productsData[i].quandity -  Math.floor((product.Price*productsData[i].quandity)*offerProduct.offerRate/100),"money",product.Price*productsData[i].quandity - Math.floor(product.Price); 
+            }else{
+                 money =  product.Price*productsData[i].quandity
+                 calculatingMoney +=  product.Price*productsData[i].quandity
+            }
+             
+            array.push(
+                {
+                    productId:productsData[i].productId._id,
+                    productStatus,
+                    paymentStatus,
+                    quandity:productsData[i].quandity,
+                    paymentMethod:paymentMethod,
+                    deliveryAddress:address,
+                    productTotal:money
+                }
+             )
+       }
+     
+                let offerMoney  = 0;
 
+                if(coupen && paymentStatus !== 'Failed'){
+                    coupenData = await CoupenDB.findOne({_id:coupen});
+                    if(coupenData){
+                        await CoupenDB.findByIdAndUpdate({_id:coupen},{$push:{usedUsers:req.session.user_id}})
+                    }
+                }
+
+                if(coupenData){
+                    offerMoney = Math.round(calculatingMoney*coupenData.offer/100)
+                }
+
+             
                 const data = new OrderDB({
                     userId:req.session.user_id,
-                    products:[{
-                        productId:productsData[i].productId._id,
-                        productStatus,
-                        paymentStatus,
-                        quandity:productsData[i].quandity,
-                        orderDate:date,
-                        paymentMethod:paymentMethod,
-                        deliveryAddress:address,
-                        productTotal:money
-                    }]
+                    products:array,
+                    couponOfferPrice: offerMoney,
                 });
+
                 await data.save();
-             }
-         }
-       
+          
+           
        if(paymentStatus !== 'Failed'){
            await CartDB.findOneAndUpdate({userId:req.session.user_id},{$set:{products:[]}});
        }
-      
+      console.log("save finisg")
        res.json({success:true});
    
       
@@ -587,43 +544,39 @@ const failePage = async(req,res)=>{
 }
 const payAgain = async(req,res)=>{
    try {
-       const {productId,quandity,addressId} = req.query  
-       const userData = await User.findOne({_id: req.session.user_id});
-       const orderData = await OrderDB.findOne({userId:req.session.user_id}).populate('products.productId');
+       const {orderId,quandity,addressId,productId} = req.query  
+       const orderData = await OrderDB.findById({_id:orderId}).populate('userId').populate('products.productId');
        const product = orderData.products.find((value)=>value._id == productId);
-       let amount = 0;
+    
        if(product.productId.stock <= 0){
          return res.json({success:false,message:"Product Is Out Of Stock!."});
        }
 
        if( product.productId.stock < quandity ){
-         amount = (product.productId.stock*product.productId.Price )*100
-       }else{
-         amount = (product.productId.Price*quandity) *100;
+         return res.json({success:false,message:"Product Quandity Exceeded The Product Stock!."})
        }
 
-       console.log(quandity,"quandity",amount,"amount");
 
        const options = {
-                       amount: amount,
+                       amount: (product.productId.Price*quandity) *100,
                        currency: 'INR',
-                       receipt: userData.email
+                       receipt: orderData.userId.email
                        }
         instance.orders.create(options, 
                        (err, order)=>{
                            if(!err){
-                              
+                                req.session.orderId = order.id
                                res.send({
                                    success:true,
                                    msg:'Order Created',
                                    order_id:order.id,
-                                   amount:amount,
+                                   amount:(product.productId.Price*quandity) *100,
                                    key_id:process.env.RAZOR_ID,
                                    productId:productId,
                                    quandity:quandity,
                                    addressId:addressId,
-                                   name:userData.name,
-                                   email: userData.email
+                                   name:orderData.userId.name,
+                                   email: orderData.userId.email
                                });
                            }else{
                                console.error("Error creating order:", err);
@@ -632,109 +585,174 @@ const payAgain = async(req,res)=>{
                        }
                    );           
                    
-       
-
    } catch (error) {
        console.log(error.message);
    }
 }
 
 
-const repay = async(req,res)=>{
+const payAgainAll = async(req,res)=>{
     try {
+        const {orderId} = req.query  ;
+        const orderData = await OrderDB.findById({_id:orderId}).populate('userId').populate('products.productId');
 
-         const {paymentStatus,productStatus,orderId} = req.body;
-        const orderData =  await OrderDB.findOne({userId:req.session.user_id}).populate('products.productId');
-        let product = orderData.products.find((pro)=>{
-            return pro._id.equals(orderId)
-        });
-        product = product.toObject();
-       
-        product.productStatus = productStatus
-        product.paymentStatus = paymentStatus
-        if(product.productId.stock < product.quandity  ){
-          product.quandity = product.productId.stock
-          product.productTotal = product.productId.Price*product.quandity
-        }else{
-          product.productTotal = product.productId.Price*product.quandity
+        let money = 0
+        for(let i=0;i<orderData.products.length;i++){
+            if(orderData.products[i].productId.stock <= 0){
+              return res.json({success:false,message:"Product Is Out Of Stock!."});
+            }
+
+            if( orderData.products[i].productId.stock < orderData.products[i].quandity ){
+              return res.json({success:false,message:"Product Quandity Exceeded The Product Stock!."})
+            }
+
+            money+=orderData.products[i].productTotal
         }
         
-        if(paymentStatus !== "Failed"){
-            product.productId.stock = product.productId.stock - product.quandity;
-        }
+        
 
-        product.orderDate = new Date();
-        delete product._id;
-      
-          await OrderDB.findOneAndUpdate({userId:req.session.user_id},{$push:{
-                     products:product
-          }})
-         return res.json({success:true});
+        const options = {
+                       amount:  money*100,
+                       currency: 'INR',
+                       receipt: orderData.userId.email
+                       }
 
+        instance.orders.create(options, 
+                       (err, order)=>{
+                           if(!err){
+                                req.session.orderId = order.id
+                               res.send({
+                                   success:true,
+                                   msg:'Order Created',
+                                   order_id:orderId,
+                                   razor_id:order.id,
+                                   amount:money *100,
+                                   key_id:process.env.RAZOR_ID,
+                                   name:orderData.userId.name,
+                                   email: orderData.userId.email
+                               });
+                           }else{
+                               console.error("Error creating order:", err);
+                               res.send({success:false,msg:'Something went wrong!'});
+                           }
+                       }
+                   );           
+                   
     } catch (error) {
         console.log(error.message);
     }
 }
 
-const returnOrder = async (req,res)=>{
-    try {      
-       const {productId,value} = req.query;
-      
-       const productData = await OrderDB.findOne({userId:req.session.user_id}).populate({
-        path: 'products.productId',
-        populate: { path: 'categoryID' }
+const savePayAgainAll = async (req,res) => {
+    try {
+        const {paymentStatus,productStatus,orderId} = req.body
+        const {_id} = req.query
+ 
+        const orderData = await OrderDB.findById({_id:_id})
+    
+        if(!req.session.orderId || req.session.orderId !== orderId){
+          return res.json({success:false,message:"Session Ended!."})
+        }
+        req.session.orderId = null;
+        
+        const products = orderData.products;
+
+        for(let i=0;i<products.length;i++){
+           products[i].paymentStatus = paymentStatus
+           products[i].productStatus = productStatus
+           if(paymentStatus !== "Failed" ){
+             await ProductDb.findByIdAndUpdate({_id:products[i].productId},{$inc:{stock:-products[i].quandity}})
+           }
+        }
+        
+   
+        const data = new OrderDB({
+                    userId:req.session.user_id,
+                    products:products,
+                    couponOfferPrice: 0,
         });
 
-       const product = productData.products.find((p)=>{
-         return  p._id.equals(productId);     
-       });
-          
-       product.productStatus = "return";
-      
-       const pro = await ProductDb.findOne({_id:product.productId._id}).populate("categoryID");
-       
-       pro.orderCount--;
-       pro.stock = pro.stock+product.quandity
-       
-       await pro.save();
-      
-      
-       const categoty = await CategoryDb.findOne({_id:pro.categoryID});
-      
-       categoty.orderCount--;
-       await categoty.save();
-               
-       product.cancellationReason = value;
-
-       await  productData.save();
-       
-       const walletData = await WalletDB.findOne({userId:req.session.user_id});
-       const offerData = await OfferDB.find({});
-       const offer = offerData.find((value)=> value.iteam == pro.name || value.iteam == pro.categoryID.name)
-       let amount =0;
-       if(offer){
-        amount = product.productId.Price*product.quandity   - Math.round(product.productId.Price*offer.offerRate/100)*product.quandity
-       }else{
-        amount = product.productId.Price*product.quandity;
-       }
-      
-    if(!walletData){
-       const data = new WalletDB({
-        userId:req.session.user_id,
-        Balance:amount,
-        walletHistery:[`Credit : ${product.productId.name} refunded amount of Rs.${product.productId.Price*product.quandity}.00`]
-       });
-
-       await data.save()
-   
-    }else{
-        const data = await WalletDB.findOne({userId:req.session.user_id});
-        const total = data.Balance +=amount;
-
-       await WalletDB.findOneAndUpdate({userId:req.session.user_id},{$set:{Balance:total}})
-       await WalletDB.findOneAndUpdate({userId:req.session.user_id},{$push:{walletHistery:`Credit : ${product.productId.name} refunded amount of Rs.${amount}.00`}})
+        await data.save();
+        res.json({success:true})
+    } catch (error) {
+        console.log(error.message)
     }
+}
+
+const savePayAgain = async (req,res) => {
+    try {
+
+        const {paymentStatus,productStatus,orderId,razor_id} = req.body
+       
+        const orderData = await OrderDB.findOne({"products._id":orderId});
+        
+        if(!req.session.orderId || req.session.orderId !== razor_id){
+          return res.json({success:false,message:"Session Ended!."})
+        }
+        req.session.orderId = null;
+        const order = orderData.products.find((order)=>order._id == orderId);
+        order.productStatus = productStatus
+        order.paymentStatus = paymentStatus
+        
+        const data = new OrderDB({
+                    userId:req.session.user_id,
+                    products:[order],
+                    couponOfferPrice: 0,
+        });
+        await data.save();
+        if(paymentStatus !== "Failed" ){
+             await ProductDb.findByIdAndUpdate({_id:order.productId},{$inc:{stock:-order.quandity}})
+        }
+        res.json({success:true})
+
+    } catch (error) {
+        console.log(error.message)
+    }
+}
+
+const returnOrder = async (req,res)=>{
+    try {      
+       const {orderId} = req.query;
+       const {value,productId} = req.body;
+       const productData = await OrderDB.findById({_id:orderId});
+
+        if(!productData){
+            return res.json({success:false,message:"Order Not Found!."})
+        }
+        
+        const product = productData.products.find((value)=>value._id == productId);
+       
+        product.productStatus = "returnPending"; 
+        product.cancellationReason = value;
+        await  productData.save();
+
+       return  res.json({success:true,message:"Product Return Request Sented Successfully. Meney Will Credit to Your Wallet After Admin Accept your Return Request"})
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
+const returnAllOrder = async (req,res)=>{
+    try {      
+       const {_id} = req.query;
+       const {reason} = req.body;
+       
+       const productData = await OrderDB.findById({_id}).populate("products.productId")
+        if(!productData){
+            return res.json({success:false,message:"Order Not Found!."})
+        }
+     
+        const products = productData.products;
+       
+        products.forEach((product)=>{
+            if(product.productStatus == "Delivered"){
+                product.productStatus = "returnPending"
+                product.cancellationReason = reason;
+            }
+        })
       
+       await  productData.save();
+     res.json({success:true,orderData:productData,message:"Product Return Request Sented Successfully. Meney Will Credit to Your Wallet After Admin Accept your Return Request"})
     } catch (error) {
         console.log(error.message);
     }
@@ -752,27 +770,20 @@ const orderUserDetailes = async (req,res)=>{
         let cartTotal=0;
         if(cartData){
             cartTotal = cartData.products.reduce((acc,productsId)=>{
-            parseInt(productsId.quandity);
-             parseInt(productsId.productId.Price);
-             const offer = offerData.find( value => value.iteam === productsId.productId.name ||  value.iteam === productsId.productId.categoryID.name)
-           if(offer){
-            return acc+productsId.quandity*productsId.productId.Price - Math.round(productsId.quandity*productsId.productId.Price*offer.offerRate/100)
-           }else{
-            return acc+productsId.quandity*productsId.productId.Price
-           }
-        },0);
+                parseInt(productsId.quandity);
+                parseInt(productsId.productId.Price);
+                const offer = offerData.find( value => value.iteam === productsId.productId.name ||  value.iteam === productsId.productId.categoryID.name)
+                if(offer){
+                    return acc+productsId.quandity*productsId.productId.Price - Math.round(productsId.quandity*productsId.productId.Price*offer.offerRate/100)
+                }else{
+                    return acc+productsId.quandity*productsId.productId.Price
+                }
+            },0);
+        }
+       const {_id} = req.query  
+       const orders =  await OrderDB.findOne({_id:_id}).populate('userId').populate('products.productId')
 
-    }
-        const {id} = req.query  
-        const data =  await OrderDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId')
-        
-        const product =  data.products.find((p)=>{
-            return p._id.equals(id)
-        });
-       
-   
-      
-       res.render('orderDetailes',{ orderData:product, userData:data,cartData,wishlistData,cartTotal})
+       return res.render('orderDetailes',{ orderData:orders,cartData,wishlistData,cartTotal})
        
     } catch (error) {
         console.log(error.message);
@@ -784,46 +795,87 @@ const orderUserDetailes = async (req,res)=>{
 const cancelUserOrder = async (req,res)=>{
     try {
     
-        const {_id} = req.query;
-        const orderData =  await OrderDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId');
+        const {_id,productId} = req.body;
+     
+        const orderData =  await OrderDB.findOne({_id:_id}).populate('userId').populate('products.productId');
        
          if(!orderData){
             return  res.json({success:false,message:"Order Not Found!."});
          }
-        const order = orderData.products.find((p)=>{
-            return p._id.equals(_id)
-        });
-  
+        const order = orderData.products.find((p)=>p._id == productId);
+       
         const product = await ProductDb.findById({_id:order.productId._id});
         if(!product){
             return res.json({success:false,message:"Product Not Found!."});
         }
-        const category = await CategoryDb.findById({_id:order.productId.categoryID});
-      
-        if(!category){
-            return res.json({success:false,message:"Category Not Found!."});
-        }
-       
 
          order.productStatus= "canceled";
          await orderData.save();
-     
-        
-        product.stock =  product.stock + order.quandity;
+         product.stock =  product.stock + order.quandity;
         if(order.paymentMethod !==  "COD"){
-          product.orderCount =  product.orderCount - order.quandity;
-          category.orderCount =  category.orderCount - order.quandity;
-          await category.save();
+          
+          await WalletDB.findOneAndUpdate({ userId:req.session.user_id},{$inc:{Balance:order.productTotal},$push:{ walletHistery:`Credit : ${order.productId.name} refunded amount of Rs.${order.productTotal}.00`}},{new:true});
+          
         }
-       
         await product.save();
         
-         if(order.paymentMethod !==  "COD"){
-          await WalletDB.findOneAndUpdate({ userId:req.session.user_id},{$inc:{Balance:order.productTotal},$push:{ walletHistery:`Credit : ${order.productId.name} refunded amount of Rs.${order.productTotal}.00`}},{new:true});
+     
+        let clearAction = true;
+        orderData.products.forEach((product)=>{
+            if(product.productStatus == "pending"){
+                clearAction = false;
+                return;
+            }
+        });
+
+        const total = orderData.products.reduce((acc,cur)=>{
+          if(cur.productStatus !== "canceled" ){
+            return acc+cur.productTotal
+          }else{
+            return acc
+          }
+        },0)
+     
+        return res.send({success:true,message:"Successfully Cancelled this Productsa!.",clearAction,total})
+        
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
+const cancelAllProductInOrder = async (req,res)=>{
+    try {
+    
+        const {_id} = req.body;
+     
+        const orderData =  await OrderDB.findOne({_id:_id}).populate('userId').populate('products.productId');
+       
+         if(!orderData){
+            return  res.json({success:false,message:"Order Not Found!."});
+         }
+
+        const products = orderData.products;
+        
+        for(let product of products){
+            const productCheck = await ProductDb.findById({_id:product.productId._id});
+            if(!productCheck){
+                return res.json({success:false,message:"Product Not Found!."});
+            }
+         
+
+            product.productStatus= "canceled";
+            
+            productCheck.stock =  productCheck.stock + product.quandity;
+            if(product.paymentMethod !==  "COD"){
+               
+                await WalletDB.findOneAndUpdate({ userId:req.session.user_id},{$inc:{Balance:product.productTotal},$push:{ walletHistery:`Credit : ${product.productId.name} refunded amount of Rs.${product.productTotal}.00`}},{new:true});
+                
+            }
+            await productCheck.save();
         }
-        
-        res.send({success:true,message:"Successfully Cancelled this Products!."})
-        
+        await orderData.save()
+        res.send({success:true,message:"Successfully Cancelled ALl Products!.",orderData})
+   
     } catch (error) {
         console.log(error.message);
     }
@@ -845,27 +897,28 @@ const wallet = async (req,res)=>{
 
 
 module.exports={
-    viewOrders,
     ordersList,
     orderDetailes,
-    cancelOrder,
     orderStatus,
     filterAndsortOrders,
     paginationOrders,
     searchOrders,
     paginationUserOrder,
-
+    savePayAgainAll,
     //user side
-
+    returnAllOrder,
     order,
     returnOrder,
     placeOrder,
     orderUserDetailes,
     cancelUserOrder,
+    cancelAllProductInOrder,
     saveOrder,
     successPage,
     failePage,
     payAgain,
-    repay,
+    payAgainAll,
+    adminReturnOrder,
+    savePayAgain,
     wallet,
 }

@@ -6,13 +6,9 @@ const OrderDB = require('../model/orderModel');
 const CartDB = require('../model/cartModel');
 const AddressDB = require('../model/addressModel');
 const WalletDB = require('../model/walletModel');
+const ProductDB = require('../model/productModel');
 const bcrypt = require('bcrypt');
-const exceljs = require('exceljs');
-const pdf = require('html-pdf');
-const fs = require('fs');
-const path = require('path');
-const ejs = require('ejs');
-const randomstring = require('randomstring');
+
 
 
 const securePassword = async (password) => {
@@ -87,18 +83,14 @@ const viewUser = async (req, res) => {
 const dashboard = async (req, res) => {
     try {
 
-        const {filter} = req.query;
-        let data;
-        let date;
-        if(!filter||filter == 'Yearly'){
-           data = "nulll"
-        }else if(filter == "Monthly"){
-             date = new Date().getMonth()+1;
-            data = "Monthly"
-           
-        }
+     
+        const products = await ProductDB.find({orderCount:{$gt:0}}).sort({'orderCount':-1}).limit(10);
+        const categorys = await CategoryDb.find({orderCount:{$gt:0}}).sort({'orderCount':-1}).limit(10);
         const orderData = await OrderDB.find({}).populate("products.productId");
-        const categoryData = await CategoryDb.find({});
+        const today = new Date();
+         return res.render('dashboard', { dbData: orderData, arrayCount: products, top10Category: categorys ,year:today.getFullYear(),sDate:today});
+         
+       
         let arrayProducts = [];
         let arrayCategory = [];
         for (let i = 0; i < orderData.length; i++) {
@@ -116,8 +108,7 @@ const dashboard = async (req, res) => {
         categoryData.forEach((value) => arrayCategory.push({ count: value.orderCount, name: value.name }))
 
         const top10Category = arrayCategory.sort((a, b) => b.count - a.count).slice(0, 10);
-        res.render('dashboard', { dbData: orderData, arrayCount: top10Product, top10Category: top10Category ,data,date});
-
+       
     } catch (error) {
         console.log(error.message)
 

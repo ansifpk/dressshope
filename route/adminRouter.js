@@ -50,7 +50,7 @@ adminRouter.set('views','./views/admin')
 
 adminRouter.get('/',authadmin.logoutAdmin,adminController.adminLogin)
 adminRouter.post('/',adminController.veryfyLogin)
-adminRouter.get('/dashboard',authadmin.loginAdmin,adminController.dashboard);
+adminRouter.get('/dashboard',adminController.dashboard);
 adminRouter.get('/changeChart',authadmin.loginAdmin,adminController.chart);
 adminRouter.get('/logout',authadmin.loginAdmin,adminController.adminLogout);
 
@@ -69,9 +69,9 @@ adminRouter.get('/userPagination',adminController.userPagination);
 
 adminRouter.get('/viewProducts',authadmin.loginAdmin,productController.viewProducts)
 adminRouter.get('/addProducts',authadmin.loginAdmin,productController.loadaddProducts)
-adminRouter.post('/addProducts',upload.fields([{name:"file-upload0",maxCount:1},{name:"file-upload1",maxCount:1},{name:"file-upload2",maxCount:1},{name:"file-upload3",maxCount:1}]),productController.addProducts)
+adminRouter.post('/addProducts',authadmin.loginAdmin,upload.fields([{name:"file-upload0",maxCount:1},{name:"file-upload1",maxCount:1},{name:"file-upload2",maxCount:1},{name:"file-upload3",maxCount:1}]),productController.addProducts)
 adminRouter.get('/editProducts',authadmin.loginAdmin,productController.editProducts)
-adminRouter.patch('/editProducts',upload.fields([{name:"file-upload0",maxCount:1},{name:"file-upload1",maxCount:1},{name:"file-upload2",maxCount:1},{name:"file-upload3",maxCount:1}]),productController.UpdateProducts)
+adminRouter.patch('/editProducts',authadmin.loginAdmin,upload.fields([{name:"file-upload0",maxCount:1},{name:"file-upload1",maxCount:1},{name:"file-upload2",maxCount:1},{name:"file-upload3",maxCount:1}]),productController.UpdateProducts)
 adminRouter.patch('/listProducts',authadmin.loginAdmin,productController.listProduct);
 adminRouter.get('/searchProduct',authadmin.loginAdmin,productController.searchProduct);
 adminRouter.get('/paginationProduct',authadmin.loginAdmin,productController.paginationProduct);
@@ -93,10 +93,9 @@ adminRouter.get('/categoryPagination',authadmin.loginAdmin,categoryController.ca
 //################### order ##########################
 
 adminRouter.get('/ordersList',authadmin.loginAdmin,orderController.ordersList)
-adminRouter.get('/viewOrder',authadmin.loginAdmin,orderController.viewOrders)
 adminRouter.get('/orderDetailes',authadmin.loginAdmin,orderController.orderDetailes)
-adminRouter.get('/cancelOrder',authadmin.loginAdmin,orderController.cancelOrder)
-adminRouter.get('/orderStatus',authadmin.loginAdmin,orderController.orderStatus)
+adminRouter.patch('/orderStatus',authadmin.loginAdmin,orderController.orderStatus)
+adminRouter.patch('/returnOrder',authadmin.loginAdmin,orderController.adminReturnOrder)
 adminRouter.get('/filterAndsortOrders',authadmin.loginAdmin,orderController.filterAndsortOrders)
 adminRouter.get('/ordersPagination',authadmin.loginAdmin,orderController.paginationOrders)
 adminRouter.get('/searchOrders',authadmin.loginAdmin,orderController.searchOrders)
@@ -117,7 +116,7 @@ adminRouter.get('/couponPagination',authadmin.loginAdmin,couponController.coupon
 
 adminRouter.get('/offer',authadmin.loginAdmin,offerController.offer)
 adminRouter.get('/addOffer',authadmin.loginAdmin,offerController.loadaddOffer)
-adminRouter.post('/addOffer',offerController.verifyOffer)
+adminRouter.post('/addOffer',authadmin.loginAdmin,offerController.verifyOffer)
 adminRouter.delete('/offer',authadmin.loginAdmin,offerController.deleteOffer)
 adminRouter.get('/selectOffer',authadmin.loginAdmin,offerController.selectOffer)
 adminRouter.get('/referalOffer',authadmin.loginAdmin,offerController.referalOffer)
@@ -127,10 +126,8 @@ adminRouter.delete('/referalOffer',authadmin.loginAdmin,offerController.deleteRe
 
 // ###########  Report #################################
 
-adminRouter.get('/createReport',reportController.createReport)
-adminRouter.get('/createReportPdf',reportController.createReportPdf)
-adminRouter.get('/weaklyReport',authadmin.loginAdmin,reportController.weaklyReport)
+adminRouter.get('/createReport',authadmin.loginAdmin,reportController.createReport)
+adminRouter.get('/createReportPdf',authadmin.loginAdmin,reportController.createReportPdf)
+adminRouter.get('/orderReport',authadmin.loginAdmin,reportController.orderReport)
 adminRouter.get('/dateChange',authadmin.loginAdmin,reportController.dateChange)
-adminRouter.get('/monthlyReport',authadmin.loginAdmin,reportController.monthlyReport)
-adminRouter.get('/yearlyReport',authadmin.loginAdmin,reportController.yearlyReport)
 module.exports=adminRouter;

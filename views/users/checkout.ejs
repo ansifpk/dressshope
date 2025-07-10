@@ -679,7 +679,7 @@
         if(paymentMethod=="Razor pay"){
             fetch(`/orders`,{method:"POST",body:JSON.stringify({addressId:address,paymentMethod,coupen:couponId}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
             .then((data)=>{
-               
+              
                 if(data.success){
                     var options = {
 						"key": `${data.key_id}`,
@@ -688,11 +688,20 @@
 						"name":`${data.name}` ,
 						"order_id": `${data.order_id}`,
 						"handler": function (response){ 
-
-							alert("Payment Succeeded");
-                            fetch(`/saveOrder`,{method:"POST",body:JSON.stringify({addressId:data.addressId,coupen:data.coupenId,paymentMethod:paymentMethod,paymentStatus:"Paid",productStatus:"pending"}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
+                           
+                     
+                            fetch(`/saveOrder`,{method:"POST",body:JSON.stringify({addressId:data.addressId,coupen:data.coupenId,paymentMethod:paymentMethod,paymentStatus:"Paid",productStatus:"pending",orderId:data.order_id}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
                             .then((res)=>{
-                                window.location.href="/successPage"   
+                                if(res.success){
+                                    window.location.href="/successPage"   
+                                }else{
+                                      window.location.href="/failePage"
+                                      Swal.fire({
+                                            title:"Warning!.",
+                                            text:res.message,
+                                            icon: "warning",
+                                        });
+                                }
                             })      
 							
 						},
@@ -706,14 +715,25 @@
 					};
 
                     var razorpayObject = new Razorpay(options);
+              
 					razorpayObject.on('payment.failed', function (response){
-							  fetch(`/saveOrder`,{method:"POST",body:JSON.stringify({addressId:data.addressId,coupen:data.coupenId,paymentMethod:paymentMethod,paymentStatus:"Failed",productStatus:"Failed"}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
+                         
+							  fetch(`/saveOrder`,{method:"POST",body:JSON.stringify({addressId:data.addressId,coupen:data.coupenId,paymentMethod:paymentMethod,paymentStatus:"Failed",productStatus:"Failed",orderId:data.order_id}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
                               .then((res)=>{
-                                 window.location.href="/failePage"
+                                if(res.success){
+                                    window.location.href="/failePage"
+                                }else{
+                                     Swal.fire({
+                                            title:"Warning!.",
+                                            text:res.message,
+                                            icon: "warning",
+                                        });
+                                }
                               })
 					});
                     
 					razorpayObject.open();
+                   
                  }else if(data.addAddress){
                     Swal.fire({
                     title: "You dont have any address?",

@@ -3,35 +3,36 @@
         <table class="table table-hover">
             <thead>
                 <tr>
-                  
-                    
-                    <th scope="col">User Name</th>
-                    <th scope="col">Product Name</th>
-                    <th scope="col">Order Date</th>
-                    <th scope="col">Product Status</th>
-                    <th scope="col">Actual price</th>
-                    <th scope="col">Product price</th>
-                    <th scope="col">Product Quandity</th>
-                    <th scope="col">Offer price</th>
-                    <th scope="col">Total price</th>
-                   
+                                             
+                    <th class="align-middle" scope="col">Order Id</th>
+                    <th class="align-middle" scope="col">Billing Name</th>
+                    <th class="align-middle" scope="col">Billing Address</th>
+                    <th class="align-middle" scope="col">Total Products</th>
+                    <th class="align-middle" scope="col">Product Total</th>
+                    <th class="align-middle" scope="col">Discount Amount</th>
+                    <th class="align-middle" scope="col">Payment Status</th>
+                    <th class="align-middle" scope="col">Product Status</th>
+                    <th class="align-middle" scope="col">Payment Method</th>
+                    <th class="align-middle" scope="col">Date</th>
                 </tr>
             </thead>
             <tbody>
                 <%
                   orderData.map((order)=>{
+                     const total = order.products.reduce((acc,cur)=>acc+=cur.productTotal,0)
                      %>
-                       <tr>                              
-                        <td><%=order.deliveryAddress.fname%></td>
-                        <td><%=order.productId.name%></td>
-                        <td><%=new Date(order.orderDate).toLocaleDateString() %></td>
-                        <td><span class="badge rounded-pill alert-warning"><%=order.productStatus%></span></td>
-                        <td><%=order.productId.Price%></td>
-                        <td><%=Math.ceil(order.productTotal/order.quandity)%></td>
-                        <td><%=order.quandity%></td>
-                        <td><%=order.productId.Price-Math.ceil(order.productTotal/order.quandity)%></td>
-                        <td><%=order.productTotal%></td> 
-                    </tr>
+                        <tr>
+                            <td><%=order._id%></td>
+                            <td><%=order.userId.name%></td>
+                            <td><%=order.products[0].deliveryAddress.address%></td>
+                            <td><%=order.products.length%></td>
+                            <td><%=total%></td>
+                            <td><%=order.couponOfferPrice%></td>
+                            <td class="text-center"><%=order.products[0].paymentStatus%></td>          
+                            <td class="text-center"><%=order.products[0].productStatus%></td>
+                            <td><%=order.products[0].paymentMethod%></td>
+                            <td><%= new Date(order.createdAt)%></td>
+                         </tr>
                      <%
                   })
                 %>

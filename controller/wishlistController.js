@@ -25,7 +25,7 @@ const wishlist = async(req,res)=>{
 
     }
 
-        res.render('wishlist',{wishlistData:wishlistData,cartData:cartData,cartTotal});
+        res.render('wishlist',{wishlistData:wishlistData,cartData:cartData,cartTotal,offerData});
 
     } catch (error) {
         console.log(error.message);

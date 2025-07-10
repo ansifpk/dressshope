@@ -258,7 +258,7 @@
                                                 <td class="quantity-col">
                                                 <div class="cart-product-quantity">
                                                    
-                                                    <input type="number" class="form-control" id="quandity<%=productData.products[i].productId._id%>" value="<%=productData.products[i].quandity%>" min="1" max="4" onchange="updateCart(this,'<%=productData.products[i].productId._id%>',)" step="1" data-decimals="0" required>
+                                                    <input type="number" class="form-control" id="quandity<%=productData.products[i].productId._id%>" value="<%=productData.products[i].quandity%>" min="1" max="4" onchange="updateCart(this,'<%=productData.products[i].productId._id%>')" step="1" data-decimals="0" required oninput="updateCart(this,'<%=productData.products[i].productId._id%>')">
                                                 </div><!-- End .cart-product-quantity -->                                 
                                             </td>
                                             <%
@@ -430,23 +430,27 @@
     <button id="scroll-top" title="Back to Top"><i class="icon-arrow-up"></i></button>
     <script>
         
-        function updateCart(quandity,productId){
-           const  limit = document.getElementById(`quandity${productId}`);
-           
-          
-           if(limit.value==limit.max){
+        function updateCart(tag,productId){
+       
+           if(tag.value==tag.max){
             Swal.fire("Maximum quandity is exceeds!");
             return;
            }
-            const Quantity = quandity.value;
-            
-          
-            fetch(`/updateCart?productId=${productId}&quandity=${Quantity}`)
+        
+            fetch(`/updateCart`,{method:"PATCH",body:JSON.stringify({productId,quandity:tag.value}),headers:{"Content-Type":"application/json"}})
             .then(res=>res.json())
-            .then(data=>{              
-                      document.getElementById(`productTotal${productId}`).innerText = `Rs.${data.productTotal}.00`;
-                      document.getElementById("SubTotal").innerText = `Rs.${data.total}.00`;          
-        })
+            .then(data=>{       
+                if(data.success){
+                  document.getElementById(`productTotal${productId}`).innerText = `Rs.${data.productTotal}.00`;
+                  document.getElementById("SubTotal").innerText = `Rs.${data.total}.00`;    
+                }else{
+                    tag.value = data.stock;
+                   Swal.fire({
+                    title: data.message,
+                    icon: "warning"
+                  });
+                }    
+            });   
     }
     
        function deleteCart(productId){
@@ -504,7 +508,7 @@ swalWithBootstrapButtons.fire({
     <script src="assets/js/jquery.waypoints.min.js"></script>
     <script src="assets/js/superfish.min.js"></script>
     <script src="assets/js/owl.carousel.min.js"></script>
-    <script src="assets/js/bootstrap-input-spinner.js"></script>
+    
     <!-- Main JS File -->
     <script src="assets/js/main.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

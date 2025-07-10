@@ -767,6 +767,131 @@
   
        }    
     </script>
+
+    <script>
+
+     
+
+        function search(tag) {
+            
+            const totalPage = document.getElementById("totalPage")
+            const currentPage = document.getElementById("currentPage")
+          
+            fetch(`/searchProduct?search=${tag.value}`).then((res)=>res.json())
+            .then((res)=>{
+               
+                 if(res.productData.length == 0){
+                 currentPage.innerText = 0
+               totalPage.innerText = 0
+                  document.getElementById("product-grid").innerHTML=` <div class="col-12 items-center">
+                        <p class="text-center items-center underline">No Products Available</p>
+                    </div>`
+              }else{
+                 totalPage.value = res.totalPage
+            currentPage.innerText = 1
+            document.getElementById("product-grid").innerHTML = res.productData
+            .map((product,i)=>{
+                
+                const productName = product.name
+                const productCategory = product.categoryID.name
+                const productOffer = res.offerData.find(offer => offer.iteam === productName);
+                const categoryOffer = res.offerData.find(offer => offer.iteam === productCategory);  
+               
+               return `
+                 <div class="col-6 col-md-4 col-lg-3">
+                       <div class="product product-3">
+                        <figure class="product-media">
+                            <span class="product-label">
+                             ${product.stock> 0 ? "Sale" : "Out of Stock" } 
+                            </span>
+                            <a href="/detailes?id=${product._id }">
+                                <img src="${product.image[0].secure_url}" alt="Product image" class="product-image">
+                            </a>
+                            
+                            ${res.offerData?
+                              productOffer?
+                               ` <div class="product-countdown-container">
+                                               <span class="product-contdown-title">offer ends in:</span>
+                                               <div class="product-contdown-title text-danger" data-until="2019, 10, 5" data-compact="true">${productOffer?.validity}</div><!-- End .product-countdown -->
+                                 </div>`
+                              :
+                              categoryOffer?
+                              `
+                               <div class="product-countdown-container">
+                                    <span class="product-contdown-title">offer ends in:</span>
+                                    <div class="product-contdown-title text-danger" data-until="2019, 10, 5" data-compact="true">${categoryOffer?.validity}</div><!-- End .product-countdown -->
+                               </div>
+                              `
+                              :""
+                            :
+                            ""
+                            }
+                           
+                            <div class="product-action-vertical">
+                                ${res.wishlistData?.products?.some((pro)=>pro.productId==product._id.toString())?
+                            `<a id="wishlist${i}" onclick="handlewishlist('${product._id}','${i}')" class="btn-product-icon btn-wishlist bg-danger btn-expandable"><span id="text${i}">remove from wishlist</span></a>`
+                            :
+                            `<a id="wishlist${i}" onclick="handlewishlist('${product._id}','${i}')" class="btn-product-icon btn-wishlist btn-expandable"><span id="text${i}">add to wishlist</span></a>`
+                            }     
+                            </div>
+                        </figure>
+
+                             <div class="product-body">
+                               ${product.stock>0?
+                                 res.cartData?.products?.some((pro)=>pro.productId._id==product._id.toString())?
+                                 `<div class="product-action">
+                                      <a id="cartBtn" class="btn-product btn-cart"  onclick="handleCart('${product._id}')"><span id="cart${product._id}">remove from cart </span></a>
+                                 </div>`
+                                 :
+                                 `<div class="product-action">
+                                      <a  class="btn-product btn-cart"  onclick="handleCart('${product._id}')"><span id="cart${product._id}">add to cart </span></a>
+                                  </div>`
+                                :
+                                `<div class="product-action">
+                                   <a  class="btn-product btn-cart" ><span>Out of stock</span></a>
+                                 </div>`
+                                }
+                           
+                            <div class="product-cat">
+                                <a href="">${product.categoryID.name}</a>
+                            </div>
+
+                            <h3 class="product-title"><a href="/detailes">${product.name}</a></h3><!-- End .product-title -->
+                            <div class="product-price">
+                                ${res.offerData?
+                                 productOffer?
+                                 `
+                                  <span class="new-price">Rs.${product.Price-Math.round(product.Price*productOffer.offerRate/100)}.00</span>
+                                  <span class="old-price">Rs.${product.Price}.00</span>`
+                                 :
+                                 categoryOffer?
+                                 `<span class="new-price">Rs.${product.Price-Math.round(product.Price*categoryOffer.offerRate/100)}.00</span>
+                                  <span class="old-price">Rs.${product.Price}.00</span>`
+                                 : 
+                                 `<span class="new-price">Rs.${product.Price}.00</span>`
+                                :
+                                ` <span class="new-price">Rs.${product.Price}.00</span>`
+                                }
+                               
+                            </div>
+                        </div>
+
+                        <div class="product-footer">
+                            <div class="ratings-container">
+                                <div class="ratings">
+                                    <div class="ratings-val" style="width: 40%;"></div><!-- End .ratings-val -->
+                                </div><!-- End .ratings -->
+                                <span class="ratings-text">( 4 Reviews )</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+               `
+               }).join("")   
+              } 
+            })
+        }
+    </script>
    
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/bootstrap.bundle.min.js"></script>

@@ -46,7 +46,7 @@ const sendOTPverificationEmail = async (email, res) => {
 
     // hash ottp
     const saltRounds = 10;
-    console.log(otp);
+    console.log(otp,email);
     const hashedOTP = await bcrypt.hash(otp, saltRounds);
 
     const newOtpVerifivation = new UserOtpVerification({
@@ -344,7 +344,7 @@ const loadOtp = async (req, res) => {
   try {
     const email = req.query.email;
     await UserOtpVerification.findOne({ email: email });
-
+    
     res.render("otp", { email: email });
   } catch (error) {
     console.log(error.message);
@@ -461,6 +461,9 @@ const verifyOtp = async (req, res) => {
 const resendOtp = async (req, res) => {
   try {
     const { email } = req.query;
+    if(!email){
+      return res.json({success:false,message:"Somthing Went Wrong!."})
+    }
     await UserOtpVerification.findOneAndDelete({ email: email });
     await sendOTPverificationEmail(email, res);
   } catch (error) {
@@ -707,7 +710,14 @@ const searchProduct = async (req, res) => {
 
     
     let data =  await ProductDB.find({$and:[{is_listed:true},{name:{$regex: ".*" + search + ".*", $options: "i"}}]}).sort({createdAt:-1}).populate("categoryID");
-    let products =  data.filter((val)=>val.categoryID.is_listed == true&& val.categoryID.name == filter );
+    
+    let products;
+
+    if(filter){
+       products =  data.filter((val)=>val.categoryID.is_listed == true&& val.categoryID.name == filter );
+    }else{
+       products =  data.filter((val)=>val.categoryID.is_listed == true );
+    }
   
     const totalPage = Math.ceil(products.length/limit);
     products =  products.slice(0,limit);
@@ -1270,7 +1280,8 @@ const loadCartt = async (req, res) => {
 };
 const updateCart = async (req, res) => {
   try {
-    const { productId,  quandity } = req.query;
+    const { productId,  quandity } = req.body;
+    console.log(req.body)
     const offerData = await OfferDB.find({});
 
     const cart = await CartDB.findOne({ userId: req.session.user_id })
@@ -1282,11 +1293,15 @@ const updateCart = async (req, res) => {
     const productUpdate = cart.products.find((p) => {
       return p.productId.equals(productId);
     });
+       
+    if(productUpdate.productId.stock < quandity ){
+      return res.json({success:false,message:"Product Quandity Exeeded Product Stock!.",stock:productUpdate.productId.stock})
+    }
 
     const q = parseInt(quandity);
     productUpdate.quandity = q;
 
-    let b = await cart.save();
+    let b = await cart.save(); 
 
     let total = b.products.reduce((acc, value) => {
       return acc + value.productId.Price * value.quandity;
@@ -1307,7 +1322,7 @@ const updateCart = async (req, res) => {
         (productUpdate.productId.Price -
           Math.round((productUpdate.productId.Price * offer.offerRate) / 100)) *
         q;
-      res.status(200).json({ total: subTotal, productTotal: productTotal });
+      res.status(200).json({ success:true, total: subTotal, productTotal: productTotal });
     } else {
       let subTotal = b.products.reduce((acc, valuee) => {
         const offer = offerData.find(
@@ -1327,7 +1342,7 @@ const updateCart = async (req, res) => {
 
       const productTotal = productUpdate.productId.Price * q;
 
-      res.status(200).json({ productTotal: productTotal, total: subTotal });
+      res.json({success:true, productTotal: productTotal, total: subTotal });
     }
   } catch (error) {
     console.log(error.message);
@@ -1565,12 +1580,27 @@ const changeAddress = async (req, res) => {
 const test = async (req, res) => {
   try {
     const { productId } = req.query;
-    const orderData = await OrderDB.findOne({ userId: req.session.user_id })
+    
+    const orderData = await OrderDB.findOne({ _id: productId})
       .populate("userId")
       .populate("products.productId");
-    const product = orderData.products.find((p) => {
-      return p._id.equals(productId);
-    });
+      let products = [];
+      orderData.products.find((product) => {
+        products.push({
+          quantity: product.quandity,
+          description: product.productId.name,
+          price: product.productId.Price
+        })
+      });
+       const offer = orderData.products.reduce((acc,cur)=>{
+        return acc+ (cur.productId.Price*cur.quandity) - cur.productTotal
+       },0)
+    
+      products.push({
+      description: "Discount",
+      price: -offer
+    })
+    
     const date = new Date().toISOString().slice(0, 10);
 
     const data = {
@@ -1593,10 +1623,10 @@ const test = async (req, res) => {
       // Your recipient
       client: {
         company: orderData.userId.name,
-        address: product.deliveryAddress.address,
-        zip: product.deliveryAddress.pincode,
-        city: product.deliveryAddress.city,
-        country: product.deliveryAddress.country,
+        address: orderData.products[0].deliveryAddress.address,
+        zip: orderData.products[0].deliveryAddress.pincode,
+        city: orderData.products[0].deliveryAddress.city,
+        country: orderData.products[0].deliveryAddress.country,
       },
       information: {
         // Invoice data
@@ -1606,14 +1636,7 @@ const test = async (req, res) => {
       },
       // The products you would like to see on your invoice
       // Total values are being calculated automatically
-      products: [
-        {
-          quantity: product.quandity,
-          description: product.productId.name,
-          price: product.productId.Price,
-          discount:  (product.productId.Price*product.quandity) - product.productTotal,
-        },
-      ],
+      products: products,
       // Settings to customize your invoice
       settings: {
         currency: "INR", // See documentation 'Locales and Currency' for more info. Leave empty for no currency.
