@@ -91,28 +91,78 @@ const dashboard = async (req, res) => {
          return res.render('dashboard', { dbData: orderData, arrayCount: products, top10Category: categorys ,year:today.getFullYear(),sDate:today});
          
        
-        let arrayProducts = [];
-        let arrayCategory = [];
-        for (let i = 0; i < orderData.length; i++) {
-            for (let j = 0; j < orderData[i].products.length; j++) {
-                if (orderData[i].products[j].productStatus == "Delivered") {
-                    arrayProducts.push({ count: orderData[i].products[j].productId.orderCount, name: orderData[i].products[j].productId.name, image: orderData[i].products[j].productId.image[0] })
-                }
-            }
-        }
-        const uniqueProducts = new Set(arrayProducts.map(JSON.stringify));
-        let spreadArray = [...uniqueProducts].map(JSON.parse);
-      
-        const top10Product = spreadArray.sort((a, b) => b.count - a.count).slice(0, 10);
-
-        categoryData.forEach((value) => arrayCategory.push({ count: value.orderCount, name: value.name }))
-
-        const top10Category = arrayCategory.sort((a, b) => b.count - a.count).slice(0, 10);
        
     } catch (error) {
         console.log(error.message)
 
     }
+}
+
+const changeDateDashboard = async(req,res)=>{
+   try {
+
+  
+    const {eDate,sDate,select}  = req.query;
+    let orderData;
+    switch (select) {
+        case "Year":
+            if(!eDate || !sDate){
+               return res.json({success:false,message:"Please Select Both Starting Year And Ending Year!."})
+            }
+            if(eDate < sDate){
+                return res.json({success:false,message:`Invalid ${select} Period!.`})
+            }
+            orderData = await OrderDB.find({$and:[{createdAt:{$lte:new Date(`${eDate}-12-31`)}},{createdAt:{$gte:new Date(`${sDate}-01-01`)}}]}).populate("userId").populate({path:"products.productId",populate:{path:"categoryID"}})
+            res.json({success:true,orderData})
+            break;
+        case "Month":
+            if(!sDate){
+               return res.json({success:false,message:"Please Select A Year!."})
+            }
+            orderData = await OrderDB.find({$and:[{createdAt:{$lte:new Date(`${sDate}-12-31`)}},{createdAt:{$gte:new Date(`${sDate}-01-01`)}}]}).populate("userId").populate({path:"products.productId",populate:{path:"categoryID"}})
+            res.json({success:true,orderData})
+            break;
+    
+        default:
+            if(!eDate || !sDate){
+               return res.json({success:false,message:"Please Select Both Starting Year And The Month!."})
+            }
+            orderData = await OrderDB.find({$and:[{createdAt:{$lte:new Date(`${sDate}-${eDate}-31`)}},{createdAt:{$gte:new Date(`${sDate}-${eDate}-01`)}}]}).populate("userId").populate({path:"products.productId",populate:{path:"categoryID"}})
+            res.json({success:true,orderData})
+            break;
+    }
+
+} catch (error) {
+    console.log(error.message);
+   }
+}
+
+const filterDashboard = async(req,res)=>{
+   try {
+
+    const {select}  = req.query;
+    const date = new Date()
+    const  months =  ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];               
+    let orderData;
+    switch (select) {
+        case "Year":
+            orderData = await OrderDB.find({$and:[{createdAt:{$lte:new Date(`${date.getFullYear()}-12-31`)}},{createdAt:{$gte:new Date(`2020-01-01`)}}]}).populate("userId").populate({path:"products.productId",populate:{path:"categoryID"}})
+            res.json({success:true,orderData})
+            break;
+        case "Month":
+            orderData = await OrderDB.find({$and:[{createdAt:{$lte:new Date(`${date.getFullYear()}-12-31`)}},{createdAt:{$gte:new Date(`${date.getFullYear()}-01-01`)}}]}).populate("userId").populate({path:"products.productId",populate:{path:"categoryID"}})
+            res.json({success:true,orderData})
+            break;
+    
+        default:
+            orderData = await OrderDB.find({$and:[{createdAt:{$lte:new Date(`${date.getFullYear()}-${months[date.getMonth()]}-31`)}},{createdAt:{$gte:new Date(`${date.getFullYear()}-${months[date.getMonth()]}-01`)}}]}).populate("userId").populate({path:"products.productId",populate:{path:"categoryID"}})
+            res.json({success:true,orderData})
+            break;
+    }
+
+} catch (error) {
+    console.log(error.message);
+   }
 }
 
 const chart = async (req, res) => {
@@ -366,6 +416,8 @@ module.exports = {
     adminLogin,
     veryfyLogin,
     dashboard,
+    changeDateDashboard,
+    filterDashboard,
     chart,
     viewUser,
     blockUser,

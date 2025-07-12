@@ -131,8 +131,8 @@ const dateChange = async(req,res)=>{
     if(new Date(eDate) < new Date(sDate) ){
         return res.json({success:false,message:"Invalid Date Period!."})
     }
-
-    const orderData = await OrderDB.find({$and:[{createdAt:{$lte:eDate}},{createdAt:{$gte:sDate}}]}).populate("userId").populate({path:"products.productId",populate:{path:"categoryID"}})
+    
+    const orderData = await OrderDB.find({$and:[{createdAt:{$lte:(eDate)}},{createdAt:{$gte:sDate}}]}).populate("userId").populate({path:"products.productId",populate:{path:"categoryID"}})
     res.json({success:true,orderData})
     return;
 

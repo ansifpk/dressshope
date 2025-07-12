@@ -181,18 +181,43 @@
                         <div class="card mb-4">
                             <article class="card-body">
                                 <h5 class="card-title">Sale statistics</h5>
-                                    <div class="row align-items-center">
-                            <div class="col-md-4 col-6">
-                                <label>Choose Starting Date</label>
-                                <input id="eDate" type="date" name="eDate" value="<%=year%>-01-01" class="form-control" />   
-                            </div>
-                            <div class="col-md-4 col-6">
-                                <label>Choose Ending Date</label>
-                                <input id="sDate" type="date" name="eDate" value="<%=sDate.toISOString().split('T')[0]%>" class="form-control" />   
-                            </div>
-                            <div class="col-md-4 mt-3 col-6">
+                                <div class="row align-items-center">
+                            <div class="col-md-3 col-6">
+                                <label id="sDateLabel" >Choose Starting </label>
+                                 <select id="sDate" class="form-select">
+                                    <option  disabled value=""></option>
+                                    <% for(let y = 2020; y <= year; y++) { 
+                                        if(y == 2020){%>
+                                            <option selected value="<%= 2020 %>"><%= 2020 %></option>
+                                        <%}else{%>
+                                            <option value="<%= y %>"><%= y %></option>
+                                        <%}
+                                     } %>
+                                </select>
+                               </div>
+                            <div class="col-md-3 col-6">
+                                <label id="eDateLabel">Choose Ending </label>
+                                <select id="eDate"  class="form-select">
+                                    <option disabled value=""></option>
+                                    <% for(let y = 2020; y <= year; y++) { 
+                                        if(y == year){%>
+                                            <option selected value="<%= y %>"><%= y %></option>
+                                        <%}else{%>
+                                            <option value="<%= y %>"><%= y %></option>
+                                        <%}
+                                     } %>
+                                </select>
+                                 </div>
+                            <div class="col-md-3 mt-3 col-6">
                             <button class="btn btn-sm font-sm rounded btn-brand" onclick="dateChange()">  Save </button>
-                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <select  id="select" onchange="selectChenge()" class="form-select border">
+                                <option value="Year" selected>Year</option>
+                                <option value="Month">Month</option>
+                                <option value="Days">Days</option>
+                            </select>
+                        </div>
                         </div>
                                
                                 <div class="col-md-2 col-6 mt-2">
@@ -303,69 +328,559 @@
                 </div>
             </footer>
         </main>
-       <script>
+        
+        <script>
+            function selectChenge() {
+                const sDate = document.getElementById("sDate");
+                const sDateLabel = document.getElementById("sDateLabel")
+                const eDate = document.getElementById("eDate")
+                const eDateLabel = document.getElementById("eDateLabel")
+                const select = document.getElementById("select");
+                const  months =  ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                     
+                     
+                switch (select.value) {
+                    case "Year":
+                         eDate.style.display = "block"
+                         eDateLabel.style.display = "block"
+                         sDate.value = 2020 
+                         eDateLabel.innerText = "Choose Ending";
+                         let options1 = `<option disabled  value=""></option>`;
+                        for (let i = 2020; i <= new Date().getFullYear() ; i++) {
+                            if(i == new Date().getFullYear()){
+                              options1 += `<option selected value="${i}">${i}</option>`;
+                            }else{
+                                options1 += `<option value="${i}">${i}</option>`;
+                            }
+                        }
+                        eDate.outerHTML = `
+                            <select id="eDate" class="form-select">
+                                ${options1}
+                            </select>
+                            `;
+                            const newEDate = document.getElementById("eDate");
+                            newEDate.value = new Date().getFullYear();
+                            
+                        break;
+                    case "Month":
+                        sDate.value = new Date().getFullYear()
+                        eDate.style.display = "none"
+                        eDateLabel.style.display = "none"
+                        break;
+                    default:
+                        let options = `<option disabled  value=""></option>`;
+                        for (let i = 0; i < months.length; i++) {
+                            if(months[i] == months[new Date().getMonth()]){
+                              options += `<option selected value="${months[i]}">${months[i]}</option>`;
+                            }else{
+                                options += `<option value="${months[i]}">${months[i]}</option>`;
+                            }
+                        }
+                        eDate.outerHTML = `
+                            <select id="eDate" class="form-select">
+                                ${options}
+                            </select>
+                            `;
+                        eDateLabel.style.display = "block"
+                        sDate.value = new Date().getFullYear()
+                        eDateLabel.innerText = "Choose Month";
+                        break;
+                }
+                fetch(`/admin/filterDashboard?select=${select.value}`).then((res)=>res.json())
+                .then((res)=>{
+                    
+                    const existingChart = Chart.getChart('myChart'); // canvas id
+
+                    if (existingChart) {
+                      existingChart.destroy();
+                    }
+                    const ctx = document.getElementById('myChart').getContext('2d');
+                    const canvas = document.getElementById('myChart');
+
+                    let years = [];
+                    let arrayDelivered ;
+                    let arrayreturn ;
+                    let arraycanceled ;
+                    let arraypending ;
+                    
+                    switch (select.value) {
+                        case "Year":
+                            for(let i = sDate.value;i<=new Date().getFullYear();i++){
+                                years.push(i*1)
+                            }
+
+                            arrayDelivered = Array(years.length).fill(0);
+                            arrayreturn = Array(years.length).fill(0);
+                            arraycanceled = Array(years.length).fill(0);
+                            arraypending = Array(years.length).fill(0);
+
+                            for (let i = 0; i < res.orderData.length; i++) {
+                                for (let j = 0; j < res.orderData[i].products.length; j++) {
+                                    const product = res.orderData[i].products[j];
+                                    const orderMonth = new Date(res.orderData[i].createdAt).getFullYear(); 
+                                    const index = years.indexOf(orderMonth)
+                                    const status = product.productStatus;             
+                                    switch (status) {
+                                        case "Delivered":
+                                            arrayDelivered[index]++;
+                                            break;
+                                        case "return":
+                                            arrayreturn[index]++;
+                                            break;
+                                        case "canceled":
+                                            arraycanceled[index]++;
+                                            break;
+                                        case "pending":
+                                            arraypending[index]++;
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                }
+                            }
+
+                            break;
+                        case "Month":
+                            years = months;
+
+                            arrayDelivered = Array(years.length).fill(0);
+                            arrayreturn = Array(years.length).fill(0);
+                            arraycanceled = Array(years.length).fill(0);
+                            arraypending = Array(years.length).fill(0);
+
+                            for (let i = 0; i < res.orderData.length; i++) {
+                                for (let j = 0; j < res.orderData[i].products.length; j++) {
+                                    const product = res.orderData[i].products[j];
+                                    const orderMonth = new Date(res.orderData[i].createdAt).getMonth(); 
+                                    const status = product.productStatus;  
    
-    function change(){
-        const status = document.getElementById("select").value;
-        window.location.href=`/admin/dashboard?filter=${status}`
-    }
+                                               
+                                    switch (status) {
+                                        case "Delivered":
+                                            arrayDelivered[orderMonth]++;
+                                            break;
+                                        case "return":
+                                            arrayreturn[orderMonth]++;
+                                            break;
+                                        case "canceled":
+                                            arraycanceled[orderMonth]++;
+                                            break;
+                                        case "pending":
+                                            arraypending[orderMonth]++;
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                }
+                            }
+
+                            break;
+                        default:
+                            years = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31];
+                            arrayDelivered = Array(years.length).fill(0);
+                            arrayreturn = Array(years.length).fill(0);
+                            arraycanceled = Array(years.length).fill(0);
+                            arraypending = Array(years.length).fill(0);
+
+                            for (let i = 0; i < res.orderData.length; i++) {
+                                for (let j = 0; j < res.orderData[i].products.length; j++) {
+                                    const product = res.orderData[i].products[j];
+                                    const orderMonth = new Date(res.orderData[i].createdAt).getDate(); 
+               
+                                    const status = product.productStatus;  
    
-    
+                                               
+                                    switch (status) {
+                                        case "Delivered":
+                                            arrayDelivered[orderMonth]++;
+                                            break;
+                                        case "return":
+                                            arrayreturn[orderMonth]++;
+                                            break;
+                                        case "canceled":
+                                            arraycanceled[orderMonth]++;
+                                            break;
+                                        case "pending":
+                                            arraypending[orderMonth]++;
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                }
+                            }
+
+                            break;
+                    }
+
+                var chart = new Chart(ctx, {
+           
+                    type: 'line',
+                    data: {
+                    
+                        labels: years,
+                        datasets: [{
+                                label: 'Delivered',
+                                tension: 0.3,
+                                fill: true,
+                                backgroundColor: 'rgba(44, 120, 220, 0.2)',
+                                borderColor: 'rgba(44, 120, 220)',
+                                data: arrayDelivered
+                            },
+                            {
+                                label: 'return',
+                                tension: 0.3,
+                                fill: true,
+                                backgroundColor: 'rgba(255, 0, 0, 0.2)',
+                                borderColor: 'rgb(255, 0, 0)',
+                                data: arrayreturn
+                            },
+                            {
+                                label: 'canceled',
+                                tension: 0.3,
+                                fill: true,
+                                backgroundColor: 'rgba(380, 200, 230, 0.2)',
+                                borderColor: 'rgb(380, 200, 230)',
+                                data:arraycanceled
+                            },
+                            {
+                                label: 'pending',
+                                tension: 0.3,
+                                fill: true,
+                                backgroundColor: 'rgba(4, 209, 130, 0.2)',
+                                borderColor: 'rgb(4, 209, 130)',
+                                data: arraypending
+                            }
+
+                        ]
+                    },
+                    options: {
+                        plugins: {
+                        legend: {
+                            labels: {
+                            usePointStyle: true,
+                            },
+                        }
+                    }
+                    }
+                });
+                })
+            }
+        </script>
+
+        <script>
+
+            function dateChange(){
+                const sDate = document.getElementById("sDate");
+                const eDate = document.getElementById("eDate");
+                const select = document.getElementById("select");
+
+                fetch(`/admin/changeDateDashboard?sDate=${sDate?.value}&&eDate=${eDate?.value}&&select=${select?.value}`).then((res)=>res.json())
+                .then((res)=>{
+                    console.log(res.orderData);
+                
+                    if(!res.success){
+                       Swal.fire({
+                            text: res.message,
+                            icon: "warning"
+                        });
+                        return;
+                    }
+                    let  months =  ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    
+                    const existingChart = Chart.getChart('myChart'); // canvas id
+
+                    if (existingChart) {
+                      existingChart.destroy();
+                    }
+                    const ctx = document.getElementById('myChart').getContext('2d');
+                    const canvas = document.getElementById('myChart');
+
+                    let years = []
+                    let arrayDelivered ;
+                    let arrayreturn ;
+                    let arraycanceled;
+                    let arraypending ;
+
+
+                     switch (select?.value) {
+                        case "Year":
+                            for(let i = sDate.value;i<=eDate.value;i++){
+                                years.push(i*1)
+                            }
+
+                            arrayDelivered = Array(years.length).fill(0);
+                            arrayreturn = Array(years.length).fill(0);
+                            arraycanceled = Array(years.length).fill(0);
+                            arraypending = Array(years.length).fill(0);
+
+                            for (let i = 0; i < res.orderData.length; i++) {
+                                for (let j = 0; j < res.orderData[i].products.length; j++) {
+                                    const product = res.orderData[i].products[j];
+                                    const orderMonth = new Date(res.orderData[i].createdAt).getFullYear(); 
+                                    const index = years.indexOf(orderMonth)
+                                    const status = product.productStatus;             
+                                    switch (status) {
+                                        case "Delivered":
+                                            arrayDelivered[index]++;
+                                            break;
+                                        case "return":
+                                            arrayreturn[index]++;
+                                            break;
+                                        case "canceled":
+                                            arraycanceled[index]++;
+                                            break;
+                                        case "pending":
+                                            arraypending[index]++;
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                }
+                            }
+                            
+                            break;
+                        case "Month":
+                            years = months;
+
+                            arrayDelivered = Array(years.length).fill(0);
+                            arrayreturn = Array(years.length).fill(0);
+                            arraycanceled = Array(years.length).fill(0);
+                            arraypending = Array(years.length).fill(0);
+
+                            for (let i = 0; i < res.orderData.length; i++) {
+                                for (let j = 0; j < res.orderData[i].products.length; j++) {
+                                    const product = res.orderData[i].products[j];
+                                    const orderMonth = new Date(res.orderData[i].createdAt).getMonth(); 
+                                    const status = product.productStatus;  
+   
+                                               
+                                    switch (status) {
+                                        case "Delivered":
+                                            arrayDelivered[orderMonth]++;
+                                            break;
+                                        case "return":
+                                            arrayreturn[orderMonth]++;
+                                            break;
+                                        case "canceled":
+                                            arraycanceled[orderMonth]++;
+                                            break;
+                                        case "pending":
+                                            arraypending[orderMonth]++;
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                }
+                            }
+
+                            break;
+                        default:
+                            years = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31];
+                            arrayDelivered = Array(years.length).fill(0);
+                            arrayreturn = Array(years.length).fill(0);
+                            arraycanceled = Array(years.length).fill(0);
+                            arraypending = Array(years.length).fill(0);
+
+                            for (let i = 0; i < res.orderData.length; i++) {
+                                for (let j = 0; j < res.orderData[i].products.length; j++) {
+                                    const product = res.orderData[i].products[j];
+                                    const orderMonth = new Date(res.orderData[i].createdAt).getDate(); 
+               
+                                    const status = product.productStatus;  
+   
+                                               
+                                    switch (status) {
+                                        case "Delivered":
+                                            arrayDelivered[orderMonth]++;
+                                            break;
+                                        case "return":
+                                            arrayreturn[orderMonth]++;
+                                            break;
+                                        case "canceled":
+                                            arraycanceled[orderMonth]++;
+                                            break;
+                                        case "pending":
+                                            arraypending[orderMonth]++;
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                }
+                            }
+
+                            break;
+                    }
+
+
+
+
+
+
+
+
+
+
+                    // return;
+                    // switch (select) {
+                    //     case "Year":
+                    //         for(let i = sDate*1;i<=eDate;i++){
+                    //             years.push(i)
+                    //         }
+                    //         break;
+                    //     case "Month":
+                    //         years = months;
+                    //         break;
+                    //     default:
+                    //         break;
+                    // }
+                    
+                    // let arrayDelivered = Array(years.length).fill(0);
+                    // let arrayreturn = Array(years.length).fill(0);
+                    // let arraycanceled = Array(years.length).fill(0);
+                    // let arraypending = Array(years.length).fill(0);
+                   
+                    // for (let i = 0; i < res.orderData.length; i++) {
+                    //     for (let j = 0; j < res.orderData[i].products.length; j++) {
+                    //         const product = res.orderData[i].products[j];
+                    //         const orderMonth = new Date(res.orderData[i].createdAt).getFullYear(); 
+                    //         const index = years.indexOf(orderMonth)
+                    //         const status = product.productStatus; 
+                            
+                                
+                    //         switch (status) {
+                    //             case "Delivered":
+                    //                 arrayDelivered[index]++;
+                    //                 break;
+                    //             case "return":
+                    //                 arrayreturn[index]++;
+                    //                 break;
+                    //             case "canceled":
+                    //                 arraycanceled[index]++;
+                    //                 break;
+                    //             case "pending":
+                    //                 arraypending[index]++;
+                    //                 break;
+                    //             default:
+                    //                 break;
+                    //         }
+                    //     }
+                    // }
+                    // let labels = years
+                 console.log(arrayDelivered);
+                 console.log(arrayreturn);
+                 console.log(arraypending);
+                 console.log(arraycanceled);
+                 console.log(years);
+                 
+               
+                var chart = new Chart(ctx, {
+           
+                    type: 'line',
+                    data: {
+                    
+                        labels: years,
+                        datasets: [{
+                                label: 'Delivered',
+                                tension: 0.3,
+                                fill: true,
+                                backgroundColor: 'rgba(44, 120, 220, 0.2)',
+                                borderColor: 'rgba(44, 120, 220)',
+                                data: arrayDelivered
+                            },
+                            {
+                                label: 'return',
+                                tension: 0.3,
+                                fill: true,
+                                backgroundColor: 'rgba(255, 0, 0, 0.2)',
+                                borderColor: 'rgb(255, 0, 0)',
+                                data: arrayreturn
+                            },
+                            {
+                                label: 'canceled',
+                                tension: 0.3,
+                                fill: true,
+                                backgroundColor: 'rgba(380, 200, 230, 0.2)',
+                                borderColor: 'rgb(380, 200, 230)',
+                                data:arraycanceled
+                            },
+                            {
+                                label: 'pending',
+                                tension: 0.3,
+                                fill: true,
+                                backgroundColor: 'rgba(4, 209, 130, 0.2)',
+                                borderColor: 'rgb(4, 209, 130)',
+                                data: arraypending
+                            }
+
+                        ]
+                    },
+                    options: {
+                        plugins: {
+                        legend: {
+                            labels: {
+                            usePointStyle: true,
+                            },
+                        }
+                    }
+                    }
+                });
+
+                })
+            }
+
+        </script>
+       
+        <script>
+
     addEventListener("DOMContentLoaded",function(){
         var ctx = document.getElementById('myChart').getContext('2d');
         var canvas = document.getElementById('myChart');
         // Retrieving the data attribute
         var dbDataString = canvas.getAttribute('data-db-data');
         var dbData = JSON.parse(dbDataString);
-        const today =new Date();
-        var eDate = document.getElementById('eDate').value;
-        var sDate = document.getElementById('sDate').value;
-      
-        
-        const  months =  ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        let labels = months
+        var eDate = document.getElementById('eDate');
+        var sDate = document.getElementById('sDate');
+        const years = []
+        for(let i = 2020;i<=new Date().getFullYear();i++){
+            years.push(i)
+        }
+        // const  months =  ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        let labels = years
 
-    
-        
-        let date=0;
-        let month = 0;
- 
-        const arrayDelivered = Array(12).fill(0);
-        const arrayreturn = Array(12).fill(0);
-        const arraycanceled = Array(12).fill(0);
-        const arraypending = Array(12).fill(0);
+        const arrayDelivered = Array(years.length).fill(0);
+        const arrayreturn = Array(years.length).fill(0);
+        const arraycanceled = Array(years.length).fill(0);
+        const arraypending = Array(years.length).fill(0);
         for (let i = 0; i < dbData.length; i++) {
             for (let j = 0; j < dbData[i].products.length; j++) {
                 const product = dbData[i].products[j];
-                const orderMonth = new Date(dbData[i].createdAt).getMonth(); // Get the month index (zero-based)
+                const orderMonth = new Date(dbData[i].createdAt).getFullYear();
+                let index = years.indexOf(orderMonth) 
                 const status = product.productStatus; 
                
-                // Update the count for the corresponding month and status
+                
                 switch (status) {
                     case "Delivered":
-                        arrayDelivered[orderMonth]++;
+                        arrayDelivered[index]++;
                         break;
                     case "return":
-                        arrayreturn[orderMonth]++;
+                        arrayreturn[index]++;
                         break;
                     case "canceled":
-                        arraycanceled[orderMonth]++;
+                        arraycanceled[index]++;
                         break;
                     case "pending":
-                        arraypending[orderMonth]++;
+                        arraypending[index]++;
                         break;
                     default:
                         break;
                 }
             }
         }
-    
-        
+
         var chart = new Chart(ctx, {
-            // The type of chart we want to create
-            type: 'line',
            
-            // The data for our dataset
+            type: 'line',
             data: {
               
                 labels: labels,
@@ -427,7 +942,7 @@
         <!-- Main Script -->
         <script src="assets/js/main.js?v=1.1" type="text/javascript"></script>
         <script src="assets/js/custom-chart.js" type="text/javascript"></script>
-       
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
        
     </body>
 </html>
