@@ -754,7 +754,7 @@ $(document).ready(function () {
     if(document.getElementById('newsletter-popup-form')) {
         setTimeout(function() {
             var mpInstance = $.magnificPopup?.instance;
-            if (mpInstance.isOpen) {
+            if (mpInstance?.isOpen) {
                 mpInstance.close();
             }
 

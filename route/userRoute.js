@@ -82,6 +82,7 @@ user_route.patch('/removeOutofStock',auth.loginUser,authBlock.blockUser,userCont
 user_route.get('/cartt',auth.loginUser,authBlock.blockUser,userControll.loadCartt);
 user_route.patch('/updateCart',auth.loginUser,authBlock.blockUser,userControll.updateCart);
 user_route.get('/deleteCart',auth.loginUser,authBlock.blockUser,userControll.deleteCart);
+user_route.get('/proceedCheckout',auth.loginUser,authBlock.blockUser,userControll.proceedCheckout);
 
 // ########################checkout##############################
 

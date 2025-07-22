@@ -355,8 +355,13 @@ const placeOrder = async (req,res)=>{
         const cartData = await CartDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId');
         const userData = await User.findById({_id: req.session.user_id});
      
-        const cherckStock = cartData.products.filter((value)=>value.productId.stock == 0)
-
+        const cherckStock = cartData.products.filter((value)=>value.productId.stock == 0 || value.productId.stock < value.quandity )
+       
+        if(cherckStock.length){
+            res.send({outofstock:true,message:"Some of the products from your cart is out of stock"})
+            return;
+        }
+      
         //* calculating money start
 
         let money = cartData.products.reduce((acc,value)=>{
@@ -377,10 +382,7 @@ const placeOrder = async (req,res)=>{
         }
          //* calculating money end
 
-        if(cherckStock.length){
-            res.send({outofstock:true,message:"Some of the products from your cart is out of stock"})
-            return;
-        }
+      
 
         if(paymentMethod=="Razor pay"){
           //* Razor pay payment method
@@ -430,7 +432,7 @@ const placeOrder = async (req,res)=>{
 const saveOrder = async(req,res)=>{
    try { 
        const {addressId,coupen,paymentMethod,paymentStatus,productStatus,orderId} = req.body;
-     console.log("hi")
+    
        if(!req.session.orderId || req.session.orderId !== orderId){
         return res.json({success:false,message:"Session Ended!."})
        }
@@ -439,11 +441,17 @@ const saveOrder = async(req,res)=>{
 
        const products = await CartDB.findOne({userId:req.session.user_id}).populate('userId').populate('products.productId').populate('products.productId.categoryID')
         let productsData = products.products;
-        console.log("12")
+        
         if(productsData.length == 0){
             return;
         }
-        console.log("1233")
+
+        productsData.filter((product)=>{
+            if(product.productId.stock < product.quandity){
+              return res.json({success:false,message:"Some of your product from your Cart is out of stock!."})
+            }
+        })
+    
        
        const offerData = await OfferDB.find({});
        const addressdb = await AddressDB.findOne({userID:req.session.user_id}).populate('userID');
@@ -517,7 +525,7 @@ const saveOrder = async(req,res)=>{
        if(paymentStatus !== 'Failed'){
            await CartDB.findOneAndUpdate({userId:req.session.user_id},{$set:{products:[]}});
        }
-      console.log("save finisg")
+      
        res.json({success:true});
    
       

@@ -1163,7 +1163,7 @@ const handleCart = async (req, res) => {
 
     const { productId } = req.query;
     const { quantity } = req.body;
- 
+    
     const userCart = await CartDB.findOne({ userId: req.session.user_id });
     if(!userCart){
       res.json({success:false,message:"Cart Not Found."})
@@ -1172,9 +1172,9 @@ const handleCart = async (req, res) => {
     if(!product){
       res.json({ success: false, message: "Product Not Found." });
     }
-    let wex = await CartDB.findOne({ userId: req.session.user_id})
+  
     const check  = await CartDB.findOne({ userId: req.session.user_id,'products.productId':{$in:[productId]}})
-    
+   
     if(check){
       const newCart = await CartDB.findOneAndUpdate({userId:req.session.user_id},{$pull:{'products':{
         productId:product._id,
@@ -1202,10 +1202,10 @@ const handleCart = async (req, res) => {
 
 const removeOutofStock = async (req, res)=>{
   try {
-    const newCart = await CartDB.findOneAndUpdate({userId:req.session.user_id}).populate("products.productId");
-    console.log(newCart.products,"111111111111")
-    newCart.products = newCart.products.filter((value)=>value.productId.stock>0)
-    console.log(newCart.products)
+    const newCart = await CartDB.findOne({userId:req.session.user_id}).populate("products.productId");
+   
+     newCart.products = newCart.products.filter((value)=>value.productId.stock >= value.quandity  )
+   
     await newCart.save();
     if(newCart.products.length>0){
       res.send({success:true})
@@ -1287,8 +1287,11 @@ const updateCart = async (req, res) => {
       return p.productId.equals(productId);
     });
        
+    if(productUpdate.productId.stock < 1 ){
+      return res.json({success:false,message:`Product ${productUpdate.productId.name} is Out of stock!.`})
+    }
     if(productUpdate.productId.stock < quandity ){
-      return res.json({success:false,message:"Product Quandity Exeeded Product Stock!.",stock:productUpdate.productId.stock})
+      return res.json({success:false,message:"Product Quandity Exeeded Product Stock!."})
     }
 
     const q = parseInt(quandity);
@@ -1369,6 +1372,24 @@ const deleteCart = async (req, res) => {
       }, 0);
       res.status(200).json({ subTotal: newprice,totalProducts:cart.products.length });
    
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+const proceedCheckout = async (req, res) => {
+  try {
+     const cartData = await CartDB.findOne({
+      userId: req.session.user_id,
+    }).populate("products.productId");
+
+ 
+    cartData.products.map((product)=>{
+      if(product.productId.stock < product.quandity){
+        return res.json({success:false,message:`The Product ${product.productId.name} is Not Have Enogh Stock!.`});
+      }
+    })
+    res.json({success:true})
+
   } catch (error) {
     console.log(error.message);
   }
@@ -1828,7 +1849,7 @@ module.exports = {
   loadCartt,
   updateCart,
   deleteCart,
-
+  proceedCheckout,
   //##### order #####
 
   changeAddress,

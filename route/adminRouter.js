@@ -49,9 +49,9 @@ adminRouter.set('views','./views/admin')
 //################### admin ##########################
 
 adminRouter.get('/',authadmin.logoutAdmin,adminController.adminLogin)
-adminRouter.post('/',adminController.veryfyLogin)
-adminRouter.get('/dashboard',adminController.dashboard);
-adminRouter.get('/changeDateDashboard',adminController.changeDateDashboard);
+adminRouter.post('/',authadmin.logoutAdmin,adminController.veryfyLogin)
+adminRouter.get('/dashboard',authadmin.loginAdmin,adminController.dashboard);
+adminRouter.get('/changeDateDashboard',authadmin.loginAdmin,adminController.changeDateDashboard);
 adminRouter.get('/filterDashboard',adminController.filterDashboard);
 adminRouter.get('/changeChart',authadmin.loginAdmin,adminController.chart);
 adminRouter.get('/logout',authadmin.loginAdmin,adminController.adminLogout);

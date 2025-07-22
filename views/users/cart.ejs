@@ -258,7 +258,7 @@
                                                 <td class="quantity-col">
                                                 <div class="cart-product-quantity">
                                                    
-                                                    <input type="number" class="form-control" id="quandity<%=productData.products[i].productId._id%>" value="<%=productData.products[i].quandity%>" min="1" max="4" onchange="updateCart(this,'<%=productData.products[i].productId._id%>')" step="1" data-decimals="0" required oninput="updateCart(this,'<%=productData.products[i].productId._id%>')">
+                                                    <input type="number" class="form-control" id="quandity<%=productData.products[i].productId._id%>" value="<%=productData.products[i].quandity%>" min="1" max="4" onchange="updateCart(this,'<%=productData.products[i].productId._id%>')" step="1" data-decimals="0"  required   onfocus="this.setAttribute('data-prev', this.value)"">
                                                 </div><!-- End .cart-product-quantity -->                                 
                                             </td>
                                             <%
@@ -320,7 +320,7 @@
                                     </table><!-- End .table table-summary -->
               
                                   
-                                        <a href="/checkout" class="btn btn-outline-primary-2 btn-order btn-block" >PROCEED TO CHECKOUT</a>
+                                        <a onclick="handleProceedCheckOut()"  class="btn btn-outline-primary-2 btn-order btn-block cursor-pointer" >PROCEED TO CHECKOUT</a>
                                         
                                         
                                 </div><!-- End .summary -->
@@ -431,20 +431,21 @@
     <script>
         
         function updateCart(tag,productId){
-       
+            const previousValue = tag.getAttribute('data-prev');
            if(tag.value==tag.max){
-            Swal.fire("Maximum quandity is exceeds!");
-            return;
+             Swal.fire("Maximum quandity is exceeds!");
            }
-        
+    
             fetch(`/updateCart`,{method:"PATCH",body:JSON.stringify({productId,quandity:tag.value}),headers:{"Content-Type":"application/json"}})
             .then(res=>res.json())
             .then(data=>{       
+               
                 if(data.success){
                   document.getElementById(`productTotal${productId}`).innerText = `Rs.${data.productTotal}.00`;
                   document.getElementById("SubTotal").innerText = `Rs.${data.total}.00`;    
                 }else{
-                    tag.value = data.stock;
+
+                   tag.value = previousValue;
                    Swal.fire({
                     title: data.message,
                     icon: "warning"
@@ -500,6 +501,23 @@ swalWithBootstrapButtons.fire({
         
 
         
+       }
+    </script>
+
+    <script>
+       function handleProceedCheckOut() {
+          fetch("/proceedCheckout").then((res)=>res.json())
+          .then((res)=>{
+          
+            if(res.success){
+              return  window.location.href="/checkout" 
+            }else{
+                Swal.fire({
+                    title: res.message,
+                    icon: "warning"
+                });
+            }
+          })
        }
     </script>
     <script src="assets/js/jquery.min.js"></script>
