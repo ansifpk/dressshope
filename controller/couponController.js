@@ -71,7 +71,7 @@ const addCuppen = async (req, res) => {
         const expiryDate = new Date(req.body.date);
         const today = new Date();
 
-        if(offerPrice < 5 && offerPrice > 20){
+        if(offerPrice < 5 || offerPrice > 20){
            return res.json({success:false,message: " Offer Rate Must Be In Between 5 And 20 "});
         }
 
@@ -127,7 +127,7 @@ const loadeditCuppen = async (req, res) => {
                 return res.json({success:false,message: " Coupon Not Found!. "});
              }
                couponImage = coupon.image;
-              if(offerPrice < 5 && offerPrice > 20){
+              if(offerPrice < 5 || offerPrice > 20){
                return res.json({success:false,message: " Offer Rate Must Be In Between 5 And 20 "});
              }
 
