@@ -4,7 +4,7 @@ const OfferDB = require("../model/offerModel");
 
 const getStoreDataForUser = async(req,res)=>{
      try {
-         const cartData = await CartDB.findOne({userId:req.session.user_id}).populate({
+         const cartData = await CartDB.findOne({userId: req.session.user_id}).populate({
              path: 'products.productId',
              populate: { path: 'categoryID' }})
             

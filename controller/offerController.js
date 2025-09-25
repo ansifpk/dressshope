@@ -15,7 +15,7 @@ const offer = async (req, res) => {
 
 const loadaddOffer = async (req, res) => {
     try {
-        const items = await ProductDb.find({is_listed:true})
+        const items = await ProductDb.find({is_listed:true}).sort({createdAt:-1})
         res.render('addOffer',{items})
     } catch (error) {
         console.log(error.message);

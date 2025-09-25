@@ -1,7 +1,6 @@
 const loginUser = async(req,res,next)=>{
     try {
         if(!req.session.user_id){
-            console.log(req.headers["content-type"])
             if(req.headers["content-type"]){
                res.status(401).json({success:false,message:"Please Login!."})
             }else{

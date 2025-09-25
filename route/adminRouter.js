@@ -15,8 +15,6 @@ adminRouter.use(session({secret:config.sessionSecret,resave:false,saveUninitiali
 adminRouter.use(bodyParser.json());
 adminRouter.use(bodyParser.urlencoded({extended:true}))
 const multer = require('multer');
-const randomstring = require('randomstring');
-
 const path = require('path');
 
 
@@ -128,8 +126,8 @@ adminRouter.delete('/referalOffer',authadmin.loginAdmin,offerController.deleteRe
 
 // ###########  Report #################################
 
-adminRouter.get('/createReport',authadmin.loginAdmin,reportController.createReport)
+adminRouter.get('/createReport',reportController.createReport)
 adminRouter.get('/createReportPdf',authadmin.loginAdmin,reportController.createReportPdf)
 adminRouter.get('/orderReport',authadmin.loginAdmin,reportController.orderReport)
-adminRouter.get('/dateChange',authadmin.loginAdmin,reportController.dateChange)
+adminRouter.get('/dateChange',reportController.dateChange)
 module.exports=adminRouter;

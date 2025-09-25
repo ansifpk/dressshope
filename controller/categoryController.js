@@ -5,7 +5,7 @@ const category = async (req, res) => {
     try {
         const limit = 2;
         const count = await CategoryDb.find({}).countDocuments();
-        const categoryData = await CategoryDb.find({}).limit(limit);
+        const categoryData = await CategoryDb.find({}).limit(limit).sort({createdAt:-1});
         res.render('category', { categoryData,totalPage:Math.ceil(count/limit) })
     } catch (error) {
         console.log(error.message)
@@ -15,7 +15,6 @@ const category = async (req, res) => {
 
 const loadaddcategory = async (req, res) => {
     try {
-
         res.render('addCategory')
     } catch (error) {
         console.log(error.message)

@@ -85,7 +85,7 @@
                     </li>
                     <li class="menu-item has-submenu">
                         <a class="menu-link" href="/admin/coupons">
-                            <i class="icon material-icons md-shopping_bag"></i>
+                            <i class="icon material-icons md-local_activity"></i>
                             <span class="text">Coupons</span>
                         </a>
                         <div class="submenu">
@@ -95,7 +95,7 @@
                     </li>
                     <li class="menu-item has-submenu">
                         <a class="menu-link" href="">
-                            <i class="icon material-icons md-shopping_bag"></i>
+                            <i class="icon material-icons md-local_offer"></i>
                             <span class="text">Offers</span>
                         </a>
                         <div class="submenu">
@@ -104,7 +104,7 @@
                            
                         </div>
                     </li>
-                   <li class="menu-item has-submenu">
+                   <li class="menu-item has-submenu ">
                         <a class="menu-link" href="/admin/orderReport">
                             <i class="icon material-icons md-post_add"></i>
                             <span class="text">Report</span>
@@ -116,8 +116,8 @@
                     </li>
                     <li class="menu-item">
                         <a class="menu-link" href="/admin/logout">
-                            <i class="icon material-icons md-comment"></i>
-                            <span class="text">Logout</span>
+                            <i class="icon material-icons md-login"></i>
+                           <span class="text">Logout</span>
                         </a>
                     </li>
                    
@@ -127,49 +127,7 @@
             </nav>
         </aside>
         <main class="main-wrap">
-            <header class="main-header navbar">
-                <div class="col-search">
-                   
-                </div>
-                <div class="col-nav">
-                    <button class="btn btn-icon btn-mobile me-auto" data-trigger="#offcanvas_aside"><i class="material-icons md-apps"></i></button>
-                    <ul class="nav">
-                        <li class="nav-item">
-                            <a class="nav-link btn-icon" href="#">
-                                <i class="material-icons md-notifications animation-shake"></i>
-                                <span class="badge rounded-pill">3</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link btn-icon darkmode" href="#"> <i class="material-icons md-nights_stay"></i> </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="requestfullscreen nav-link btn-icon"><i class="material-icons md-cast"></i></a>
-                        </li>
-                        <li class="dropdown nav-item">
-                            <a class="dropdown-toggle" data-bs-toggle="dropdown" href="#" id="dropdownLanguage" aria-expanded="false"><i class="material-icons md-public"></i></a>
-                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownLanguage">
-                                <a class="dropdown-item text-brand" href="#"><img src="assets/imgs/theme/flag-us.png" alt="English" />English</a>
-                                <a class="dropdown-item" href="#"><img src="assets/imgs/theme/flag-fr.png" alt="Français" />Français</a>
-                                <a class="dropdown-item" href="#"><img src="assets/imgs/theme/flag-jp.png" alt="Français" />日本語</a>
-                                <a class="dropdown-item" href="#"><img src="assets/imgs/theme/flag-cn.png" alt="Français" />中国人</a>
-                            </div>
-                        </li>
-                        <li class="dropdown nav-item">
-                            <a class="dropdown-toggle" data-bs-toggle="dropdown" href="#" id="dropdownAccount" aria-expanded="false"> <img class="img-xs rounded-circle" src="assets/imgs/people/avatar-2.png" alt="User" /></a>
-                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownAccount">
-                                <a class="dropdown-item" href="#"><i class="material-icons md-perm_identity"></i>Edit Profile</a>
-                                <a class="dropdown-item" href="#"><i class="material-icons md-settings"></i>Account Settings</a>
-                                <a class="dropdown-item" href="#"><i class="material-icons md-account_balance_wallet"></i>Wallet</a>
-                                <a class="dropdown-item" href="#"><i class="material-icons md-receipt"></i>Billing</a>
-                                <a class="dropdown-item" href="#"><i class="material-icons md-help_outline"></i>Help center</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item text-danger" href="#"><i class="material-icons md-exit_to_app"></i>Logout</a>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </header>
+        
             <section class="content-main">
                 <div class="content-header">
                     <div>
@@ -218,7 +176,16 @@
                                     <%
                                     if(orderData.length>0){
                                         orderData.forEach((order)=>{
-                                            const price = order.products.reduce((acc,pro)=>acc+pro.productTotal,0)
+                                            let price = order.products.reduce((acc,pro)=>{
+                                                if(pro.productStatus == "Delivered" || pro.productStatus == "returnPending" || pro.productStatus == "pending" ){
+                                                  return acc+pro.productTotal
+                                                }else{
+                                                  return acc;
+                                                }
+                                            },0);
+                                            if(price !== 0){
+                                                price = price - order.couponOfferPrice;
+                                            }
                                             %>
                                              <tr>
                                               <td><%=order._id%></td> 
@@ -234,7 +201,7 @@
                                     %>
                                     <tr>
                                         <td>
-                                            no order
+                                            no orders
                                         </td>
                                     </tr>
                                     <%
@@ -281,11 +248,9 @@
                  const search = document.getElementById("search").value
                  let page = document.getElementById("page")
                  let totalPage = document.getElementById("totalPage")
-                 console.log(totalPage,"tit");
                  
                  fetch(`/admin/filterAndsortOrders?search=${search}&&sort=${sort}`).then((res)=>res.json())
                  .then((res)=>{
-                     console.log(res);
                     
                      totalPage.value = res.totalPage;
                      if(res.products.length == 0){
@@ -301,7 +266,16 @@
                          document.getElementById("page").innerText=1;
                          document.getElementById("table").innerHTML=
                          res.products.map((order) => {
-                             const price = order.products.reduce((acc,pro)=>acc+pro.productTotal,0)
+                            let price = order.products.reduce((acc,pro)=>{
+                                                if(pro.productStatus == "Delivered" || pro.productStatus == "returnPending" || pro.productStatus == "pending" ){
+                                                  return acc+pro.productTotal
+                                                }else{
+                                                  return acc;
+                                                }
+                                            },0);
+                                            if(price !== 0){
+                                                price = price - order.couponOfferPrice;
+                                            }
                            return `
                               <tr> 
                                     <td>${order._id}</td> 
@@ -341,7 +315,16 @@
                
                     table.innerHTML=
                         res.orders.map((order) => {
-                            const price = order.products.reduce((acc,pro)=>acc+pro.productTotal,0)
+                            let price = order.products.reduce((acc,pro)=>{
+                                                if(pro.productStatus == "Delivered" || pro.productStatus == "returnPending" || pro.productStatus == "pending" ){
+                                                  return acc+pro.productTotal
+                                                }else{
+                                                  return acc;
+                                                }
+                                            },0);
+                                            if(price !== 0){
+                                                price = price - order.couponOfferPrice;
+                                            }
                             return `
                               <tr> 
                                     <td>${order._id}</td> 
@@ -364,7 +347,6 @@
                 let totalPage = document.getElementById("totalPage");
                 fetch(`/admin/searchOrders?search=${tag.value.trim()}`).then((res)=>res.json())
                 .then((res)=>{
-                    console.log(res,"ress");
                     document.getElementById("sort").value = ""
                 
                     totalPage.value = res.totalPage 
@@ -380,7 +362,16 @@
                          document.getElementById("page").innerText=1;
                          document.getElementById("table").innerHTML=
                          res.orders.map((order) => {
-                            const price = order.products.reduce((acc,pro)=>acc+pro.productTotal,0)
+                            let price = order.products.reduce((acc,pro)=>{
+                                                if(pro.productStatus == "Delivered" || pro.productStatus == "returnPending" || pro.productStatus == "pending" ){
+                                                  return acc+pro.productTotal
+                                                }else{
+                                                  return acc;
+                                                }
+                                            },0);
+                                            if(price !== 0){
+                                                price = price - order.couponOfferPrice;
+                                            }
                             return `
                               <tr> 
                                     <td>${order._id}</td> 

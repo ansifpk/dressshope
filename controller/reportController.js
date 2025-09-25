@@ -10,46 +10,86 @@ const getPastDays = require('../helperfunctions/getPastDays');
 const createReport = async (req, res) => {
     try {
         const {sDate,eDate} = req.query;
+
+         console.log(new Date(sDate),new Date(eDate));
         const workbook = new exceljs.Workbook();
         const worksheet = workbook.addWorksheet("Orders");
         
         worksheet.columns = [
-            { header: "S no.", key: 's_no' , width: 10},
+            { header: "Si.No", key: 'si_no' , width: 10,alignment:"center"},
             { header: "Order Id", key: 'orderId' , width: 30},
-            { header: "User Name", key: 'usersname' , width: 20},
-            { header: "Order Address", key: 'orderAddress' , width: 20},
-            { header: "Total Products", key: 'totalProducts' , width: 20},
-            { header: "Product Total", key: 'productTotal' , width: 20},
-            { header: "Discount Amount", key: 'discountAmount' , width: 20},
-            { header: "Payment Status", key: 'paymentStatus', width: 20 },
-            { header: "Product Status", key: 'orderStatus', width: 20 },
+            { header: "Billing Name", key: 'billingName' , width: 20},
+            { header: "Billing Address", key: 'billingAddress' , width: 20},
+            { header: "Product Name", key: 'productName' , width: 30},
+            { header: "Product Status", key: 'productStatus' , width: 20},
             { header: "Payment Method", key: 'paymentMethod', width: 20 },
             { header: "Order Date", key: 'orderDate' , width: 20},
+            { header: "Product Quandity", key: 'productQuandity' , width: 20},
+            { header: "Product Price", key: 'productPrice' , width: 20},
+            { header: "Discount Amount", key: 'discountAmount' , width: 20},
+            { header: "Product Total", key: 'productTotal' , width: 20},
         ];
+        worksheet.columns.forEach(col => {
+        col.alignment = { horizontal: 'center', vertical: 'middle' };
+        });
 
-        const orderData = await OrderDB.find({$and:[{createdAt:{$lte:eDate}},{createdAt:{$gte:sDate}}]}).populate('userId').populate('products.productId');
-
+        // const orderData = await OrderDB.find({$and:[{createdAt:{$lte:eDate}},{createdAt:{$gte:sDate}}]}).populate('userId').populate('products.productId');
+        const orderData = await OrderDB.aggregate([
+            {$unwind:"$products"},
+            {$match : {$and:[{createdAt:{$gte:new Date(sDate)}},{createdAt:{$lte:new Date(eDate)}},{"products.productStatus":{$in:["pending","Delivered","returnPending"]}} ]} },
+            {$lookup:{
+                from:"users",
+                localField:"userId",
+                foreignField:"_id",
+                as:"userId"
+            }},
+            {$unwind:"$userId"},
+            {$lookup:{
+                from:"products",
+                localField:"products.productId",
+                foreignField:"_id",
+                as:"products.productId"
+            }},
+            {$unwind:"$products.productId"},
+            {
+                $sort:{createdAt:-1}
+            }
+        ]); 
+        let total = 0;
+        let discount = 0;
         orderData.forEach((order,i) => {
-                const total = order.products.reduce((acc,cur)=>acc+=cur.productTotal,0)
-                order.s_no = i+1;
+                total+=order.products.productTotal 
+                discount+=order.couponOfferPrice;
+                order.si_no = i+1;
                 order.orderId = order._id;
-                order.usersname = `${order.products[0].deliveryAddress.fname} ${order.products[0].deliveryAddress.lname}`;
-                order.orderAddress = order.products[0].deliveryAddress.address;
-                order.totalProducts = order.products.length;
-                order.productTotal = total;
+                order.billingName = `${order.products.deliveryAddress.fname} ${order.products.deliveryAddress.lname}`;
+                order.billingAddress = order.products.deliveryAddress.address;
+                order.productName = order.products.productId.name;
+                order.productStatus = order.products.productStatus;
+                order.paymentMethod = order.products.paymentMethod;
+                order.orderDate = order.createdAt;
+                order.productQuandity = order.products.quandity
+                order.productPrice = order.products.productId.Price;
                 order.discountAmount = order.couponOfferPrice;
-                order.paymentStatus = order.products[0].paymentStatus;
-                order.orderStatus = order.products[0].productStatus;
-                order.paymentMethod = order.paymentMethod ;
-                order.orderDate = order.createdAt ;
+                order.productTotal = order.products.productTotal - order.couponOfferPrice;
                 worksheet.addRow(order);
-        
+        });
 
+        worksheet.addRow({
+            discountAmount:"Total",
+            productTotal:total,
+        });
+        worksheet.addRow({
+            discountAmount:"Discount",
+            productTotal:discount,
+        });
+        worksheet.addRow({
+            discountAmount:"Grand Total",
+            productTotal:total-discount,
         });
        
         worksheet.getRow(1).eachCell((cell) => {
-            cell.font = { bold: true };
-            
+            cell.font = { bold: true }; 
         });
 
         res.setHeader(
@@ -71,8 +111,28 @@ const createReportPdf = async (req, res) => {
     try {
 
         const {sDate,eDate} = req.query;
-        const orderData = await OrderDB.find({$and:[{createdAt:{$lte:eDate}},{createdAt:{$gte:sDate}}]}).populate('userId').populate('products.productId');
-
+        // const orderData = await OrderDB.find({$and:[{createdAt:{$lte:eDate}},{createdAt:{$gte:sDate}}]}).populate('userId').populate('products.productId');
+        const orderData = await OrderDB.aggregate([
+            {$unwind:"$products"},
+            {$match : {$and:[{createdAt:{$gte:new Date(sDate)}},{createdAt:{$lte:new Date(eDate)}},{"products.productStatus":{$in:["pending","Delivered","returnPending"]}} ]} },
+            {$lookup:{
+                from:"users",
+                localField:"userId",
+                foreignField:"_id",
+                as:"userId"
+            }},
+            {$unwind:"$userId"},
+            {$lookup:{
+                from:"products",
+                localField:"products.productId",
+                foreignField:"_id",
+                as:"products.productId"
+            }},
+            {$unwind:"$products.productId"},
+            {
+                $sort:{createdAt:-1}
+            }
+        ]); 
         const data = {
             orderData: orderData,
             start:sDate,
@@ -112,30 +172,63 @@ const createReportPdf = async (req, res) => {
 const orderReport = async(req,res)=>{
    try {
 
-    const today = new Date();
-    const orderData = await OrderDB.find({createdAt:{$eq:new Date(today)}}).populate("userId").populate({path:"products.productId",populate:{path:"categoryID"}})
-
-    res.render("orderReport",{orderData,today})
-    return;
-    
+    const eDate = new Date();
+    const sDate = new Date(eDate.getFullYear(),0,1);
+    const orderData = await OrderDB.aggregate([
+        {$unwind:"$products"},
+        {$match : {$and:[{createdAt:{$gte:new Date(sDate)}},{createdAt:{$lte:new Date(eDate)}},{"products.productStatus":{$in:["pending","Delivered","returnPending"]}} ]} },
+        {$lookup:{
+            from:"users",
+            localField:"userId",
+            foreignField:"_id",
+            as:"userId"
+        }},
+        {$unwind:"$userId"},
+        {$lookup:{
+            from:"products",
+            localField:"products.productId",
+            foreignField:"_id",
+            as:"products.productId"
+        }},
+        {$unwind:"$products.productId"},
+        {
+            $sort:{createdAt:-1}
+        }
+    ])
+    res.render("orderReport",{orderData,eDate,sDate})
 } catch (error) {
     console.log(error.message);
    }
 }
 const dateChange = async(req,res)=>{
    try {
-
-  
     const {eDate,sDate}  = req.query;
-    
     if(new Date(eDate) < new Date(sDate) ){
         return res.json({success:false,message:"Invalid Date Period!."})
     }
+    const orderData = await OrderDB.aggregate([
+        {$unwind:"$products"},
+        {$match : {$and:[{createdAt:{$lte:new Date(eDate)}},{createdAt:{$gte:new Date(sDate)}},{"products.productStatus":{$in:["pending","Delivered","returnPending"]}} ]} },
+        {$lookup:{
+            from:"users",
+            localField:"userId",
+            foreignField:"_id",
+            as:"userId"
+        }},
+        {$unwind:"$userId"},
+        {$lookup:{
+            from:"products",
+            localField:"products.productId",
+            foreignField:"_id",
+            as:"products.productId"
+        }},
+        {$unwind:"$products.productId"},
+        {
+            $sort:{createdAt:-1}
+        }
+    ])
+    return res.json({success:true,orderData})
     
-    const orderData = await OrderDB.find({$and:[{createdAt:{$lte:(eDate)}},{createdAt:{$gte:sDate}}]}).populate("userId").populate({path:"products.productId",populate:{path:"categoryID"}})
-    res.json({success:true,orderData})
-    return;
-
 } catch (error) {
     console.log(error.message);
    }

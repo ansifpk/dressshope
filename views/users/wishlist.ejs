@@ -33,33 +33,6 @@
 <body>
     <div class="page-wrapper">
         <header class="header">
-            <div class="header-top">
-                <div class="container">
-                    <div class="header-left">
-                        <div class="header-dropdown">
-                            <a href="#">Usd</a>
-                            <div class="header-menu">
-                                <ul>
-                                    <li><a href="#">Eur</a></li>
-                                    <li><a href="#">Usd</a></li>
-                                </ul>
-                            </div><!-- End .header-menu -->
-                        </div><!-- End .header-dropdown -->
-
-                        <div class="header-dropdown">
-                            <a href="#">Eng</a>
-                            <div class="header-menu">
-                                <ul>
-                                    <li><a href="#">English</a></li>
-                                    <li><a href="#">French</a></li>
-                                    <li><a href="#">Spanish</a></li>
-                                </ul>
-                            </div><!-- End .header-menu -->
-                        </div><!-- End .header-dropdown -->
-                    </div><!-- End .header-left -->
-                </div><!-- End .container -->
-            </div><!-- End .header-top -->
-
             <div class="header-middle sticky-header">
                 <div class="container">
                     <div class="header-left">
@@ -108,39 +81,8 @@
                     </div><!-- End .header-left -->
 
                     <div class="header-right">
-                        <div class="header-search">
-                            <a href="#" class="search-toggle" role="button" title="Search"><i class="icon-search"></i></a>
-                            <form action="#" method="get">
-                                <div class="header-search-wrapper">
-                                    <label for="q" class="sr-only">Search</label>
-                                    <input type="search" class="form-control" name="q" id="q" placeholder="Search in..." required>
-                                </div><!-- End .header-search-wrapper -->
-                            </form>
-                        </div><!-- End .header-search -->
-                        <div class="dropdown compare-dropdown">
-                            <a href="#" class="dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-display="static" title="Compare Products" aria-label="Compare Products">
-                                <i class="icon-random"></i>
-                            </a>
-
-                            <div class="dropdown-menu dropdown-menu-right">
-                                <ul class="compare-products">
-                                    <li class="compare-product">
-                                        <a href="#" class="btn-remove" title="Remove Product"><i class="icon-close"></i></a>
-                                        <h4 class="compare-product-title"><a href="product.html">Blue Night Dress</a></h4>
-                                    </li>
-                                    <li class="compare-product">
-                                        <a href="#" class="btn-remove" title="Remove Product"><i class="icon-close"></i></a>
-                                        <h4 class="compare-product-title"><a href="product.html">White Long Skirt</a></h4>
-                                    </li>
-                                </ul>
-
-                                <div class="compare-actions">
-                                    <a href="#" class="action-link">Clear All</a>
-                                    <a href="#" class="btn btn-outline-primary-2"><span>Compare</span><i class="icon-long-arrow-right"></i></a>
-                                </div>
-                            </div><!-- End .dropdown-menu -->
-                        </div><!-- End .compare-dropdown -->
-
+                        
+                        
                         <div class="dropdown cart-dropdown">
                             <a href="#" class="dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-display="static">
                                 <i class="icon-shopping-cart"></i>
@@ -186,6 +128,7 @@
                             <%
                              if(wishlistData.products.length){
                                for(let i=0;i<wishlistData.products.length;i++){
+                                const offer =offerData?.find( offer => offer?.iteam == wishlistData.products[i].productId.name || offer?.iteam == wishlistData.products[i].productId.categoryID.name );
                                 %>
                                 <tr id="remove<%=i%>">
 								<td class="product-col">
@@ -197,32 +140,14 @@
 										</figure>
 									</div>
 								</td>
-                                <td ><h6><%=wishlistData.products[i].productId.name%></h6></td>
-								<%
-                                            if(offerData.length>0){
-                                       
-                                               const productOffer = offerData.find(offer => offer.iteam === wishlistData.products[i].productId.name|| offer.iteam===wishlistData.products[i].productId.categoryID.name);
-                                              
-                                               if(productOffer){
-                                                %>
-                                              
-                                                <td class="price-col">Rs.<%=wishlistData.products[i].productId.Price-Math.round(wishlistData.products[i].productId.Price*productOffer.offerRate/100)%>.00</td>
-                                                <%
-                                               }else{
-                                               
-                                                %>
-                                                 <td class="price-col">Rs.<%=wishlistData.products[i].productId.Price%>.00</td>
-                                                <%
-                                               }
-                                              
-                                            }else{
-                                                 %>
-                                                
-                                                 <td class="price-col">Rs.<%=wishlistData.products[i].productId.Price%>.00</td>
-                                               
-                                                <%
-                                            }
-                                            %>    
+                                <td><h6><%=wishlistData.products[i].productId.name%></h6></td>
+                                <td>
+                                    <%- offer 
+                                        ? `<span class='new-price'>Rs.${wishlistData.products[i].productId.Price - Math.round(wishlistData.products[i].productId.Price * offer.offerRate / 100)}.00</span>
+                                        <span class='old-price'>Rs.${wishlistData.products[i].productId.Price}.00</span>`
+                                        : `Rs.${wishlistData.products[i].productId.Price}.00` 
+                                    %>
+                                </td>
                                 <td class="stock-col"><span class="in-stock <%=wishlistData.products[i].productId.stock>0?"text-success":"text-danger"%>"><%=wishlistData.products[i].productId.stock>0?"In Stock":"Out of Stock"%></span></td>
                                 <td class="action-col">
                                     <%
@@ -369,14 +294,14 @@
       text: "Iteam added to your Cart.",
       icon: "success"
     });
-    
-       
+
             tag.innerText="Iteam in Cart";
             tag.disabled=true
              fetch(`/cart?productId=${productId}`,{method:"PATCH"})
             .then((res)=>res.json())
             .then((res)=>{
                 if(res.success&&res.added){
+                    
                     document.getElementById("cart-count").innerText=`${res.count}`
                     document.getElementById("cart-price").innerText=`RS:${res.totel}`
                     Swal("Item Added to your cart!.")

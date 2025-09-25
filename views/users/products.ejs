@@ -95,8 +95,6 @@
                     <div class="header-left">
                         <nav class="main-nav">
                             <ul class="menu sf-arrows">
-                               
-                              
                                 <li >
                                     <a href="/home" class="sf-with-ul">Home</a>
 
@@ -124,13 +122,13 @@
                                 </li>
                                
                                 
-                            </ul><!-- End .menu -->
+                            </ul>
                         </nav><!-- End .main-nav -->
                        
                     </div><!-- End .header-left -->
 
                     <div class="header-right">
-                        <div class="details-filter-row details-row-size">
+                        <div class="d-flex mt-1 details-filter-row details-row-size ">
                             <div class="select-custom">
                                 <select name="sort" id="size" onchange="filteringAndSort()" class="form-control">
                                     <option value="" selected disabled>Sort Product</option>
@@ -143,8 +141,6 @@
                                     <option value="Sort by Name : Z-A" >Sort by Name : Z-A</option>
                                 </select>
                             </div>
-                        </div> 
-                        <div class="details-filter-row details-row-size">
                             <div class="select-custom">
                                 <select name="filter" id="filter" onchange="filteringAndSort()" class="form-control">
                                     <option disabled selected >Filter</option>
@@ -164,7 +160,7 @@
         </header><!-- End .header -->
 
         <main id="main" class="main">
-               <div id="product-grid" class="row" >
+               <div id="product-grid" class="row mx-auto" >
                 <%
                 if(productData?.length > 0){                  
                         for(let i=0;i<productData.length;i++){
@@ -186,12 +182,11 @@
                                     const productCategory = productData[i].categoryID.name;
                                     const productOffer = offerData?.find(offer => offer.iteam === productName);
                                     const categoryOffer = offerData?.find(offer => offer.iteam === productCategory);  
-                                  
                                     if(productOffer){%>
                                         <div class="product-countdown-container">
                                                <span class="product-contdown-title">offer ends in:</span>
                                                <div class="product-contdown-title text-danger" data-compact="true"><%=new Date(productOffer?.validity).toLocaleDateString()%></div>
-                                       </div><
+                                       </div>
                                     <%}else if(categoryOffer){
                                         %>
                                         <div class="product-countdown-container">
@@ -200,8 +195,7 @@
                                        </div>
                                         <%
                                     }
-                                    else{%>
-                                        
+                                    else{%>         
                                     <%}
                                 }
                                 %>
@@ -283,14 +277,7 @@
                             </div><!-- End .product-price -->
                         </div><!-- End .product-body -->
 
-                        <div class="product-footer">
-                            <div class="ratings-container">
-                                <div class="ratings">
-                                    <div class="ratings-val" style="width: 40%;"></div><!-- End .ratings-val -->
-                                </div><!-- End .ratings -->
-                                <span class="ratings-text">( 4 Reviews )</span>
-                            </div><!-- End .rating-container -->
-                        </div><!-- End .product-footer -->
+                       
                     </div><!-- End .product -->
                 </div>
 
@@ -467,11 +454,13 @@
               }
            })
            .then((res)=>{
-            console.log(res,"carttt");
-            
+    
             if(res.success){
              if(res.added){
-                Swal.fire("Product added to your Cart!");
+                Swal.fire({
+                    title:"Product added to your Cart!",
+                    icon:"success"
+                });
                 document.getElementById(`cart${productId}`).innerText="remove from cart";
                 document.getElementById('cart-count').innerText=`${res.count}`;
                 document.getElementById('cart-txt').innerText=`Rs.${res.totel}.00`;
@@ -537,16 +526,16 @@
          const filter = document.getElementById("filter").value
          const currentPage = document.getElementById("currentPage")
          const totalPage = document.getElementById("totalPage")
+         const search = document.getElementById("search").value.trim()
          fetch(`/sort?sort=${sort}&&filter=${filter}&&search=${search}`,{method:"GET"}).then((res)=>res.json())
          .then((res)=>{
-          
+           
           
             totalPage.innerText = res.totalPage
             currentPage.innerText = 1
             document.getElementById("product-grid").innerHTML=  res.productData
             .filter((product)=>product.categoryID.is_listed == true)
             .map((product,i)=>{
-                
                 const productName = product.name
                 const productCategory = product.categoryID.name
                 const productOffer = res.offerData.find(offer => offer.iteam === productName);
@@ -642,8 +631,10 @@
                     </div>
                 </div>
                `
-            }).join("")
-         })
+            })
+            .join("")
+         
+        })
        }
     </script>
     <script>
@@ -779,7 +770,7 @@
             const totalPage = document.getElementById("totalPage")
             const currentPage = document.getElementById("currentPage")
           
-            fetch(`/searchProduct?search=${tag.value}`).then((res)=>res.json())
+            fetch(`/searchProduct?search=${tag.value.trim()}`).then((res)=>res.json())
             .then((res)=>{
                
                  if(res.productData.length == 0){
@@ -910,7 +901,6 @@
 </body>
 
 
-<!-- molla/index-16.html  22 Nov 2019 10:00:25 GMT -->
 </html>
 
 

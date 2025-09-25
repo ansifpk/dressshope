@@ -9,11 +9,15 @@ const CoupenDB = require("../model/cuppenModel");
 const OfferDB = require("../model/offerModel");
 const randomstring = require("randomstring");
 const bcrypt = require("bcrypt");
+const fs = require("fs");
+const path = require("path");
+const ejs = require("ejs");
+const pdf = require("html-pdf");
 const nodemailer = require("nodemailer");
 const walletModel = require("../model/walletModel");
 const ReferalDB = require("../model/referalOfferModel");
-const easyinvoice = require('easyinvoice');
 const getStoreDataForUser  = require('../helperfunctions/helper') ;
+
 
 const securePassword = async (password) => {
   try {
@@ -133,8 +137,9 @@ const veryfyChangePassword = async (req, res) => {
   try {
       
       const user = await userModel.findById({_id:req.session.user_id});
-      console.log(req.body,user)
       const {newPassword,conPassword,oldPassword} = req.body;
+      console.log(req.body,user.email);
+     
       let checkCurrentPassword = await bcrypt.compare(oldPassword,user.password);
       if(!checkCurrentPassword){
        return res.json({success:false,message:"Current Password is not Matching!."})
@@ -156,8 +161,8 @@ const veryfyChangePassword = async (req, res) => {
       if(newPassword !== conPassword){
        return res.json({success:false,message:"Confirm Password is Not Matching!."})
       }
-       const securepassword = await securePassword(req.body.newPassword);
-      const userData = await userModel.findByIdAndUpdate(
+      const securepassword = await securePassword(req.body.newPassword);
+      await userModel.findByIdAndUpdate(
             { _id: req.session.user_id },
             { $set: { password: securepassword, token: "" } }
       );
@@ -174,7 +179,6 @@ const veryfyForgetPassword = async (req, res) => {
   try {
     const email = req.body.email;
     const userData = await userModel.findOne({ email: email });
-    console.log(userData)
     if(!userData){
       return res.json({success:false,message:"Email Not Registerd!."})
     }
@@ -182,13 +186,13 @@ const veryfyForgetPassword = async (req, res) => {
        return res.json({success:false,message:"Access Deniedd!."})
     }
 
-     const randomString = randomstring.generate();
-        await userModel.findOneAndUpdate(
-          { email: email },
-          { $set: { token: randomString } }
-        );
-      await sendResetPasswordMail(userData.name, userData.email, randomString);
-      return res.json({success:true, message: "Reset Password Link is Sent to Your Mail"})
+    const randomString = randomstring.generate();
+    await userModel.findOneAndUpdate(
+      { email: email },
+      { $set: { token: randomString } }
+    );
+    await sendResetPasswordMail(userData.name, userData.email, randomString);
+    return res.json({success:true, message: "Reset Password Link is Sent to Your Mail"})
    
   } catch (error) {
     console.log(error.message);
@@ -236,29 +240,25 @@ const loadnewPassword = async (req, res) => {
 
 const veryfynewPassword = async (req, res) => {
   try {
-    console.log(req.query)
-    console.log(req.body)
+ 
     const {userId} = req.query;
     const {password,conPassword} = req.body;
     
     if(!userId){
       return res.json({success:false,message:"Invalid Tocken!."})
     }
+    if(password.trim().length < 8 || password.trim().length > 20 ){
+       return res.json({success:false, message: "Password must be in between 8 - 20 charectors!."})
+    }
+    if(password.trim() !== conPassword.trim()){
+       return res.json({success:false, message: "confirm password not match"})
+    }
     const user = await userModel.findOne({_id:userId});
-    let checkCurrentPassword = await bcrypt.compare(password,user.password);
+    let checkCurrentPassword = await bcrypt.compare(password.trim(),user.password);
     if(checkCurrentPassword){
       return res.json({success:false, message: "You cannot set the current password Again!."})
     }
-    if(password.length < 5){
-       return res.json({success:false, message: "Please Enter a Strong Password!."})
-    }
-    if(password.length > 20){
-       return res.json({success:false, message: "Password is Too Strong!."})
-    }
-    if(password !== conPassword){
-       return res.json({success:false, message: "confirm password not match"})
-    }
-    const securepassword = await securePassword(password);
+    const securepassword = await securePassword(password.trim());
 
     const userData = await userModel.findByIdAndUpdate(
           { _id:userId },
@@ -286,6 +286,9 @@ const insertUser = async (req, res) => {
   try {
 
     const {refferalCode} = req.query;
+    const {name,email,password,mobile} = req.body;
+    // console.log(req.body);
+    
     if(refferalCode){
        const refaralOffer = await ReferalDB.findOne();
        if(!refaralOffer){
@@ -297,44 +300,37 @@ const insertUser = async (req, res) => {
        }
     } 
       
-    req.body.name = req.body.name.trim();
-    if (/^[A-Za-z]+(?: [A-Za-z]+)*$/.test(req.body.name)) {
-      if (/^[A-Za-z0-9.%+-]+@gmail\.com$/.test(req.body.email)) {
-        const emailCheck = await userModel.findOne({ email: req.body.email });
-        if (emailCheck) {
-          res.json({ emailError: "Email Already Exists" });
-          return;
-        }
-        const mobileLength = req.body.mobile.length;
-        if (mobileLength !== 10) {
-          res.json({ mobileError: "Mobile Number Should Be 10 Degit" });
-          return;
-        }
-        const passLength = req.body.password.length;
-        if (passLength < 8 || passLength > 20) {
-          res.json({ passwordError: "Password Should be in between 8 - 20" });
-          return;
-        }
-        req.session.user = {
-          email: req.body.email,
-          name: req.body.name,
-          mobile: req.body.mobile,
-          password: await securePassword(req.body.password),
-          is_admin: 0,
-          is_blocked: false,
-          is_verified: false,
-          refferalCode
-        };
-
-        sendOTPverificationEmail(req.body.email, res);
-      } else {
-        res.json({ emailError: "Please Check Your Email Structure" });
-        return;
-      }
-    } else {
-      res.json({ nameError: "invalid name provide" });
-      return;
+    
+    if (!/^[A-Za-z]+(?: [A-Za-z]+)*$/.test(name.trim())) {
+      return res.json({ nameError: "invalid name provide" });
     }
+    if (!/^[A-Za-z0-9.%+-]+@gmail\.com$/.test(email.trim())) {
+      return res.json({ nameError: "invalid name provide" });
+    }
+    const emailCheck = await userModel.findOne({ email:email.trim() });
+    if (emailCheck) {
+      return res.json({ emailError: "Email Already Exists" });
+    }
+    const mobileLength = mobile.trim().length;
+    if (mobileLength !== 10) {
+      return res.json({ mobileError: "Mobile Number Should Be 10 Degit" });
+    }
+    const passLength = password.trim().length;
+    if (passLength < 8 || passLength > 20) {
+      return res.json({ passwordError: "Password Should be in between 8 - 20" });
+    }
+    req.session.user = {
+      email: email.trim(),
+      name: name.trim(),
+      mobile: mobile.trim(),
+      password: await securePassword(password.trim()),
+      is_admin: 0,
+      is_blocked: false,
+      is_verified: false,
+      refferalCode
+    };
+    sendOTPverificationEmail(email.trim(), res);
+    return;
   } catch (error) {
     console.log(error.message);
   }
@@ -357,7 +353,6 @@ const verifyOtp = async (req, res) => {
 
     let balance = 0;
     const history = []
-    let str= ""
    
     const userVerification = await UserOtpVerification.findOne({
       email: email,
@@ -470,22 +465,22 @@ const veryfyLogin = async (req, res) => {
     const {email,password} = req.body;
     const userData = await userModel.findOne({ email: email });
     if(!userData){
-      res.json({success:false,message: "User Not Found" });
+      return res.json({success:false,message: "User Not Found" });
     }
      const passwordMatch = await bcrypt.compare(password, userData.password);
      if(!passwordMatch){
-      res.json({success:false, message: "Email or Password is incorrect" });
+     return res.json({success:false, message: "Email or Password is incorrect" });
      }
 
         if (userData.is_blocked == false) {
           if (userData.is_verified == true) {
             req.session.user_id = userData._id;
-             res.json({success:true});
+            return res.json({success:true});
           } else {
-             res.json({success:false, message:"you Are an Bloked User" });
+            return res.json({success:false, message:"Your Access Denied By Admin" });
           }
         } else {
-           res.json({success:false, message: "you Are an Bloked User" });
+          return res.json({success:false, message: "Your Access Denied By Admin" });
         }
   
   } catch (error) {
@@ -1174,14 +1169,19 @@ const handleCart = async (req, res) => {
     }
   
     const check  = await CartDB.findOne({ userId: req.session.user_id,'products.productId':{$in:[productId]}})
-   
+    const offerData  = await OfferDB.find();
     if(check){
       const newCart = await CartDB.findOneAndUpdate({userId:req.session.user_id},{$pull:{'products':{
         productId:product._id,
         quandity:quantity,
        }}},{new:true}).populate("products.productId");
-       const totel = newCart.products.reduce((totel,val)=>{
-        return totel+(val.productId.Price*val.quandity)
+       const totel = newCart.products.reduce((acc,val)=>{
+        const offerProduct = offerData.find((offer) => offer.iteam === val.productId.name || offer.iteam === val.productId.categoryID.name);
+        if (offerProduct) {
+          return (acc +val.productId.Price * val.quandity - ((val.productId.Price * offerProduct.offerRate) / 100) * val.quandity );
+        } else {
+          return acc + (val.productId.Price*val.quandity);
+        }
        },0);
        res.json({ success: true,totel,count:newCart.products.length,removed:true });
     }else{
@@ -1190,8 +1190,13 @@ const handleCart = async (req, res) => {
         productId:product._id,
         quandity:quantity,
        }}},{new:true}).populate("products.productId");
-       const totel = newCart.products.reduce((totel,val)=>{
-        return totel+(val.productId.Price*val.quandity)
+       const totel = newCart.products.reduce((acc,val)=>{
+        const offerProduct = offerData.find((offer) => offer.iteam === val.productId.name || offer.iteam === val.productId.categoryID.name);
+        if (offerProduct) {
+          return (acc +val.productId.Price * val.quandity - ((val.productId.Price * offerProduct.offerRate) / 100) * val.quandity );
+        } else {
+          return acc + (val.productId.Price*val.quandity);
+        }
        },0);
        res.json({ success: true,totel,count:newCart.products.length,added:true });
     }
@@ -1274,9 +1279,8 @@ const loadCartt = async (req, res) => {
 const updateCart = async (req, res) => {
   try {
     const { productId,  quandity } = req.body;
-    console.log(req.body)
-    const offerData = await OfferDB.find({});
 
+    const offerData = await OfferDB.find({});
     const cart = await CartDB.findOne({ userId: req.session.user_id })
       .populate("userId")
       .populate({
@@ -1293,53 +1297,35 @@ const updateCart = async (req, res) => {
     if(productUpdate.productId.stock < quandity ){
       return res.json({success:false,message:"Product Quandity Exeeded Product Stock!."})
     }
-
+    let prevQuandity = productUpdate.quandity;
     const q = parseInt(quandity);
     productUpdate.quandity = q;
 
-    let b = await cart.save(); 
+    let newCart = await cart.save(); 
+    
+    let total = 0 ;
+    let discount = 0 ;
+    let productDiscount = 0 ;
+    let subTotal = 0 ;
+    newCart.products.map((product) => {
+       subTotal+=product.productId.Price * product.quandity;
+       const offer = offerData.find((value) => (value.iteam === product.productId.name || value.iteam === product.productId.categoryID.name));
+      if(offer){
+        discount =  - Math.floor(product.productId.Price * (offer.offerRate/100)) ;
+        discount = discount * product.quandity
+      }
+    });
 
-    let total = b.products.reduce((acc, value) => {
-      return acc + value.productId.Price * value.quandity;
-    }, 0);
-
-    const offer = offerData.find(
-      (value) =>
-        value &&
-        (value.iteam === productUpdate.productId.name ||
-          value.iteam === productUpdate.productId.categoryID.name)
-    );
-
-    if (offer) {
-      const subTotal =
-        total -
-        Math.round((productUpdate.productId.Price * offer.offerRate) / 100) * q;
-      const productTotal =
-        (productUpdate.productId.Price -
-          Math.round((productUpdate.productId.Price * offer.offerRate) / 100)) *
-        q;
-      res.status(200).json({ success:true, total: subTotal, productTotal: productTotal });
-    } else {
-      let subTotal = b.products.reduce((acc, valuee) => {
-        const offer = offerData.find(
-          (value) =>
-            value &&
-            (value.iteam === valuee.productId.name ||
-              value.iteam === valuee.productId.categoryID.name)
-        );
-        var amount = 0;
-        if (offer) {
-          amount =
-            Math.round((valuee.productId.Price * offer.offerRate) / 100) *
-            valuee.quandity;
-        }
-        return acc + valuee.productId.Price * valuee.quandity - amount;
-      }, 0);
-
-      const productTotal = productUpdate.productId.Price * q;
-
-      res.json({success:true, productTotal: productTotal, total: subTotal });
+    const offer = offerData.find((value) => (value.iteam === productUpdate.productId.name || value.iteam === productUpdate.productId.categoryID.name));
+    if(offer){
+      productDiscount =  - Math.floor(productUpdate.productId.Price * (offer.offerRate/100)) ;
+      productDiscount = productDiscount * productUpdate.quandity
     }
+    total = subTotal + discount;
+    const productTotal = (productUpdate.productId.Price * productUpdate.quandity) + productDiscount;
+    res.json({success:true, subTotal ,total,discount,productTotal });
+
+ 
   } catch (error) {
     console.log(error.message);
   }
@@ -1354,7 +1340,8 @@ const deleteCart = async (req, res) => {
     )
       .populate("userId")
       .populate("products.productId");
-    
+      let subTotal = 0;
+      let checkOffer = false;
       const newprice = cart.products.reduce((acc, product) => {
         const offer = offerData.find(
           (value) =>
@@ -1364,13 +1351,15 @@ const deleteCart = async (req, res) => {
         );
         var amount = 0;
         if (offer) {
+          checkOffer=true;
           amount =
             Math.round((product.productId.Price * offer.offerRate) / 100) *
             product.quandity;
         }
+        subTotal+=product.productId.Price * product.quandity;
         return acc + product.productId.Price * product.quandity - amount;
       }, 0);
-      res.status(200).json({ subTotal: newprice,totalProducts:cart.products.length });
+      res.status(200).json({ total: newprice,subTotal,checkOffer });
    
   } catch (error) {
     console.log(error.message);
@@ -1399,23 +1388,25 @@ const proceedCheckout = async (req, res) => {
 const checkOut = async (req, res) => {
   try {
     const { cartData, wishlistData, offerData, cartTotal } = await getStoreDataForUser(req, res);
+    const total = cartData.products.reduce((acc,cur)=>acc+=(cur.productId.Price*cur.quandity),0);
+    const date = new Date();
+    const  coupons = await CoupenDB.find({expiryDate:{$gte:date},usedUsers:{$nin:req.session.user_id}});
+   
     const address = await AddressDB.findOne({
       userID: req.session.user_id,
     }).populate("userID");
         res.render("checkout", {
           productData: cartData,
           addressData: address,
-          offer:0,
+          offer:total - cartTotal,
           offerData: offerData,
-          subTotal: cartTotal,
+          subTotal: total,
+          total:cartTotal,
           cartData: cartData,
           productsLength:cartData.products.length,
           wishlistData: wishlistData,
           cartTotal,
-          message1: req.flash("msg1"),
-          message2: req.flash("msg2"),
-          message3: req.flash("msg3"),
-          message4: req.flash("msg4"),
+          coupons
         });
   
     
@@ -1594,86 +1585,125 @@ const changeAddress = async (req, res) => {
 const test = async (req, res) => {
   try {
     const { productId } = req.query;
-    
+    const today = new Date()
+    const offer = await OfferDB.find({validity:{$gte:today}},{iteam:1,offerRate:1,_id:0});
     const orderData = await OrderDB.findOne({ _id: productId})
       .populate("userId")
       .populate("products.productId");
-      let products = [];
-      orderData.products.find((product) => {
-        products.push({
-          quantity: product.quandity,
-          description: product.productId.name,
-          price: product.productId.Price
-        })
-      });
-       const offer = orderData.products.reduce((acc,cur)=>{
-        return acc+ (cur.productId.Price*cur.quandity) - cur.productTotal
-       },0)
-    
-      products.push({
-      description: "Discount",
-      price: -offer
-    })
-    
-    const date = new Date().toISOString().slice(0, 10);
-
+    const total = orderData.products.reduce((acc,cur)=>{
+      return acc+=cur.productId.Price;
+    },0);
     const data = {
-      apiKey: "free", // Please register to receive a production apiKey: https://app.budgetinvoice.com/register
-      mode: "development", // Production or development, defaults to production
-      images: {
-        // The logo on top of your invoice
-        logo: "https://public.budgetinvoice.com/img/logo_en_original.png",
-        // The invoice background
-        // background: "https://public.budgetinvoice.com/img/watermark-draft.jpg"
-      },
-      // Your own data
-      sender: {
-        company: "Molla",
-        address: "MG Street",
-        zip: "560001",
-        city: "Bangaloru",
-        country: "INDIA",
-      },
-      // Your recipient
-      client: {
-        company: orderData.userId.name,
-        address: orderData.products[0].deliveryAddress.address,
-        zip: orderData.products[0].deliveryAddress.pincode,
-        city: orderData.products[0].deliveryAddress.city,
-        country: orderData.products[0].deliveryAddress.country,
-      },
-      information: {
-        // Invoice data
-        date: date,
-        // Invoice due date
-        // dueDate: "31-12-2021"
-      },
-      // The products you would like to see on your invoice
-      // Total values are being calculated automatically
-      products: products,
-      // Settings to customize your invoice
-      settings: {
-        currency: "INR", // See documentation 'Locales and Currency' for more info. Leave empty for no currency.
-        // locale: "nl-NL", // Defaults to en-US, used for number formatting (See documentation 'Locales and Currency')
-        // marginTop: 25, // Defaults to '25'
-        // marginRight: 25, // Defaults to '25'
-        // marginLeft: 25, // Defaults to '25'
-        // marginBottom: 25, // Defaults to '25'
-        // format: "A4", // Defaults to A4, options: A3, A4, A5, Legal, Letter, Tabloid
-        // height: "1000px", // allowed units: mm, cm, in, px
-        // width: "500px", // allowed units: mm, cm, in, px
-        // orientation: "landscape" // portrait or landscape, defaults to portrait
-      },
+      orderData: orderData,
+      total,
+      offer
     };
+    const filepathname = path.resolve(__dirname, '../views/users/invoice.ejs');
+    const htmlString = fs.readFileSync(filepathname).toString();
+    let options = {
+      format: 'A4',
+      orientation: "portrait",
+      border: "10mm"
+    };
+    const ejsData = ejs.render(htmlString, data);
+    pdf.create(ejsData, options).toFile('invoice.pdf', (err, response) => {
+    if (err) console.log(err);
+    
+    const filePath = path.resolve(__dirname, '../invoice.pdf');
+    fs.readFile(filePath, (err, file) => {
+        if (err) {
+          console.log(err);
+          return res.status(500).send('could not doenload the file')
+        }
+        
+        res.setHeader('Content-type', 'application/pdf')
+        res.setHeader('Content-Disposition', 'attachment;filename="invoice.pdf"');
+        res.send(file)
+      })
+    })
+   
+    return;
+    // const { productId } = req.query;
+    
+    // const orderData = await OrderDB.findOne({ _id: productId})
+    //   .populate("userId")
+    //   .populate("products.productId");
+    //   let products = [];
+    //   orderData.products.find((product) => {
+    //     products.push({
+    //       quantity: product.quandity,
+    //       description: product.productId.name,
+    //       price: product.productId.Price
+    //     })
+    //   });
+    //    const offer = orderData.products.reduce((acc,cur)=>{
+    //     return acc+ (cur.productId.Price*cur.quandity) - cur.productTotal
+    //    },0)
+    
+    //   products.push({
+    //   description: "Discount",
+    //   price: -offer
+    // })
+    
+    // const date = new Date().toISOString().slice(0, 10);
 
-    //Create your invoice! Easy!
+    // const data = {
+    //   apiKey: "free", // Please register to receive a production apiKey: https://app.budgetinvoice.com/register
+    //   mode: "development", // Production or development, defaults to production
+    //   images: {
+    //     // The logo on top of your invoice
+    //     logo: "https://public.budgetinvoice.com/img/logo_en_original.png",
+    //     // The invoice background
+    //     // background: "https://public.budgetinvoice.com/img/watermark-draft.jpg"
+    //   },
+    //   // Your own data
+    //   sender: {
+    //     company: "Molla",
+    //     address: "MG Street",
+    //     zip: "560001",
+    //     city: "Bangaloru",
+    //     country: "INDIA",
+    //   },
+    //   // Your recipient
+    //   client: {
+    //     company: orderData.userId.name,
+    //     address: orderData.products[0].deliveryAddress.address,
+    //     zip: orderData.products[0].deliveryAddress.pincode,
+    //     city: orderData.products[0].deliveryAddress.city,
+    //     country: orderData.products[0].deliveryAddress.country,
+    //   },
+    //   information: {
+    //     // Invoice data
+    //     date: date,
+    //     // Invoice due date
+    //     // dueDate: "31-12-2021"
+    //   },
+    //   // The products you would like to see on your invoice
+    //   // Total values are being calculated automatically
+    //   products: products,
+    //   // Settings to customize your invoice
+    //   settings: {
+    //     currency: "INR", // See documentation 'Locales and Currency' for more info. Leave empty for no currency.
+    //     // locale: "nl-NL", // Defaults to en-US, used for number formatting (See documentation 'Locales and Currency')
+    //     // marginTop: 25, // Defaults to '25'
+    //     // marginRight: 25, // Defaults to '25'
+    //     // marginLeft: 25, // Defaults to '25'
+    //     // marginBottom: 25, // Defaults to '25'
+    //     // format: "A4", // Defaults to A4, options: A3, A4, A5, Legal, Letter, Tabloid
+    //     // height: "1000px", // allowed units: mm, cm, in, px
+    //     // width: "500px", // allowed units: mm, cm, in, px
+    //     // orientation: "landscape" // portrait or landscape, defaults to portrait
+    //   },
+    // };
 
-    const results = easyinvoice.createInvoice(data, function (result) {
-      const pdfBuffer = Buffer.from(result.pdf, "base64");
-      res.setHeader("Content-Type", "application/pdf");
-      res.setHeader("Content-Disposition", "attachment; filename=invoice.pdf");
-      res.send(pdfBuffer);
-    });
+    // //Create your invoice! Easy!
+
+    // const results = easyinvoice.createInvoice(data, function (result) {
+    //   const pdfBuffer = Buffer.from(result.pdf, "base64");
+    //   res.setHeader("Content-Type", "application/pdf");
+    //   res.setHeader("Content-Disposition", "attachment; filename=invoice.pdf");
+    //   res.send(pdfBuffer);
+    // });
   } catch (error) {
     console.log(error.message);
   }

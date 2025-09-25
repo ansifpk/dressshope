@@ -71,7 +71,7 @@
                                         
                                         <div class="form-footer">
                                             <!-- <a href="" class="btn btn-primary text-white">Sign in</a> -->
-                                            <button onclick="handleClick()" type="button" class="btn btn-outline-primary-2">
+                                            <button onclick="handleClick('<%=email%>')" type="button" class="btn btn-outline-primary-2">
 			                					<span>VERIFY</span>
 			            						<i class="icon-long-arrow-right"></i>
 			                				</button>
@@ -223,36 +223,39 @@
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true"><i class="icon-close"></i></span>
                     </button>
-
-                    
                 </div><!-- End .modal-body -->
             </div><!-- End .modal-content -->
         </div><!-- End .modal-dialog -->
     </div><!-- End .modal -->
-
+      
+   
      <script>
-      // timer
-       
-      const disable = document.getElementById("disable");
-      disable.disabled=true;
-      const expire = document.getElementById('expire');
-      expire.innerText=60;
-      const expireInterval = setInterval(function(){
-        expire.innerText--;
-        if(expire.innerText==0){
-          clearInterval(expireInterval);
-          disable.disabled=false
-        }
-      },1000)
 
-      // resend otp
-      function resend(email){
+    //start timer
+    function timer() {
+        const disable = document.getElementById("disable");
+        disable.disabled=true;
+        const expire = document.getElementById('expire');
+        expire.innerText=60;
+        const expireInterval = setInterval(function(){
+            expire.innerText--;
+            if(expire.innerText==0){
+            clearInterval(expireInterval);
+            disable.disabled=false
+            }
+        },1000);
+    }
+    
+    timer();
+    // resend otp
+    function resend(email){
     
         fetch(`/resend?email=${email}`).then((res)=>res.json())
         .then((res)=>{
             if(res.success){
-                const expire = document.getElementById('expire');
-                expire.innerText=60;
+                // const expire = document.getElementById('expire');
+                // expire.innerText=60;
+                timer()
               Swal.fire({
                 title:"New OTP Sented To Your Email",
                 icon: "success",
@@ -268,10 +271,13 @@
         });
 
       }
+  
+    </script>
 
-      // handle submit
+    <script>
+        // handle submit
 
-      async function handleClick(email){
+        async function handleClick(email){
         const otp = document.getElementById("otp").value.trim()
         const label = document.getElementById("otpLabel")
  
@@ -317,5 +323,6 @@
       }
 
     </script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <% include("../layout/footer.ejs") %>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<% include("../layout/footer.ejs") %>

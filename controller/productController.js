@@ -95,7 +95,7 @@ const addProducts = async (req, res) => {
 const editProducts = async (req, res) => {
   try {
     const category = await CategoryDb.find({});
-    const productData = await ProductDb.findById({ _id: req.query._id });
+    const productData = await ProductDb.findById({ _id: req.query._id }).populate('categoryID');
 
     res.render("editProduct", {
       productData: productData,

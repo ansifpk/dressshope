@@ -1,6 +1,6 @@
 
 
-<link rel="apple-touch-icon" sizes="180x180" href="assets/images/icons/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/images/icons/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/images/icons/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/images/icons/favicon-16x16.png">
     <link rel="manifest" href="assets/images/icons/site.html">
@@ -19,7 +19,6 @@
     <!-- Main CSS File -->
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/demos/demo-16.css">
-
     <link rel="shortcut icon" type="image/x-icon" href="assets/imgs/theme/favicon.svg" />
     <!-- Template CSS -->
     <!-- <link href="assets/css/main.css?v=1.1" rel="stylesheet" type="text/css" /> -->
@@ -64,54 +63,7 @@
                             </a>
 
                             <div class="dropdown-menu dropdown-menu-right">
-                                <!-- <div class="dropdown-cart-products">
-                                    <div class="product">
-                                        <div class="product-cart-details">
-                                            <h4 class="product-title">
-                                                <a href="product.html">Beige knitted elastic runner shoes</a>
-                                            </h4>
-
-                                            <span class="cart-product-info">
-                                                <span class="cart-product-qty">1</span>
-                                                x $84.00
-                                            </span>
-                                        </div>End .product-cart-details -->
-
-                                        <!-- <figure class="product-image-container">
-                                            <a href="product.html" class="product-image">
-                                                <img src="assets/images/products/cart/product-1.jpg" alt="product">
-                                            </a>
-                                        </figure>
-                                        <a href="#" class="btn-remove" title="Remove Product"><i class="icon-close"></i></a>
-                                    </div>End .product -->
-
-                                    <!-- <div class="product">
-                                        <div class="product-cart-details">
-                                            <h4 class="product-title">
-                                                <a href="product.html">Blue utility pinafore denim dress</a>
-                                            </h4>
-
-                                            <span class="cart-product-info">
-                                                <span class="cart-product-qty">1</span>
-                                                x $76.00
-                                            </span>
-                                        </div>End .product-cart-details -->
-
-                                        <!-- <figure class="product-image-container">
-                                            <a href="product.html" class="product-image">
-                                                <img src="assets/images/products/cart/product-2.jpg" alt="product">
-                                            </a>
-                                        </figure>
-                                        <a href="#" class="btn-remove" title="Remove Product"><i class="icon-close"></i></a>
-                                    </div> End .product -->
-                                <!-- </div>End .cart-product --> 
-
-                                <!-- <div class="dropdown-cart-total">
-                                    <span>Total</span>
-
-                                    <span class="cart-total-price">$160.00</span>
-                                </div>End .dropdown-cart-total -->
-
+                            
                                 <div class="dropdown-cart-action">
                                     <a href="/cartt" class="btn btn-primary">View Cart</a>
                                     <a href="/checkout" class="btn btn-outline-primary-2"><span>Checkout</span><i class="icon-long-arrow-right"></i></a>
@@ -240,7 +192,8 @@
                                                                 <p class="mb-1">
                                                                     Shipping: Fargo express <br />
                                                                     Pay method: <%=orderData.products[0].paymentMethod%> <br />
-                                                                    Status: <%=orderData.products[0].paymentStatus%>
+                                                                    Status: <%=orderData.products[0].paymentStatus%> <br />
+                                                                    Order date: <%=orderData.createdAt.toLocaleDateString()%>
                                                                 </p>
                                                             </div>
                                                         </article>
@@ -271,20 +224,21 @@
                                                                  <%
                                                                   
 
-                                                                if(orderData.products[0].productStatus==='Delivered' || orderData.products[0].paymentMethod !== "COD"){
+                                                                if(orderData.products[0].paymentMethod !== "COD"){
                                                                     let showDiscount = false;
                                                                     orderData.products.forEach((cur)=>{
                                                                         if(cur.productStatus == "pending" || cur.productStatus == "Delivered" || cur.productStatus == "returnPending" ){
                                                                           showDiscount = true;
-                                                                          
                                                                         }
                                                                     })
                                                                     %>
-                                                                     <a id="invoiceButton" class="btn btn-primary mt-1 text-white <%=showDiscount?"":"disabled"%>"  onclick="DownloadInvoice(this,'<%=orderData._id%>')"><span>Download invoice</span></a>
+                                                                     <a href="/test?productId=<%=orderData._id%>" id="invoiceButton" class="btn btn-primary mt-1 text-white <%=showDiscount?"":"disabled"%>"  onclick="DownloadInvoice(this,'<%=orderData._id%>')"><span>Download invoice</span></a>
                                                                     <%
                                                                 }
                                                                  %> 
                                                                  <%
+                                                                 const diffTime = Math.abs(orderData.createdAt - date); 
+                                                                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
                                                                  let pending = false;
                                                                  let delivered = false;
                                                                  let failed = false;
@@ -304,7 +258,7 @@
                                                                      <a id="actionButton" onclick="handleAllCancell(this,'<%=orderData._id%>')" class="btn btn-primary mt-1 text-white" ><span>Cancell All</span></a>
                                                                   <%} else if(failed) {%>
                                                                      <a id="actionButton" class="btn btn-primary mt-1 text-white" onclick="handleAllPayagain(this,'<%=orderData._id%>')" ><span>Pay Again</span></a>
-                                                                  <%}else if(delivered){%>
+                                                                  <%}else if(delivered && diffDays <= 7){%>
                                                                      <a id="actionButton" class="btn btn-primary mt-1 text-white" onclick="handleAllReturn(this,'<%=orderData._id%>')" ><span>Return All</span></a>
                                                                   <%}
                                                                   %>
@@ -340,7 +294,8 @@
                                                                         }
                                                                     },0)
                                                                     orderData.products.forEach(product => {
-                                                                    
+                                                                        
+                                                                       
                                                                         %>
                                                                          <tr>
                                                                     <td>
@@ -360,30 +315,33 @@
                                                                           <td ><span id="status<%=product._id%>" class="badge rounded-pill btn-danger"><%=product.productStatus%></span></td>
                                                                           <td class="text-end"><button onclick="payAgain('<%=orderData._id%>','<%=product.quandity%>','<%=product.deliveryAddress._id%>','<%=product._id%>')"  class="btnn btn-danger rounded  text-white p-2">pay again</button></td>
                                                                         <%
-                                                                      }else if(product.productStatus==='Delivered'){
+                                                                      }else if(product.productStatus==='Delivered' ){
                                                                         %>
-                                                                          <td><span id="return" class="badge rounded-pill btn-success text-white "><%=product.productStatus%></span></td>
-                                                                          <td><button type="button" onclick="returnOrder(this,'<%=product._id%>','<%=orderData._id%>')" class="btnn btn-danger rounded text-white p-2">Return</button></td>
-                                                                        <%
+                                                                          <td><span id="return<%=product._id%>" class="badge rounded-pill btn-success text-white "><%=product.productStatus%></span></td>
+                                                                          <%if (diffDays <= 7) {%>
+                                                                            
+                                                                              <td><button type="button" onclick="returnOrder(this,'<%=product._id%>','<%=orderData._id%>')" class="btnn btn-danger rounded text-white p-2">Return</button></td>
+                                                                          <%}%>
+                                                                          <%
                                                                       }else if(product.productStatus==="canceled"){
                                                                         %>
                                                                          <td ><span class="badge rounded-pill btn-danger"><%=product.productStatus%></span></td>
-                                                                         <td class="text-end"><span>this iteam canceled</span>
-                                                                        </td>
+                                                                         <td class="text-end"><span>this iteam canceled</span></td>
                                                                         <%
                                                                       }else if(product.productStatus==='return'){
                                                                          %>
-                                                                         <td><span id="badge" class="badge rounded-pill btn-danger text-white "><%=product.productStatus%></span></td>
-                                                                          <td><span>this iteam returned</span> </td>
+                                                                         <td><span id="badge" class="badge rounded-pill btn-danger text-white"><%=product.productStatus%></span></td>
+                                                                         <td><span>this iteam returned</span> </td>
                                                                          <%
                                                                       }else if(product.productStatus==='returnPending'){
                                                                          %>
-                                                                         <td><span id="badge" class="badge rounded-pill btn-danger text-white "><%=product.productStatus%></span></td>
-                                                                          <td><span>Return Request Sented</span> </td>
+                                                                         <td><span id="badge" class="badge rounded-pill btn-danger text-white"><%=product.productStatus%></span></td>
+                                                                         <td><span>Return Request Sented</span> </td>
                                                                          <%
                                                                       }else{
                                                                          %>
-                                                                          <td><span id="status<%=product._id%>" class="badge rounded-pill btn-success text-white "><%=product.productStatus%></span></td>
+                                                                          
+                                                                          <td><span id="status<%=product._id%>" class="badge rounded-pill btn-success text-white"><%=product.productStatus%></span></td>
                                                                           <td id="actionCol<%=product._id%>" class="text-end"> <button onclick="cancelOrder(this,'<%=orderData._id%>','<%=product._id%>')" class="btnn btn-danger rounded text-white p-2">Cancel</button></td>
                                                                           <%
                                                                       }
@@ -661,7 +619,6 @@
             </div>
         </div>
     </div>
-      <!-- cancell all Order -->
     <script>
         function handleAllCancell(tag,orderId) {
             Swal.fire({
@@ -873,7 +830,7 @@
                     fetch(`/cancelOrder`,{method:"PATCH",body:JSON.stringify({_id:orderId,productId}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
                     .then((res)=>{
                         if(res.success){
-                          
+                            console.log(res)
                             const total = document.getElementById("Total")
                             const couponDiscount =  document.getElementById("Coupon Discount")
                             let gtotal = document.getElementById("Grand Total")
@@ -884,7 +841,7 @@
                                gtotal.innerText = 0
                             }else{
                                 total.innerText = res.total
-                                gtotal.innerText = gtotal.innerText - res.total;
+                                gtotal.innerText =res.grandTotal;
                             }
                             
                            
@@ -993,42 +950,7 @@
 
        }
     </script>
-      <!--download invoice -->
-    <script>
-       function DownloadInvoice(tag,id) {
-
-    tag.classList.add("disabled");
-    tag.innerHTML =`<div class="spinner-border spinner-border-sm me-2" role="status">
-                                        <span class="visually-hidden"></span>
-                                    </div>
-                                    Downloading...
-                                    `
-    fetch(`/test?productId=${id}`)
-        .then(res => res.blob())
-        .then(blob => {
-             tag.classList.remove("disabled");
-             tag.innerHTML = `<span>Download invoice</span>`
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'invoice.pdf';
-            document.body.appendChild(link);
-            link.click();
-            setTimeout(() => {
-                URL.revokeObjectURL(url);
-                document.body.removeChild(link);
-            }, 100);
-        })
-        .catch(error => {
-            console.error('Error downloading invoice:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
-                text: 'Something went wrong while downloading the invoice!',
-            });
-        });
-}
-    </script>
+    
     <!-- return single Order -->
     <script>
         
@@ -1036,10 +958,10 @@
         
             const { value: text } =  Swal.fire({
             input: "textarea",
-            inputLabel: "Message",
-            inputPlaceholder: "Type your message here...",
+            inputLabel: "Enter Your Reason",
+            inputPlaceholder: "Type your reason here...",
             inputAttributes: {
-            "aria-label": "Type your message here"
+            "aria-label": "Type your reason here"
               },
            
               showCancelButton: true,
@@ -1060,16 +982,15 @@
                       
                     fetch(`/returnOrder?orderId=${orderId}`,{method:"PATCH",body:JSON.stringify({value:result.value,productId}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
                     .then((res)=>{
-                       console.log(res);
                        
                         if(res.success){
-                             Swal.fire({
-                                title: "Thanks for Your Feedback",
+                            Swal.fire({
+                                title: "Return request sented successfully.",
                                 text: res.message,
                                 icon: "success"
                             });
                             const span = document.createElement("span");
-                            const returnTag =  document.getElementById("return");
+                            const returnTag =  document.getElementById(`return${productId}`);
                             returnTag.innerText = 'returnPending'
                             returnTag.classList.remove("btn-success")
                             returnTag.classList.add("btn-danger")
@@ -1100,10 +1021,10 @@
 
           const { value: text } =  Swal.fire({
             input: "textarea",
-            inputLabel: "Message",
-            inputPlaceholder: "Type your message here...",
+            inputLabel: "Reason",
+            inputPlaceholder: "Type your reasonere...",
             inputAttributes: {
-            "aria-label": "Type your message here"
+            "aria-label": "Type your reason here"
               },
               showCancelButton: true,
               confirmButtonText: "Submit",

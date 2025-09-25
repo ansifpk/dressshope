@@ -10,14 +10,13 @@ const flash = require("connect-flash");
 const session = require('express-session');
 
 app.use(session({secret:process.env.SESSION_SECRET,resave:false,saveUninitialized:true}))
-
 app.set("view engine","ejs");
 app.set("views",'./views/users');
 app.set("views",'./views/admin');
 app.set("views",'./views/layout');
 
 
-app.use(nocahe())
+app.use(nocahe());
 app.use(flash());
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
@@ -30,5 +29,5 @@ const adminRouter = require('./route/adminRouter')
 app.use('/admin',adminRouter)
 
 app.listen(3000,()=>{
-    console.log("starrt")
-})
+  console.log("start")
+});

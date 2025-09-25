@@ -85,7 +85,7 @@
                     </li>
                     <li class="menu-item has-submenu">
                         <a class="menu-link" href="/admin/coupons">
-                            <i class="icon material-icons md-shopping_bag"></i>
+                            <i class="icon material-icons md-local_activity"></i>
                             <span class="text">Coupons</span>
                         </a>
                         <div class="submenu">
@@ -95,7 +95,7 @@
                     </li>
                     <li class="menu-item has-submenu">
                         <a class="menu-link" href="">
-                            <i class="icon material-icons md-shopping_bag"></i>
+                            <i class="icon material-icons md-local_offer"></i>
                             <span class="text">Offers</span>
                         </a>
                         <div class="submenu">
@@ -104,7 +104,7 @@
                            
                         </div>
                     </li>
-                   <li class="menu-item has-submenu">
+                   <li class="menu-item has-submenu ">
                         <a class="menu-link" href="/admin/orderReport">
                             <i class="icon material-icons md-post_add"></i>
                             <span class="text">Report</span>
@@ -116,8 +116,8 @@
                     </li>
                     <li class="menu-item">
                         <a class="menu-link" href="/admin/logout">
-                            <i class="icon material-icons md-comment"></i>
-                            <span class="text">Logout</span>
+                            <i class="icon material-icons md-login"></i>
+                           <span class="text">Logout</span>
                         </a>
                     </li>
                    
@@ -127,49 +127,7 @@
             </nav>
         </aside>
         <main class="main-wrap">
-            <header class="main-header navbar">
-                <div class="col-search">
-                   
-                </div>
-                <div class="col-nav">
-                    <button class="btn btn-icon btn-mobile me-auto" data-trigger="#offcanvas_aside"><i class="material-icons md-apps"></i></button>
-                    <ul class="nav">
-                        <li class="nav-item">
-                            <a class="nav-link btn-icon" href="#">
-                                <i class="material-icons md-notifications animation-shake"></i>
-                                <span class="badge rounded-pill">3</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link btn-icon darkmode" href="#"> <i class="material-icons md-nights_stay"></i> </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="requestfullscreen nav-link btn-icon"><i class="material-icons md-cast"></i></a>
-                        </li>
-                        <li class="dropdown nav-item">
-                            <a class="dropdown-toggle" data-bs-toggle="dropdown" href="#" id="dropdownLanguage" aria-expanded="false"><i class="material-icons md-public"></i></a>
-                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownLanguage">
-                                <a class="dropdown-item text-brand" href="#"><img src="assets/imgs/theme/flag-us.png" alt="English" />English</a>
-                                <a class="dropdown-item" href="#"><img src="assets/imgs/theme/flag-fr.png" alt="Français" />Français</a>
-                                <a class="dropdown-item" href="#"><img src="assets/imgs/theme/flag-jp.png" alt="Français" />日本語</a>
-                                <a class="dropdown-item" href="#"><img src="assets/imgs/theme/flag-cn.png" alt="Français" />中国人</a>
-                            </div>
-                        </li>
-                        <li class="dropdown nav-item">
-                            <a class="dropdown-toggle" data-bs-toggle="dropdown" href="#" id="dropdownAccount" aria-expanded="false"> <img class="img-xs rounded-circle" src="assets/imgs/people/avatar-2.png" alt="User" /></a>
-                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownAccount">
-                                <a class="dropdown-item" href="#"><i class="material-icons md-perm_identity"></i>Edit Profile</a>
-                                <a class="dropdown-item" href="#"><i class="material-icons md-settings"></i>Account Settings</a>
-                                <a class="dropdown-item" href="#"><i class="material-icons md-account_balance_wallet"></i>Wallet</a>
-                                <a class="dropdown-item" href="#"><i class="material-icons md-receipt"></i>Billing</a>
-                                <a class="dropdown-item" href="#"><i class="material-icons md-help_outline"></i>Help center</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item text-danger" href="#"><i class="material-icons md-exit_to_app"></i>Logout</a>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </header>
+            
             <section class="content-main">
                 <div class="content-header">
                     <div>
@@ -253,7 +211,6 @@
                                                 <option>Delivered</option>
                                             </select>
                                             <a class="btn btn-primary" onclick="orderStatus('<%=orderData._id%>')">Save</a>
-                                            
                                         </div>
                                         <thead>
                                             <tr>
@@ -266,42 +223,42 @@
                                                 <th >Date</th>
                                                 <th >Payment Status</th>
                                                 <th >Delivery Status</th>
+
                                             </tr>
                                         </thead>
                                         <tbody id="table">
                                             <%
-                                               let showDiscount = false;
-                                               const productTotal = orderData.products.reduce((acc,cur)=>{
+                                               
+                                               let productTotal = orderData.products.reduce((acc,cur)=>{
                                                 if (cur.productStatus == "pending" || cur.productStatus == "Delivered" || cur.productStatus == "returnPending") {
-                                                     showDiscount = false;
                                                    return acc+cur.productTotal
                                                 } else {
                                                     return acc
                                                 }
-                                               },0)
+                                               },0);
+                                              
                                                orderData.products.forEach((order,i) => {
                                                   %>
                                                     <tr>
-                                                        <td><%=i+1%></td>
-                                                        <td>
+                                                        <td class="text-center"><%=i+1%></td>
+                                                        <td class="text-center" >
                                                             <a class="itemside">
                                                                 <div class="left">
                                                                     <img src="<%=order.productId.image[0].secure_url%>" width="40" height="40" class="img-xs" alt="Item" />
                                                                 </div>
                                                             </a>
                                                         </td>
-                                                        <td><%=order.productId.name%></td>
-                                                        
-                                                        <td><%=order.productTotal/order.quandity%></td>
-                                                        <td><%=order.quandity%></td>
-                                                        <td ><%=order.productTotal%></td>
-                                                        <td id="date"><%= new Date(orderData.createdAt).toLocaleDateString() %></td>
-                                                        <td><span id="paymentBadge" class="badge rounded-pill <%=order.paymentStatus == "Failed" || order.paymentStatus == "Not Paid" ?"btn-danger":"btn-success" %>  text-black "><%=order.paymentStatus%></span></td>
-                                                        <td><span id="badge<%=order._id%>" class="badge rounded-pill <%=order.productStatus == "pending" || order.productStatus == "Delivered" ?"btn-success":"btn-danger" %>  text-black "><%=order.productStatus%></span></td>
+                                                        <td class="text-center"><%=order.productId.name%></td>
+                                                        <td class="text-center"><%=order.productTotal/order.quandity%></td>
+                                                        <td class="text-center"><%=order.quandity%></td>
+                                                        <td class="text-center"><%=order.productTotal%></td>
+                                                        <td id="date" class="text-center"><%= new Date(orderData.createdAt).toLocaleDateString() %></td>
+                                                        <td class="text-center"><span id="paymentBadge" class="badge rounded-pill <%=order.paymentStatus == "Failed" || order.paymentStatus == "Not Paid" ?"btn-danger":"btn-success" %>  text-black "><%=order.paymentStatus%></span></td>
+                                                        <td class="text-center"><span id="badge<%=order._id%>" class="badge rounded-pill <%=order.productStatus == "pending" || order.productStatus == "Delivered" ?"btn-success":"btn-danger" %>  text-black "><%=order.productStatus%></span></td>
                                                         <%
                                                         if(order.productStatus == "returnPending"){%>
                                                             <td id="remove<%=order._id%>"><button onclick="reason('<%=order.cancellationReason%>','<%=order._id%>','<%=orderData._id%>')" class="btnn btn-danger rounded text-white">show reason</button></td>
-                                                        <%} 
+                                                        <%}
                                                         %>
                                                     </tr>
                                                   <%
@@ -315,10 +272,12 @@
                                                     <td></td>
                                                     <td></td>
                                                     <td></td>
+                                                    <td></td>
                                                     <td class="border-bottom">Total</td>
-                                                    <td class="border-bottom" id="Total"><%=productTotal%></td>
+                                                    <td class="border-bottom" id="total"><%=productTotal%></td>
                                                 </tr>
                                                 <tr>
+                                                    <td></td>
                                                     <td></td>
                                                     <td></td>
                                                     <td></td>
@@ -327,7 +286,7 @@
                                                     <td></td>
                                                     <td></td>
                                                     <td class="border-bottom">Coupon Discount</td>
-                                                    <td class="border-bottom" id="Coupon Discount"><%=showDiscount?orderData.couponOfferPrice:0%></td>
+                                                    <td class="border-bottom text-danger" id="couponDiscount"><%=productTotal == 0? 0: -orderData.couponOfferPrice%></td>
                                                 </tr>
                                                 <tr>
                                                     <td></td>
@@ -337,8 +296,9 @@
                                                     <td></td>
                                                     <td></td>
                                                     <td></td>
+                                                    <td></td>
                                                     <td class="border-bottom">Grand Total</td>
-                                                    <td class="border-bottom" id="Grand Total"><%=showDiscount ? productTotal - orderData.couponOfferPrice : productTotal%></td>
+                                                    <td class="border-bottom" id="grandTotal"><%=productTotal == 0? 0:productTotal - orderData.couponOfferPrice%></td>
                                                 </tr>
                                         </tbody>
                                     </table>
@@ -375,10 +335,9 @@ function orderStatus(orderId){
     const  table = document.getElementById("table");
     const status =  document.getElementById("badge");
    
-   const total = document.getElementById("Total");
-   const discount = document.getElementById("Coupon Discount");
-   const gtotal = document.getElementById("Grand Total");
-   console.log(total.innerText,discount.innerText,gtotal.innerText);
+   const total = document.getElementById("total");
+   const discount = document.getElementById("couponDiscount");
+   const gtotal = document.getElementById("grandTotal");
    
    if(changeStatus.value == 'Change status') {
     return ;
@@ -389,17 +348,16 @@ function orderStatus(orderId){
         showCancelButton: true,
         confirmButtonColor: "#3085d6",
         cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, cancel it!"
+        confirmButtonText: "Yes, change it!"
         }).then((result) => {
             if (result.isConfirmed) {
                 fetch(`/admin/orderStatus?_id=${orderId}`,{method:"PATCH",body:JSON.stringify({changeStatus:changeStatus.value}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
                 .then((res)=>{
-                    
                     if(res.success){
                        
                        table.innerHTML =  res.orderData.products.map((order,i)=>{
                              if(res.orderData.products.length -1 == i){
-
+                     
                                  return ` 
                                     <tr>
                                       <td>${i+1}</td>
@@ -432,7 +390,7 @@ function orderStatus(orderId){
                                         <td></td>
                                         <td></td>
                                         <td>Total</td>
-                                        <td id="Total">${changeStatus.value == "canceled"?0:total.innerText}</td>
+                                        <td id="total">${changeStatus.value == "canceled"?0:total.innerText}</td>
                                 </tr>
                                 <tr>
                                         <td></td>
@@ -443,7 +401,7 @@ function orderStatus(orderId){
                                         <td></td>
                                         <td></td>
                                         <td>Coupon Discount</td>
-                                        <td id="Coupon Discount">${changeStatus.value == "canceled"?0:discount.innerText}</td>
+                                        <td id="couponDiscount">${changeStatus.value == "canceled"?0:discount.innerText}</td>
                                 </tr>
                                 <tr>
                                         <td></td>
@@ -454,7 +412,7 @@ function orderStatus(orderId){
                                         <td></td>
                                         <td></td>
                                         <td>Grand Total</td>
-                                        <td id="Grand Total">${changeStatus.value == "canceled"?0:gtotal.innerText}</td>
+                                        <td id="grandTotal">${changeStatus.value == "canceled"?0:gtotal.innerText}</td>
                                 </tr>
                                   `
                              }else{
@@ -505,11 +463,12 @@ function orderStatus(orderId){
                         text: res.message,
                         icon: "success"
                         });
+
                     }else{
                         Swal.fire({
-                        title: "Warning!.",
-                        text: res.message,
-                        icon: "warning"
+                            title: "Warning!.",
+                            text: res.message,
+                            icon: "warning"
                         });
                     }
                 });  
@@ -519,44 +478,14 @@ function orderStatus(orderId){
   
 
 
-   function cancelOrder(orderId){
-   
-    Swal.fire({
-  title: "Are you sure?",
-  icon: "warning",
-  showCancelButton: true,
-  confirmButtonColor: "#3085d6",
-  cancelButtonColor: "#d33",
-  confirmButtonText: "Yes, cancel it!"
-}).then((result) => {
-  if (result.isConfirmed) {
-    Swal.fire({
-      title: "canceled!",
-      text: "This order has been canceled.",
-      icon: "success"
-    });
-    const cancelButton = document.querySelector('.btnn');
-    cancelButton.disabled = true;
-
-    var status = document.getElementById("badge")
-    status.innerHTML="canceled";
-    status.style.color="white"
-    status.style.backgroundColor="red"
-
-    fetch(`/admin/cancelOrder?orderId=${orderId}`);
-  }
-});
-
-   }
-
 
 
     function reason(reason,productId,orderId){
         const  tag = document.getElementById(`remove${productId}`);
         const  badge = document.getElementById(`badge${productId}`);
-        const  total = document.getElementById(`Total`);
-        const  coupon = document.getElementById(`Coupon Discount`);
-        const  gTotal = document.getElementById(`Grand Total`);
+        const  total = document.getElementById(`total`);
+        const  coupon = document.getElementById(`couponDiscount`);
+        const  gTotal = document.getElementById(`grandTotal`);
        
         
         Swal.fire({
@@ -581,19 +510,21 @@ function orderStatus(orderId){
 
             fetch(`/admin/returnOrder?orderId=${orderId}`,{method:"PATCH",body:JSON.stringify({status,productId}),headers:{"Content-Type":"application/json"}}).then((res) =>res.json())
             .then((res)=>{
-             
                if(res.success){
                 
                    
-                   tag.remove()
+                    tag.remove()
                     if (result.isConfirmed) {
                         Swal.fire("Accepted The Request", "", "success");
                         badge.innerText = 'return'
-                        total.innerText = total.innerText - res.returnAmount
-                        if(total.innerText == 0){
+                        if(res.total == 0){
                             gTotal.innerText = 0
                             coupon.innerText = 0
+                            total.innerText = 0
+                            return;
                         }
+                        total.innerText = res.total
+                        gTotal.innerHTML = res.total -coupon.innerText 
                         
                     } else if (result.isDenied) {
                         Swal.fire("Declained The Request", "", "success");

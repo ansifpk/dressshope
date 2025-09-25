@@ -1,5 +1,5 @@
 <% include("../layout/header.ejs") %>
-<link rel="apple-touch-icon" sizes="180x180" href="assets/images/icons/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/images/icons/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/images/icons/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/images/icons/favicon-16x16.png">
     <link rel="manifest" href="assets/images/icons/site.html">
@@ -31,7 +31,8 @@
                                 <div class="header-search-wrapper search-wrapper-wide">
                                     <label for="q" class="sr-only">Search</label>
                                     <button class="btn btn-primary" type="submit"><i class="icon-search"></i></button>
-                                    <input type="search" class="form-control" name="q" id="q" placeholder="Search product ..." required>
+                                    <input type="search" class="form-control" name="q" id="q"
+                                        placeholder="Search product ..." required>
                                 </div><!-- End .header-search-wrapper -->
                             </form>
                         </div><!-- End .header-search -->
@@ -46,32 +47,38 @@
                         <a href="/wishlist" class="wishlist-link">
                             <i class="icon-heart-o"></i>
                             <%if(wishlistData){%>
-                                <span class="wishlist-count"><%=wishlistData?.products?.length%></span>
+                                <span class="wishlist-count">
+                                    <%=wishlistData?.products?.length%>
+                                </span>
                                 <span class="wishlist-txt">My Wishlist</span>
-                            <%}else{%>
-                                <span class="wishlist-count">0</span>
-                                <span class="wishlist-txt">My Wishlist</span>
-                            <%}%>
-                           
+                                <%}else{%>
+                                    <span class="wishlist-count">0</span>
+                                    <span class="wishlist-txt">My Wishlist</span>
+                                    <%}%>
+
                         </a>
 
                         <div class="dropdown cart-dropdown">
-                            <a href="/cart" class="dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-display="static">
+                            <a href="/cart" class="dropdown-toggle" role="button" data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false" data-display="static">
                                 <i class="icon-shopping-cart"></i>
                                 <%if(cartData){%>
-                                    <span class="cart-count"><%=cartData?.products?.length%></span>
+                                    <span class="cart-count">
+                                        <%=cartData?.products?.length%>
+                                    </span>
                                     <span class="cart-txt">Rs:<%=cartTotal%></span>
-                                <%}else{%>
-                                    <span class="cart-count">0</span>
-                                    <span class="cart-txt">Rs:00.00</span>
-                                <%}%>
-                               
+                                    <%}else{%>
+                                        <span class="cart-count">0</span>
+                                        <span class="cart-txt">Rs:00.00</span>
+                                        <%}%>
+
                             </a>
 
                             <div class="dropdown-menu dropdown-menu-right">
                                 <div class="dropdown-cart-action">
                                     <a href="/cartt" class="btn btn-primary">View Cart</a>
-                                    <a href="/checkout" class="btn btn-outline-primary-2"><span>Checkout</span><i class="icon-long-arrow-right"></i></a>
+                                    <a href="/checkout" class="btn btn-outline-primary-2"><span>Checkout</span><i
+                                            class="icon-long-arrow-right"></i></a>
                                 </div><!-- End .dropdown-cart-total -->
                             </div><!-- End .dropdown-menu -->
                         </div><!-- End .cart-dropdown -->
@@ -84,35 +91,35 @@
                     <div class="header-left">
                         <nav class="main-nav">
                             <ul class="menu sf-arrows">
-                               
-                              
+
+
                                 <li class="megamenu-container active">
                                     <a href="/home" class="sf-with-ul">Home</a>
 
-                                    
+
                                 </li>
                                 <li>
                                     <a href="/products" class="sf-with-ul">Product</a>
 
-                                    
+
                                 </li>
                                 <li>
                                     <a href="/about" class="sf-with-ul">About</a>
 
-                                  
+
                                 </li>
                                 <li>
                                     <a href="/contact" class="sf-with-ul">Contact</a>
 
-                                    
+
                                 </li>
                                 <li>
                                     <a href="/profile" class="sf-with-ul">Profile</a>
 
-                                  
+
                                 </li>
-                              
-                                
+
+
                             </ul><!-- End .menu -->
                         </nav><!-- End .main-nav -->
 
@@ -123,331 +130,327 @@
                     </div><!-- End .header-left -->
 
                     <div class="header-right">
-                        <i class="la la-lightbulb-o"></i><p>Clearance Up to 30% Off</span></p>
+                        <i class="la la-lightbulb-o"></i>
+                        <p>Clearance Up to 30% Off</span></p>
                     </div>
                 </div><!-- End .container -->
             </div><!-- End .header-bottom -->
         </header><!-- End .header -->
 
         <main class="main">
-       
-           
+
+
 
             <div class="page-content">
-            	<div class="checkout">
-	                <div class="container">
-                       
-            			<div  class="row">
-                            <div class="col-sm-4"> 
-                                <input type="text" id="coupon" name="city" placeholder="Have a coupon? Click here to enter your code" required class="form-control" >
+                <div class="checkout">
+                    <div class="container">
+
+                        <div class="row mt-2">
+                            <div class="col-sm-4">
+                                    <select id="coupon" name="city" class="p-2">
+                                        <option value="" selected disabled >Have a coupon? Click here to select your coupon</option>
+                                        <%coupons.forEach((coupon)=>{%>
+                                            <option value="<%=coupon.couponCode%>" ><%=coupon.couponCode%></option>
+                                        <%})%> 
+                                    </select>
                             </div>
-                          
-            			</div>
-                        <a  onclick="applyCoupon()"  class="btn btn-outline-primary-2 btn-order ">
+
+                        </div>
+                        <a id="applyButton" onclick="applyCoupon()" class="btn btn-outline-primary-2 btn-order mt-2">
                             <span class="btn-text">Apply</span>
                             <span class="btn-hover-text">Apply</span>
                         </a>
-            			<form >
-                          
-		                	<div class="row">
-		                		<div class="col-lg-9">
-		                			<h2 class="checkout-title">Billing Details</h2><!-- End .checkout-title -->
-                                  
-		                				<div class="row">
-		                					<div class="col-sm-6">
-		                						<label id="fnameLabel">First Name *</label>
-                                                
-		                						<input type="text" id="fname" required class="form-control" >
-		                					</div><!-- End .col-sm-6 -->
+                        <a id="removeButton" onclick="removeCoupon(this)" class="d-none btn btn-outline-primary-2 btn-order mt-2">
+                            <span class="btn-text">Remove</span>
+                            <span class="btn-hover-text">Remove</span>
+                        </a>
+                        <form>
 
-		                					<div class="col-sm-6">
-		                						<label id="lnameLabel">Last Name *</label>
-                                                
-		                						<input type="text" id="lname" required class="form-control" >
-		                					</div><!-- End .col-sm-6 -->
-		                				</div><!-- End .row -->
+                            <div class="row">
+                                <div class="col-lg-9">
+                                    <h2 class="checkout-title">Billing Details</h2><!-- End .checkout-title -->
 
-	            						
+                                    <div class="row">
+                                        <div class="col-sm-6">
+                                            <label id="fnameLabel">First Name *</label>
 
-	            						<label id="countryLabel">Country *</label>
-	            						<input type="text" class="form-control" id="country" >
+                                            <input type="text" id="fname" required class="form-control">
+                                        </div><!-- End .col-sm-6 -->
 
-	            						<label id="addressLabel">Street address *</label>
-                                       
-	            						<input type="text" class="form-control" required id="address" placeholder="House number and Street name" >
-	            						<input type="hidden" id="couponId" value="">
+                                        <div class="col-sm-6">
+                                            <label id="lnameLabel">Last Name *</label>
 
-	            						<div class="row">
-		                					<div class="col-sm-6">
-		                						<label id="cityLabel">Town / City *</label>
-		                						<input type="text" id="city" required class="form-control" >
-		                					</div><!-- End .col-sm-6 -->
+                                            <input type="text" id="lname" required class="form-control">
+                                        </div><!-- End .col-sm-6 -->
+                                    </div><!-- End .row -->
 
-		                					<div class="col-sm-6">
-		                						<label id="stateLabel">State  *</label>
-		                						<input type="text" id="state" required class="form-control" >
-		                					</div><!-- End .col-sm-6 -->
-		                				</div><!-- End .row -->
 
-		                				<div class="row">
-		                					<div class="col-sm-6">
-		                						<label id="pincodeLabel">Postcode / ZIP *</label>
-		                						<input type="number" id="pincode" required class="form-control" >
-		                					</div><!-- End .col-sm-6 -->
 
-		                					<div class="col-sm-6">
-		                						<label id="mobileLabel">Phone *</label>
-		                						<input type="number" id="mobile" class="form-control" >
-		                					</div><!-- End .col-sm-6 -->
-		                				</div><!-- End .row -->
+                                    <label id="countryLabel">Country *</label>
+                                    <input type="text" class="form-control" id="country">
 
-	                					
-                                        
-                                        <button type="button" onclick="handleAddress(this)" class="btn btn-outline-primary-2 btn-order btn-block">Save Address</button>
-	        							
-		                		</div><!-- End .col-lg-9 -->
-		                		<aside class="col-lg-3">
-		                			<div class="summary">
-		                				<h3 class="summary-title">Your Order</h3><!-- End .summary-title -->
-                                        
-		                				<table class="table table-summary">
-		                					<thead>
-		                						<tr>
-		                							<th>Product</th>
-		                							<th>Total</th>
-		                						</tr>
-		                					</thead>
+                                    <label id="addressLabel">Street address *</label>
 
-		                					<tbody>
-                                                <%
-                                                if(productData){
-                                                for(let i=0;i<productData.products.length;i++){
-                                                   %>
+                                    <input type="text" class="form-control" required id="address"
+                                        placeholder="House number and Street name">
+                                    <input type="hidden" id="couponId" value="">
 
-                                                   <tr>
-                                                    <%
-                                                    if(offerData.length>0){
-                                                       const offerProduct =  offerData.find(offer => offer.iteam === productData.products[i].productId.name|| offer.iteam===productData.products[i].productId.categoryID.name); 
-                                                       if(offerProduct){
-                                                        %>
-		                							<td><a href="#"><%=productData.products[i].productId.name%></a></td>
-		                							<td>Rs.<%=productData.products[i].productId.Price*productData.products[i].quandity - Math.round(productData.products[i].productId.Price*offerProduct.offerRate/100)*productData.products[i].quandity%>.00</td>
+                                    <div class="row">
+                                        <div class="col-sm-6">
+                                            <label id="cityLabel">Town / City *</label>
+                                            <input type="text" id="city" required class="form-control">
+                                        </div><!-- End .col-sm-6 -->
 
-		                						   </tr>
+                                        <div class="col-sm-6">
+                                            <label id="stateLabel">State *</label>
+                                            <input type="text" id="state" required class="form-control">
+                                        </div><!-- End .col-sm-6 -->
+                                    </div><!-- End .row -->
 
-                                                   <%
-                                                       }else{
-                                                        %>
-		                							<td><a href="#"><%=productData.products[i].productId.name%></a></td>
-		                							<td>Rs.<%=productData.products[i].productId.Price*productData.products[i].quandity%>.00</td>
+                                    <div class="row">
+                                        <div class="col-sm-6">
+                                            <label id="pincodeLabel">Postcode / ZIP *</label>
+                                            <input type="number" id="pincode" required class="form-control">
+                                        </div><!-- End .col-sm-6 -->
 
-		                						   </tr>
+                                        <div class="col-sm-6">
+                                            <label id="mobileLabel">Phone *</label>
+                                            <input type="number" id="mobile" class="form-control">
+                                        </div><!-- End .col-sm-6 -->
+                                    </div><!-- End .row -->
 
-                                                   <%
-                                                       }
 
-                                                    }
-                                                   
-                                                    }
-                                                    %>
-                                                <tr class="summary-subtotal">
-		                							<td>Subtotal:</td>
-		                							<td id="subTotel">Rs.<%=subTotal%>.00</td>
-		                						</tr><!-- End .summary-subtotal -->
-                                                <%
-                                                if(!offer){
-                                                    %>
-                                                    <tr>
-                                                        <td>Offer Price</td>
-		                							    <td id="couponOffer">RS:00.00</td>
-                                                    </tr>
-                                                    <tr class="summary-total">
-		                							<td>Total:</td>
-		                							<td id="offerTotal">Rs.<%=subTotal%>.00</td>
-                                                    <input type="hidden" id="sub" value="<%=subTotal%>">
-		                						</tr><!-- End .summary-total -->
-                                                    <%
-                                                    }else{
-                                                        %>
-                                                    <tr>
-                                                        <td>Offer Price</td>
-		                							    <td>Rs.<%=offer%></td>
-                                                    </tr>
-                                                    <tr  class="summary-total">
-		                							<td>Total:</td>
-		                							<td id="offerTotal">Rs.<%=subTotal-offer%>.00</td>
-                                                    <input type="hidden" id="sub" value="<%=subTotal-offer%>">
-		                						</tr><!-- End .summary-total -->
-                                                        <%
-                                                    }
-                                                    %>
-		                							
-		                						
-                                                %>
-                                                <%
-                                            }else{
-                                                %>
+
+                                    <button type="button" onclick="handleAddress(this)"
+                                        class="btn btn-outline-primary-2 btn-order btn-block">Save Address</button>
+
+                                </div><!-- End .col-lg-9 -->
+                                <aside class="col-lg-3">
+                                    <div class="summary">
+                                        <h3 class="summary-title">Your Order</h3><!-- End .summary-title -->
+
+                                        <table class="table table-summary">
+                                            <thead>
                                                 <tr>
-                                                    <td><a href="#">no products</a></td>
+                                                    <th>Product</th>
+                                                    <th>Total</th>
                                                 </tr>
-                                                <%
-                                            }
-                                                %>
-		                					</tbody>
-		                				</table><!-- End .table table-summary -->
+                                            </thead>
 
-		                				
+                                            <tbody>
+                                                <% if(productData){ for(let i=0;i<productData.products.length;i++){ %>
+
+                                                    <tr>
+                                                        <% if(offerData.length>0){
+                                                            const offerProduct = offerData.find(offer => offer.iteam ===
+                                                            productData.products[i].productId.name||
+                                                            offer.iteam===productData.products[i].productId.categoryID.name);
+                                                            if(offerProduct){
+                                                            %>
+                                                            <td><a href="#">
+                                                                    <%=productData.products[i].productId.name%>
+                                                                </a></td>
+                                                            <td>Rs.
+                                                                <%=productData.products[i].productId.Price*productData.products[i].quandity
+                                                                    -
+                                                                    Math.round(productData.products[i].productId.Price*offerProduct.offerRate/100)*productData.products[i].quandity%>
+                                                                    .00
+                                                            </td>
+
+                                                    </tr>
+
+                                                    <% }else{ %>
+                                                        <td><a>
+                                                                <%=productData.products[i].productId.name%>
+                                                            </a></td>
+                                                        <td>Rs.
+                                                            <%=productData.products[i].productId.Price*productData.products[i].quandity%>
+                                                                .00
+                                                        </td>
+
+                                                        </tr>
+
+                                                        <% } } } %>
+                                                            <tr class="summary-subtotal">
+                                                                <td>Sub Total:</td>
+                                                                <td id="subTotel">Rs.<%=subTotal%>.00</td>
+                                                            </tr>
+
+                                                            <tr>
+                                                                <td>Offer Price</td>
+                                                                <td id="offer" class="text-danger">Rs.<%=offer ? -
+                                                                        offer: 00 %>.00</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Coupon Offer</td>
+                                                                <td id="couponOffer" class="text-danger">Rs 00.00</td>
+                                                            </tr>
+                                                            <tr class="summary-total">
+                                                                <td>Total:</td>
+                                                                <td id="total">Rs.<%=total%>.00</td>
+                                                                <input type="hidden" id="sub" value="<%=total%>">
+                                                            </tr>
+
+
+                                                            %>
+                                                            <% }else{ %>
+                                                                <tr>
+                                                                    <td><a href="#">no products</a></td>
+                                                                </tr>
+                                                                <% } %>
+                                            </tbody>
+                                        </table>
+
+
                                         <div class="form-group">
-                                <label>Choose payment methods</label>
-                                <select class="col-sm-6" id="paymentMethod" name="paymentMethod">        
-                                    <%
-                                     if((subTotal-offer)>1000){  
-                                       %>
-                                        <option >Razor pay</option>
-                                       <%
-                                     }else{ 
-                                        %>
-                                        <option>COD</option>
-                                        <option >Razor pay</option>
-                                        <%
-                                     }
-                                    %>  
-                                </select>
-                            </div>
-                                <div class="form-group">
-                                <label>Choose Your Address</label>
-                                <select class="col-sm-6" id="chooseAddress" name="chooseAddress">
-                                    <% if(addressData){
-                                    for (let i = 0; i < addressData.address.length; i++) { %>
-                                    <option value="<%= addressData.address[i]._id %>"><%= addressData.address[i].address %></option> 
-                                           <% 
-                                        }
-                                        }else{
-                                            %>
-                                            <option></option>
-                                            <%
-                                        } 
-                                    %>
-                                </select>
-                            </div>
-                         
-                                        <a   onclick='order()'  class="btn btn-outline-primary-2 btn-order btn-block">
-		                					<span class="btn-text">Place Order</span>
-		                					<span class="btn-hover-text">Proceed to Checkout</span>
-		                				</a>
-                             
-		                				
-		                			</div><!-- End .summary -->
-		                		</aside><!-- End .col-lg-3 -->
-		                	</div><!-- End .row -->
-            			</form>
-	                </div><!-- End .container -->
+                                            <label>Choose payment methods</label>
+                                            <select class="col-sm-6" id="paymentMethod" name="paymentMethod">
+                                                <% if((subTotal-offer)>1000){
+                                                    %>
+                                                    <option>Razor pay</option>
+                                                    <% }else{ %>
+                                                        <option>COD</option>
+                                                        <option>Razor pay</option>
+                                                        <% } %>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Choose Your Address</label>
+                                            <select class="col-sm-6" id="chooseAddress" name="chooseAddress">
+                                                <% if(addressData){ for (let i=0; i < addressData.address.length; i++) {
+                                                    %>
+                                                    <option value="<%= addressData.address[i]._id %>">
+                                                        <%= addressData.address[i].address %>
+                                                    </option>
+                                                    <% } }else{ %>
+                                                        <option></option>
+                                                        <% } %>
+                                            </select>
+                                        </div>
+
+                                        <a onclick='order()' class="btn btn-outline-primary-2 btn-order btn-block">
+                                            <span class="btn-text">Place Order</span>
+                                            <span class="btn-hover-text">Proceed to Checkout</span>
+                                        </a>
+
+
+                                    </div><!-- End .summary -->
+                                </aside><!-- End .col-lg-3 -->
+                            </div><!-- End .row -->
+                        </form>
+                    </div><!-- End .container -->
                 </div><!-- End .checkout -->
             </div><!-- End .page-content -->
-           
 
-           
-                  
-                
-            </div><!-- End .bg-lighter pt-5 pb-5 -->
 
-            
 
-            <div class="mb-6"></div><!-- End .mb-6 -->
-             
-            
-            <nav class="portfolio-nav">
-                <ul class="nav-filter portfolio-filter justify-content-center">
-                    <li class="active"><a href="/home" data-filter="*">More Products</a></li>
-                </ul>
-            </nav><!-- End .portfolio-nav -->
 
-          
 
-           
-        </main><!-- End .main -->
+    </div><!-- End .bg-lighter pt-5 pb-5 -->
 
-        <footer class="footer">
-            <div class="footer-middle">
-                <div class="container">
-                    <div class="row">
-                        <div class="col-sm-6 col-lg-3">
-                            <div class="widget widget-about">
-                                <h4 class="widget-title">about molla</h4><!-- End .widget-title -->
-                                <p>Praesent dapibus, neque id cursus ucibus, tortor neque egestas augue, eu vulputate magna eros eu erat. </p>
 
-                                <div class="social-icons">
-                                    <a href="#" class="social-icon" title="Facebook" target="_blank"><i class="icon-facebook-f"></i></a>
-                                    <a href="#" class="social-icon" title="Twitter" target="_blank"><i class="icon-twitter"></i></a>
-                                    <a href="#" class="social-icon" title="Instagram" target="_blank"><i class="icon-instagram"></i></a>
-                                    <a href="#" class="social-icon" title="Youtube" target="_blank"><i class="icon-youtube"></i></a>
-                                </div><!-- End .soial-icons -->
-                            </div><!-- End .widget about-widget -->
-                        </div><!-- End .col-sm-6 col-lg-3 -->
 
-                        <div class="col-sm-6 col-lg-3">
-                            <div class="widget">
-                                <h4 class="widget-title">Useful Links</h4><!-- End .widget-title -->
+    <div class="mb-6"></div><!-- End .mb-6 -->
 
-                                <ul class="widget-list">
-                                    <li><a href="about.html">About Molla</a></li>
-                                    <li><a href="#">How to shop on Molla</a></li>
-                                    <li><a href="#">FAQ</a></li>
-                                    <li><a href="contact.html">Contact us</a></li>
-                                    <li><a href="login.html">Log in</a></li>
-                                </ul><!-- End .widget-list -->
-                            </div><!-- End .widget -->
-                        </div><!-- End .col-sm-6 col-lg-3 -->
 
-                        <div class="col-sm-6 col-lg-3">
-                            <div class="widget">
-                                <h4 class="widget-title">Customer Service</h4><!-- End .widget-title -->
+    <nav class="portfolio-nav">
+        <ul class="nav-filter portfolio-filter justify-content-center">
+            <li class="active"><a href="/home" data-filter="*">More Products</a></li>
+        </ul>
+    </nav><!-- End .portfolio-nav -->
 
-                                <ul class="widget-list">
-                                    <li><a href="#">Payment Methods</a></li>
-                                    <li><a href="#">Money-back guarantee!</a></li>
-                                    <li><a href="#">Returns</a></li>
-                                    <li><a href="#">Shipping</a></li>
-                                    <li><a href="#">Terms and conditions</a></li>
-                                    <li><a href="#">Privacy Policy</a></li>
-                                </ul><!-- End .widget-list -->
-                            </div><!-- End .widget -->
-                        </div><!-- End .col-sm-6 col-lg-3 -->
 
-                        <div class="col-sm-6 col-lg-3">
-                            <div class="widget">
-                                <h4 class="widget-title">My Account</h4><!-- End .widget-title -->
 
-                                <ul class="widget-list">
-                                    <li><a href="#">Sign In</a></li>
-                                    <li><a href="cart.html">View Cart</a></li>
-                                    <li><a href="#">My Wishlist</a></li>
-                                    <li><a href="#">Track My Order</a></li>
-                                    <li><a href="#">Help</a></li>
-                                </ul><!-- End .widget-list -->
-                            </div><!-- End .widget -->
-                        </div><!-- End .col-sm-6 col-lg-3 -->
-                    </div><!-- End .row -->
-                </div><!-- End .container -->
-            </div><!-- End .footer-middle -->
 
-            <div class="footer-bottom">
-                <div class="container">
-                    <figure class="footer-payments">
-                        <img src="assets/images/payments.png" alt="Payment methods" width="272" height="20">
-                    </figure><!-- End .footer-payments -->
-                    <img src="assets/images/demos/demo-6/logo-footer.png" alt="Molla Logo" width="82" height="25">
-                    <p class="footer-copyright">Copyright © 2019 Molla Store. All Rights Reserved.</p><!-- End .footer-copyright -->
-                </div><!-- End .container -->
-            </div><!-- End .footer-bottom -->
-        </footer><!-- End .footer -->
+    </main><!-- End .main -->
+
+    <footer class="footer">
+        <div class="footer-middle">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="widget widget-about">
+                            <h4 class="widget-title">about molla</h4><!-- End .widget-title -->
+                            <p>Praesent dapibus, neque id cursus ucibus, tortor neque egestas augue, eu vulputate magna
+                                eros eu erat. </p>
+
+                            <div class="social-icons">
+                                <a href="#" class="social-icon" title="Facebook" target="_blank"><i
+                                        class="icon-facebook-f"></i></a>
+                                <a href="#" class="social-icon" title="Twitter" target="_blank"><i
+                                        class="icon-twitter"></i></a>
+                                <a href="#" class="social-icon" title="Instagram" target="_blank"><i
+                                        class="icon-instagram"></i></a>
+                                <a href="#" class="social-icon" title="Youtube" target="_blank"><i
+                                        class="icon-youtube"></i></a>
+                            </div><!-- End .soial-icons -->
+                        </div><!-- End .widget about-widget -->
+                    </div><!-- End .col-sm-6 col-lg-3 -->
+
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="widget">
+                            <h4 class="widget-title">Useful Links</h4><!-- End .widget-title -->
+
+                            <ul class="widget-list">
+                                <li><a href="about.html">About Molla</a></li>
+                                <li><a href="#">How to shop on Molla</a></li>
+                                <li><a href="#">FAQ</a></li>
+                                <li><a href="contact.html">Contact us</a></li>
+                                <li><a href="login.html">Log in</a></li>
+                            </ul><!-- End .widget-list -->
+                        </div><!-- End .widget -->
+                    </div><!-- End .col-sm-6 col-lg-3 -->
+
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="widget">
+                            <h4 class="widget-title">Customer Service</h4><!-- End .widget-title -->
+
+                            <ul class="widget-list">
+                                <li><a href="#">Payment Methods</a></li>
+                                <li><a href="#">Money-back guarantee!</a></li>
+                                <li><a href="#">Returns</a></li>
+                                <li><a href="#">Shipping</a></li>
+                                <li><a href="#">Terms and conditions</a></li>
+                                <li><a href="#">Privacy Policy</a></li>
+                            </ul><!-- End .widget-list -->
+                        </div><!-- End .widget -->
+                    </div><!-- End .col-sm-6 col-lg-3 -->
+
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="widget">
+                            <h4 class="widget-title">My Account</h4><!-- End .widget-title -->
+
+                            <ul class="widget-list">
+                                <li><a href="#">Sign In</a></li>
+                                <li><a href="cart.html">View Cart</a></li>
+                                <li><a href="#">My Wishlist</a></li>
+                                <li><a href="#">Track My Order</a></li>
+                                <li><a href="#">Help</a></li>
+                            </ul><!-- End .widget-list -->
+                        </div><!-- End .widget -->
+                    </div><!-- End .col-sm-6 col-lg-3 -->
+                </div><!-- End .row -->
+            </div><!-- End .container -->
+        </div><!-- End .footer-middle -->
+
+        <div class="footer-bottom">
+            <div class="container">
+                <figure class="footer-payments">
+                    <img src="assets/images/payments.png" alt="Payment methods" width="272" height="20">
+                </figure><!-- End .footer-payments -->
+                <img src="assets/images/demos/demo-6/logo-footer.png" alt="Molla Logo" width="82" height="25">
+                <p class="footer-copyright">Copyright © 2019 Molla Store. All Rights Reserved.</p>
+                <!-- End .footer-copyright -->
+            </div><!-- End .container -->
+        </div><!-- End .footer-bottom -->
+    </footer><!-- End .footer -->
     </div><!-- End .page-wrapper -->
     <button id="scroll-top" title="Back to Top"><i class="icon-arrow-up"></i></button>
 
     <!-- Mobile Menu -->
     <div class="mobile-menu-overlay"></div><!-- End .mobil-menu-overlay -->
 
-   
+
 
     <!-- Sign in / Register Modal -->
     <div class="modal fade" id="signin-modal" tabindex="-1" role="dialog" aria-hidden="true">
@@ -462,23 +465,28 @@
                         <div class="form-tab">
                             <ul class="nav nav-pills nav-fill nav-border-anim" role="tablist">
                                 <li class="nav-item">
-                                    <a class="nav-link active" id="signin-tab" data-toggle="tab" href="#signin" role="tab" aria-controls="signin" aria-selected="true">Sign In</a>
+                                    <a class="nav-link active" id="signin-tab" data-toggle="tab" href="#signin"
+                                        role="tab" aria-controls="signin" aria-selected="true">Sign In</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" id="register-tab" data-toggle="tab" href="#register" role="tab" aria-controls="register" aria-selected="false">Register</a>
+                                    <a class="nav-link" id="register-tab" data-toggle="tab" href="#register" role="tab"
+                                        aria-controls="register" aria-selected="false">Register</a>
                                 </li>
                             </ul>
                             <div class="tab-content" id="tab-content-5">
-                                <div class="tab-pane fade show active" id="signin" role="tabpanel" aria-labelledby="signin-tab">
+                                <div class="tab-pane fade show active" id="signin" role="tabpanel"
+                                    aria-labelledby="signin-tab">
                                     <form action="#">
                                         <div class="form-group">
                                             <label for="singin-email">Username or email address *</label>
-                                            <input type="text" class="form-control" id="singin-email" name="singin-email" required>
+                                            <input type="text" class="form-control" id="singin-email"
+                                                name="singin-email" required>
                                         </div><!-- End .form-group -->
 
                                         <div class="form-group">
                                             <label for="singin-password">Password *</label>
-                                            <input type="password" class="form-control" id="singin-password" name="singin-password" required>
+                                            <input type="password" class="form-control" id="singin-password"
+                                                name="singin-password" required>
                                         </div><!-- End .form-group -->
 
                                         <div class="form-footer">
@@ -488,8 +496,10 @@
                                             </button>
 
                                             <div class="custom-control custom-checkbox">
-                                                <input type="checkbox" class="custom-control-input" id="signin-remember">
-                                                <label class="custom-control-label" for="signin-remember">Remember Me</label>
+                                                <input type="checkbox" class="custom-control-input"
+                                                    id="signin-remember">
+                                                <label class="custom-control-label" for="signin-remember">Remember
+                                                    Me</label>
                                             </div><!-- End .custom-checkbox -->
 
                                             <a href="#" class="forgot-link">Forgot Your Password?</a>
@@ -517,12 +527,14 @@
                                     <form action="#">
                                         <div class="form-group">
                                             <label for="register-email">Your email address *</label>
-                                            <input type="email" class="form-control" id="register-email" name="register-email" required>
+                                            <input type="email" class="form-control" id="register-email"
+                                                name="register-email" required>
                                         </div><!-- End .form-group -->
 
                                         <div class="form-group">
                                             <label for="register-password">Password *</label>
-                                            <input type="password" class="form-control" id="register-password" name="register-password" required>
+                                            <input type="password" class="form-control" id="register-password"
+                                                name="register-password" required>
                                         </div><!-- End .form-group -->
 
                                         <div class="form-footer">
@@ -532,8 +544,10 @@
                                             </button>
 
                                             <div class="custom-control custom-checkbox">
-                                                <input type="checkbox" class="custom-control-input" id="register-policy" required>
-                                                <label class="custom-control-label" for="register-policy">I agree to the <a href="#">privacy policy</a> *</label>
+                                                <input type="checkbox" class="custom-control-input" id="register-policy"
+                                                    required>
+                                                <label class="custom-control-label" for="register-policy">I agree to the
+                                                    <a href="#">privacy policy</a> *</label>
                                             </div><!-- End .custom-checkbox -->
                                         </div><!-- End .form-footer -->
                                     </form>
@@ -569,12 +583,15 @@
                 <div class="row no-gutters bg-white newsletter-popup-content">
                     <div class="col-xl-3-5col col-lg-7 banner-content-wrap">
                         <div class="banner-content text-center">
-                            <img src="assets/images/popup/newsletter/logo.png" class="logo" alt="logo" width="60" height="15">
+                            <img src="assets/images/popup/newsletter/logo.png" class="logo" alt="logo" width="60"
+                                height="15">
                             <h2 class="banner-title">get <span>25<light>%</light></span> off</h2>
-                            <p>Subscribe to the Molla eCommerce newsletter to receive timely updates from your favorite products.</p>
+                            <p>Subscribe to the Molla eCommerce newsletter to receive timely updates from your favorite
+                                products.</p>
                             <form action="#">
                                 <div class="input-group input-group-round">
-                                    <input type="email" class="form-control form-control-white" placeholder="Your Email Address" aria-label="Email Adress" required>
+                                    <input type="email" class="form-control form-control-white"
+                                        placeholder="Your Email Address" aria-label="Email Adress" required>
                                     <div class="input-group-append">
                                         <button class="btn" type="submit"><span>go</span></button>
                                     </div><!-- .End .input-group-append -->
@@ -582,7 +599,8 @@
                             </form>
                             <div class="custom-control custom-checkbox">
                                 <input type="checkbox" class="custom-control-input" id="register-policy-2" required>
-                                <label class="custom-control-label" for="register-policy-2">Do not show this popup again</label>
+                                <label class="custom-control-label" for="register-policy-2">Do not show this popup
+                                    again</label>
                             </div><!-- End .custom-checkbox -->
                         </div>
                     </div>
@@ -593,455 +611,474 @@
             </div>
         </div>
     </div>
-     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-      
-        if("<%=productsLength%>" == 0){
-             Swal.fire({
-                    text: "You Dont Have Products On Your Cart!.",
-                    icon: "warning",
-                    confirmButtonText: "ok!"
-                    
-             }).then((result) => {
+
+        if ("<%=productsLength%>" == 0) {
+            Swal.fire({
+                text: "You Dont Have Products On Your Cart!.",
+                icon: "warning",
+                confirmButtonText: "ok!"
+
+            }).then((result) => {
                 if (result.isConfirmed) {
-                  window.location.href="/products"
+                    window.location.href = "/products"
                 }
             });
-  
+
+        }
+    </script>
+      <!-- remove coupon -->
+    <script>
+        function removeCoupon(tag) {
+            const coupon = document.getElementById("coupon");
+            let couponOffer = document.getElementById("couponOffer");
+            let total = document.getElementById("total");
+            total.innerText = `Rs.${parseInt(total.innerText.replace("Rs.","").replace(".00","")) + parseInt(couponOffer.innerText.replace("Rs.-","").replace(".00",""))}.00`;
+            couponOffer.innerText = `Rs 00.00`;
+            coupon.value = "";
+            tag.classList.add("d-none")
         }
     </script>
     <script>
-     
-       async function applyCoupon() {
-         const coupon = document.getElementById("coupon").value
-         let total = document.getElementById("offerTotal")
-         let couponOffer = document.getElementById("couponOffer")
 
-         fetch("/applyCoupon",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({couponCode:coupon})})
-         .then((res)=>res.json())
-         .then((res)=>{
-            
-            if(res.success){
-                couponOffer.innerText = `Rs:${res.offerPrice}.00`;
-                total.innerText=`Rs.${res.total}.00`;
-                document.getElementById("couponId").value = res.couponId
+        async function applyCoupon() {
+            const coupon = document.getElementById("coupon").value
+            let couponOffer = document.getElementById("couponOffer")
+            let total = document.getElementById("total")
+            if(coupon.length == 0) {
                 Swal.fire({
-                    text: res.message,
-                    icon: "success",
-                    confirmButtonText: "ok!"
-                });
-                            
-            }else{
-                Swal.fire({
-                    title: res.message,
-                    text: res.message,
+                    title: "Please select a coupon to apply" ,
                     icon: "warning",
-                    confirmButtonColor: "#3085d6",
-                    confirmButtonText: "ok!"
                 });
-                document.getElementById("couponId").value = ""
+                return;
             }
-         });
-       }
+            fetch("/applyCoupon", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ couponCode: coupon }) })
+                .then((res) => res.json())
+                .then((res) => {
+                    if (res.success) {
+                        couponOffer.innerText = `Rs.-${res.offerPrice}.00`;
+                        total.innerText = `Rs.${res.total}.00`;
+                        document.getElementById("couponId").value = res.couponId
+                        Swal.fire({
+                            text: res.message,
+                            icon: "success",
+                            confirmButtonText: "ok!"
+                        });
+
+                        document.getElementById("removeButton").classList.remove("d-none")
+
+                    } else {
+                        Swal.fire({
+                            title: res.message,
+                            text: res.message,
+                            icon: "warning",
+                            confirmButtonColor: "#3085d6",
+                            confirmButtonText: "ok!"
+                        });
+                        document.getElementById("couponId").value = ""
+                    }
+                });
+        }
 
         function order() {
-        const couponId =   document.getElementById("couponId").value ;
- 
-        let selectElement0 = document.getElementById("offerTotal").innerText.replace("Rs.","").replace(".00","");
-        let selectElement1 = document.getElementById("chooseAddress");
-        let selectElement2 = document.getElementById("paymentMethod");
-        let address = selectElement1.value;
-        let paymentMethod = selectElement2.value;
-        let selectElement3 = document.getElementById("sub");
-        let couponOffer = document.getElementById("couponOffer").innerText.replace("RS:","").replace(".00","");;
+            const couponId = document.getElementById("couponId").value;
+            let selectElement0 = document.getElementById("offer").innerText.replace("Rs.", "").replace(".00", "");
+            let selectElement1 = document.getElementById("chooseAddress");
+            let selectElement2 = document.getElementById("paymentMethod");
+            let address = selectElement1.value;
+            let paymentMethod = selectElement2.value;
+            let selectElement3 = document.getElementById("sub");
+            let couponOffer = document.getElementById("couponOffer").innerText.replace("RS:", "").replace(".00", "");
      
-        if (parseInt(selectElement0)>1000 && paymentMethod == "COD" ) {
-            Swal.fire(`Paying Total Amount greater than 1000 is not possile in COD`);
-            return;
-        } 
-      
-        if(!address){
-            Swal.fire({
-            title: "You dont have any address?",
-            text: "Add a address first!",
-            icon: "warning",
-            confirmButtonColor: "#3085d6",
-            confirmButtonText: "ok!",
-          })
-        .then((result) => {
-            if (result.isConfirmed) {
-                window.location.href="/addAddress"
+           
+            if (parseInt(selectElement0) > 1000 && paymentMethod == "COD") {
+                Swal.fire(`Paying Total Amount greater than 1000 is not possile in COD`);
+                return;
             }
-          });
-        }
-     
-       
-        if(paymentMethod=="Razor pay"){
-            fetch(`/orders`,{method:"POST",body:JSON.stringify({addressId:address,paymentMethod,coupen:couponId}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
-            .then((data)=>{
-                 console.log("data88",data);
-                 
-                if(data.success){
-                    var options = {
-						"key": `${data.key_id}`,
-						"amount": `${data.amount}`,
-						"currency": "INR",
-						"name":`${data.name}` ,
-						"order_id": `${data.order_id}`,
-						"handler": function (response){ 
-                           
-                     
-                            fetch(`/saveOrder`,{method:"POST",body:JSON.stringify({addressId:data.addressId,coupen:data.coupenId,paymentMethod:paymentMethod,paymentStatus:"Paid",productStatus:"pending",orderId:data.order_id}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
-                            .then((res)=>{
-                              
-                                if(res.success){
-                                    window.location.href="/successPage"   
-                                }else{
-                                    Swal.fire({
-                                          
-                                            text:res.message,
-                                            icon: "warning",
-                                            confirmButtonColor: "#3085d6",
-                                            confirmButtonText: "Continue"
-                                    }).then((res)=>{
-                                        if(res.isConfirmed){
-                                          window.location.href="/failePage"
-                                        }
-                                    })
-                                    
-                                }
-                            })      
-							
-						},
-						"prefill": {
-							"name":`${data.name}`,
-							"email": `${data.email}`
-						},
-						"theme": {
-							"color": "#2300a3"
-						}
-					};
 
-                    var razorpayObject = new Razorpay(options);
-              
-					razorpayObject.on('payment.failed', function (response){
-                         
-							  fetch(`/saveOrder`,{method:"POST",body:JSON.stringify({addressId:data.addressId,coupen:data.coupenId,paymentMethod:paymentMethod,paymentStatus:"Failed",productStatus:"Failed",orderId:data.order_id}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
-                              .then((res)=>{
-                                if(res.success){
-                                    window.location.href="/failePage"
-                                }else{
-                                     Swal.fire({
-                                            title:"Warning!.",
-                                            text:res.message,
-                                            icon: "warning",
-                                            confirmButtonColor: "#3085d6",
-                                            confirmButtonText: "Continue"
-                                    }).then((res)=>{
-                                        if(res.isConfirmed){
-                                          window.location.href="/failePage"
-                                        }
-                                    })
-                                }
-                              })
-					});
-                    
-					razorpayObject.open();
-                   
-                 }else if(data.addAddress){
-                    Swal.fire({
+            if (!address) {
+                Swal.fire({
                     title: "You dont have any address?",
                     text: "Add a address first!",
                     icon: "warning",
                     confirmButtonColor: "#3085d6",
-                    confirmButtonText: "ok!"
-                    }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.location.href="/addAddress"
-                    }
-                  });  
-
-                }else if(data.outofstock){
-                    Swal.fire({
-                    title:data.message,
-                    text: "Click the Continue button to remove the out of stock products from your cart and Continue purchasing!.",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#3085d6",
-                    cancelButtonColor: "#d33",
-                    confirmButtonText: "Continue"
-                    }).then((result) => {
+                    confirmButtonText: "ok!",
+                })
+                    .then((result) => {
                         if (result.isConfirmed) {
-                            fetch('/removeOutofStock',{method:"PATCH"}).then((res)=>res.json())
-                            .then((res)=>{
-                              
-                                if(res.success){
-                                    
-                                    fetch(`/orders`,{method:"POST",body:JSON.stringify({addressId:address,paymentMethod,coupen:couponId}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
-                                    .then((data)=>{
-                                     
-                                        var options = {
-                                        "key": `${data.key_id}`,
-                                        "amount": `${data.amount}`,
-                                        "currency": "INR",
-                                        "name":`${data.name}` ,
-                                        "order_id": `${data.order_id}`,
-                                        "handler": function (response){ 
-                                         
-                                             fetch(`/saveOrder`,{method:"POST",body:JSON.stringify({addressId:data.addressId,coupen:data.coupenId,paymentMethod:paymentMethod,paymentStatus:"Paid",productStatus:"Failed"}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
-                                             .then((res)=>{
-                                                  if(res.success){
-                                                        window.location.href="/successPage"   
-                                                    }else{
-                                                        Swal.fire({
-                                                            
-                                                                text:res.message,
-                                                                icon: "warning",
-                                                                confirmButtonColor: "#3085d6",
-                                                                confirmButtonText: "Continue"
-                                                        }).then((res)=>{
-                                                            if(res.isConfirmed){
-                                                            window.location.href="/failePage"
-                                                            }
-                                                        })
-                                                        
-                                                    }
-                                             })
-                                           
-                                        },
-                                        "prefill": {
-                                            "name":`${data.name}`,
-                                            "email": `${data.email}`
-                                        },
-                                        "theme": {
-                                            "color": "#2300a3"
-                                        }
-                                     };
-
-                            var razorpayObject = new Razorpay(options);
-                            razorpayObject.on('payment.failed', function (response){
-                                 fetch(`/saveOrder`,{method:"POST",body:JSON.stringify({addressId:data.addressId,coupen:data.coupenId,paymentMethod:paymentMethod,paymentStatus:"Failed",productStatus:"Failed"}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
-                                 .then(()=>{
-                                     
-                                    window.location.href="/failePage"
-                                 })
-                            });
-                            razorpayObject.open();
-                                    }) 
-                                }else{
-                                    Swal.fire({
-                                        title:data.message,
-                                        text: "Go to product page and some new products to your Cart!.",
-                                        icon: "warning",
-                                        confirmButtonColor: "#3085d6",
-                                        confirmButtonText: "Continue"
-                                    }).then((res)=>{
-                                        if(res.isConfirmed){
-                                          window.location.href="/products"
-                                        }
-                                    })
-                                }
-                            }) 
+                            window.location.href = "/addAddress"
                         }
                     });
-                }
-            })
-        }else{
-          
-            fetch(`/orders`,{method:"POST",body:JSON.stringify({addressId:address,paymentMethod,coupen:couponId}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
-            .then((data)=>{
-             
-                if(data.success){
-                     fetch(`/saveOrder`,{method:"POST",body:JSON.stringify({addressId:address,coupen:couponId,paymentMethod:paymentMethod,paymentStatus:"Not paid",productStatus:"pending"}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
-                     .then(()=>{
-                        
-                        window.location.href="/successPage"
-                     })
-                    
-                }else if(data.outofstock){
+            }
+
+
+            if (paymentMethod == "Razor pay") {
+                fetch(`/orders`, { method: "POST", body: JSON.stringify({ addressId: address, paymentMethod, coupen: couponId }), headers: { "Content-Type": "application/json" } }).then((res) => res.json())
+                    .then((data) => {
                      
-                    Swal.fire({
-                    title:data.message,
-                    text: "Click the Continue button to remove the out of stock products from your cart and Continue purchasing!.",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#3085d6",
-                    cancelButtonColor: "#d33",
-                    confirmButtonText: "Continue"
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            fetch('/removeOutofStock',{method:"PATCH"}).then((res)=>res.json())
-                            .then((res)=>{
-                                if(res.success){
-                                  fetch(`/saveOrder`,{method:"POST",body:JSON.stringify({addressId:data.addressId,coupen:data.coupenId,paymentMethod:paymentMethod,paymentStatus:"Paid",productStatus:"pending",orderId:data.order_id}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
-                            .then((res)=>{
-                                if(res.success){
-                                    window.location.href="/successPage"   
-                                }else{
-                                      window.location.href="/failePage"
-                                      Swal.fire({
-                                            title:"Warning!.",
-                                            text:res.message,
-                                            icon: "warning",
-                                        });
+
+                        if (data.success) {
+                            var options = {
+                                "key": `${data.key_id}`,
+                                "amount": `${data.amount}`,
+                                "currency": "INR",
+                                "name": `${data.name}`,
+                                "order_id": `${data.order_id}`,
+                                "handler": function (response) {
+
+
+                                    fetch(`/saveOrder`, { method: "POST", body: JSON.stringify({ addressId: data.addressId, coupen: data.coupenId, paymentMethod: paymentMethod, paymentStatus: "Paid", productStatus: "pending", orderId: data.order_id }), headers: { "Content-Type": "application/json" } }).then((res) => res.json())
+                                        .then((res) => {
+
+                                            if (res.success) {
+                                                window.location.href = "/successPage"
+                                            } else {
+                                                Swal.fire({
+
+                                                    text: res.message,
+                                                    icon: "warning",
+                                                    confirmButtonColor: "#3085d6",
+                                                    confirmButtonText: "Continue"
+                                                }).then((res) => {
+                                                    if (res.isConfirmed) {
+                                                        window.location.href = "/failePage"
+                                                    }
+                                                })
+
+                                            }
+                                        })
+
+                                },
+                                "prefill": {
+                                    "name": `${data.name}`,
+                                    "email": `${data.email}`
+                                },
+                                "theme": {
+                                    "color": "#2300a3"
                                 }
-                            })  
-                                }else{
-                                    Swal.fire({
-                                        title:data.message,
-                                        text: "Go to product page and some new products to your Cart!.",
-                                        icon: "warning",
-                                        confirmButtonColor: "#3085d6",
-                                        confirmButtonText: "Continue"
-                                    }).then((res)=>{
-                                        if(res.isConfirmed){
-                                          window.location.href="/products"
+                            };
+
+                            var razorpayObject = new Razorpay(options);
+
+                            razorpayObject.on('payment.failed', function (response) {
+
+                                fetch(`/saveOrder`, { method: "POST", body: JSON.stringify({ addressId: data.addressId, coupen: data.coupenId, paymentMethod: paymentMethod, paymentStatus: "Failed", productStatus: "Failed", orderId: data.order_id }), headers: { "Content-Type": "application/json" } }).then((res) => res.json())
+                                    .then((res) => {
+                                        if (res.success) {
+                                            window.location.href = "/failePage"
+                                        } else {
+                                            Swal.fire({
+                                                title: "Warning!.",
+                                                text: res.message,
+                                                icon: "warning",
+                                                confirmButtonColor: "#3085d6",
+                                                confirmButtonText: "Continue"
+                                            }).then((res) => {
+                                                if (res.isConfirmed) {
+                                                    window.location.href = "/failePage"
+                                                }
+                                            })
                                         }
                                     })
+                            });
+
+                            razorpayObject.open();
+
+                        } else if (data.addAddress) {
+                            Swal.fire({
+                                title: "You dont have any address?",
+                                text: "Add a address first!",
+                                icon: "warning",
+                                confirmButtonColor: "#3085d6",
+                                confirmButtonText: "ok!"
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.href = "/addAddress"
+                                }
+                            });
+
+                        } else if (data.outofstock) {
+                            Swal.fire({
+                                title: data.message,
+                                text: "Click the Continue button to remove the out of stock products from your cart and Continue purchasing!.",
+                                icon: "warning",
+                                showCancelButton: true,
+                                confirmButtonColor: "#3085d6",
+                                cancelButtonColor: "#d33",
+                                confirmButtonText: "Continue"
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    fetch('/removeOutofStock', { method: "PATCH" }).then((res) => res.json())
+                                        .then((res) => {
+
+                                            if (res.success) {
+
+                                                fetch(`/orders`, { method: "POST", body: JSON.stringify({ addressId: address, paymentMethod, coupen: couponId }), headers: { "Content-Type": "application/json" } }).then((res) => res.json())
+                                                    .then((data) => {
+
+                                                        var options = {
+                                                            "key": `${data.key_id}`,
+                                                            "amount": `${data.amount}`,
+                                                            "currency": "INR",
+                                                            "name": `${data.name}`,
+                                                            "order_id": `${data.order_id}`,
+                                                            "handler": function (response) {
+
+                                                                fetch(`/saveOrder`, { method: "POST", body: JSON.stringify({ addressId: data.addressId, coupen: data.coupenId, paymentMethod: paymentMethod, paymentStatus: "Paid", productStatus: "Failed" }), headers: { "Content-Type": "application/json" } }).then((res) => res.json())
+                                                                    .then((res) => {
+                                                                        if (res.success) {
+                                                                            window.location.href = "/successPage"
+                                                                        } else {
+                                                                            Swal.fire({
+
+                                                                                text: res.message,
+                                                                                icon: "warning",
+                                                                                confirmButtonColor: "#3085d6",
+                                                                                confirmButtonText: "Continue"
+                                                                            }).then((res) => {
+                                                                                if (res.isConfirmed) {
+                                                                                    window.location.href = "/failePage"
+                                                                                }
+                                                                            })
+
+                                                                        }
+                                                                    })
+
+                                                            },
+                                                            "prefill": {
+                                                                "name": `${data.name}`,
+                                                                "email": `${data.email}`
+                                                            },
+                                                            "theme": {
+                                                                "color": "#2300a3"
+                                                            }
+                                                        };
+
+                                                        var razorpayObject = new Razorpay(options);
+                                                        razorpayObject.on('payment.failed', function (response) {
+                                                            fetch(`/saveOrder`, { method: "POST", body: JSON.stringify({ addressId: data.addressId, coupen: data.coupenId, paymentMethod: paymentMethod, paymentStatus: "Failed", productStatus: "Failed" }), headers: { "Content-Type": "application/json" } }).then((res) => res.json())
+                                                                .then(() => {
+
+                                                                    window.location.href = "/failePage"
+                                                                })
+                                                        });
+                                                        razorpayObject.open();
+                                                    })
+                                            } else {
+                                                Swal.fire({
+                                                    title: data.message,
+                                                    text: "Go to product page and some new products to your Cart!.",
+                                                    icon: "warning",
+                                                    confirmButtonColor: "#3085d6",
+                                                    confirmButtonText: "Continue"
+                                                }).then((res) => {
+                                                    if (res.isConfirmed) {
+                                                        window.location.href = "/products"
+                                                    }
+                                                })
+                                            }
+                                        })
+                                }
+                            });
+                        }
+                    })
+            } else {
+
+                fetch(`/orders`, { method: "POST", body: JSON.stringify({ addressId: address, paymentMethod, coupen: couponId }), headers: { "Content-Type": "application/json" } }).then((res) => res.json())
+                    .then((data) => {
+
+                        if (data.success) {
+                            fetch(`/saveOrder`, { method: "POST", body: JSON.stringify({ addressId: address, coupen: couponId, paymentMethod: paymentMethod, paymentStatus: "Not paid", productStatus: "pending" }), headers: { "Content-Type": "application/json" } }).then((res) => res.json())
+                                .then(() => {
+
+                                    window.location.href = "/successPage"
+                                })
+
+                        } else if (data.outofstock) {
+
+                            Swal.fire({
+                                title: data.message,
+                                text: "Click the Continue button to remove the out of stock products from your cart and Continue purchasing!.",
+                                icon: "warning",
+                                showCancelButton: true,
+                                confirmButtonColor: "#3085d6",
+                                cancelButtonColor: "#d33",
+                                confirmButtonText: "Continue"
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    fetch('/removeOutofStock', { method: "PATCH" }).then((res) => res.json())
+                                        .then((res) => {
+                                            if (res.success) {
+                                                fetch(`/saveOrder`, { method: "POST", body: JSON.stringify({ addressId: data.addressId, coupen: data.coupenId, paymentMethod: paymentMethod, paymentStatus: "Paid", productStatus: "pending", orderId: data.order_id }), headers: { "Content-Type": "application/json" } }).then((res) => res.json())
+                                                    .then((res) => {
+                                                        if (res.success) {
+                                                            window.location.href = "/successPage"
+                                                        } else {
+                                                            window.location.href = "/failePage"
+                                                            Swal.fire({
+                                                                title: "Warning!.",
+                                                                text: res.message,
+                                                                icon: "warning",
+                                                            });
+                                                        }
+                                                    })
+                                            } else {
+                                                Swal.fire({
+                                                    title: data.message,
+                                                    text: "Go to product page and some new products to your Cart!.",
+                                                    icon: "warning",
+                                                    confirmButtonColor: "#3085d6",
+                                                    confirmButtonText: "Continue"
+                                                }).then((res) => {
+                                                    if (res.isConfirmed) {
+                                                        window.location.href = "/products"
+                                                    }
+                                                })
+                                            }
+                                        })
                                 }
                             })
                         }
                     })
-                }
-            })
-        }
-    }  
+            }
+        }  
     </script>
     <script>
         function handleAddress(button) {
-        
-           let fname =  document.getElementById("fname")
-           let lname =  document.getElementById("lname")
-           let country =  document.getElementById("country")
-           let address =   document.getElementById("address")
-           let city =   document.getElementById("city")
-           let state =   document.getElementById("state")
-           let pincode =   document.getElementById("pincode")
-           let mobile =  document.getElementById("mobile")
-          
-           const snameLabel =  document.getElementById("lnameLabel")
-           const fnameLabel =  document.getElementById("fnameLabel")
-           const countryLabel =  document.getElementById("countryLabel")
-           const addressLabel =   document.getElementById("addressLabel")
-           const cityLabel =   document.getElementById("cityLabel")
-           const stateLabel =   document.getElementById("stateLabel")
-           const pincodeLabel =   document.getElementById("pincodeLabel")
-           const mobileLabel =  document.getElementById("mobileLabel")
-           
-           let error = false;
 
-           if(fname.value.trim().length == 0 ){
-              fnameLabel.style.color = "red";
-              error = true;
-            }else{
-               fnameLabel.style.color = "";
-           }
-           if(lname.value.trim().length == 0 ){
-              snameLabel.style.color = "red";
-              error = true;
-            }else{
-               snameLabel.style.color = "";
-           }
+            let fname = document.getElementById("fname")
+            let lname = document.getElementById("lname")
+            let country = document.getElementById("country")
+            let address = document.getElementById("address")
+            let city = document.getElementById("city")
+            let state = document.getElementById("state")
+            let pincode = document.getElementById("pincode")
+            let mobile = document.getElementById("mobile")
 
-           if(address.value.trim().length == 0 ){
-              addressLabel.style.color = "red";
-              error = true;
-            }else{
-               addressLabel.style.color = "";
-           }
+            const snameLabel = document.getElementById("lnameLabel")
+            const fnameLabel = document.getElementById("fnameLabel")
+            const countryLabel = document.getElementById("countryLabel")
+            const addressLabel = document.getElementById("addressLabel")
+            const cityLabel = document.getElementById("cityLabel")
+            const stateLabel = document.getElementById("stateLabel")
+            const pincodeLabel = document.getElementById("pincodeLabel")
+            const mobileLabel = document.getElementById("mobileLabel")
 
-           if(country.value.trim().length == 0 ){
-              countryLabel.style.color = "red";
-              error = true;
-            }else{
-               countryLabel.style.color = "";
-           }
+            let error = false;
 
-           if(city.value.trim().length == 0 ){
-              cityLabel.style.color = "red";
-              error = true;
-            }else{
-               cityLabel.style.color = "";
-           }
-           if(state.value.trim().length == 0 ){
-              stateLabel.style.color = "red";
-              error = true;
-            }else{
-               stateLabel.style.color = "";
-           }
+            if (fname.value.trim().length == 0) {
+                fnameLabel.style.color = "red";
+                error = true;
+            } else {
+                fnameLabel.style.color = "";
+            }
+            if (lname.value.trim().length == 0) {
+                snameLabel.style.color = "red";
+                error = true;
+            } else {
+                snameLabel.style.color = "";
+            }
 
-           if(pincode.value.trim().length == 0 ){
-              pincodeLabel.style.color = "red";
-              error = true;
-            }else{
-               pincodeLabel.style.color = "";
-           }
+            if (address.value.trim().length == 0) {
+                addressLabel.style.color = "red";
+                error = true;
+            } else {
+                addressLabel.style.color = "";
+            }
 
-           if(mobile.value.trim().length == 0 ){
-              mobileLabel.style.color = "red";
-              error = true;
-            }else{
-               mobileLabel.style.color = "";
-           }
+            if (country.value.trim().length == 0) {
+                countryLabel.style.color = "red";
+                error = true;
+            } else {
+                countryLabel.style.color = "";
+            }
 
-         
-           
-           if(error){
+            if (city.value.trim().length == 0) {
+                cityLabel.style.color = "red";
+                error = true;
+            } else {
+                cityLabel.style.color = "";
+            }
+            if (state.value.trim().length == 0) {
+                stateLabel.style.color = "red";
+                error = true;
+            } else {
+                stateLabel.style.color = "";
+            }
+
+            if (pincode.value.trim().length == 0) {
+                pincodeLabel.style.color = "red";
+                error = true;
+            } else {
+                pincodeLabel.style.color = "";
+            }
+
+            if (mobile.value.trim().length == 0) {
+                mobileLabel.style.color = "red";
+                error = true;
+            } else {
+                mobileLabel.style.color = "";
+            }
+
+
+
+            if (error) {
+                Swal.fire({
+                    title: "Warning!.",
+                    text: "Please Provide All Information!.",
+                    icon: "warning",
+                });
+                return;
+            }
+
             Swal.fire({
-                 title:"Warning!.",
-                text:"Please Provide All Information!.",
-                icon: "warning",
-            });
-            return;
-           }
-
-           Swal.fire({
                 title: "Do you want to save the changes?",
                 showCancelButton: true,
                 confirmButtonText: "Save",
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                       button.disabled = true;
-                        button.innerHTML =  `<div class="spinner-border spinner-border-sm me-2" role="status">
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    button.disabled = true;
+                    button.innerHTML = `<div class="spinner-border spinner-border-sm me-2" role="status">
                                         <span class="visually-hidden"></span>
                                     </div>
                                     Loading...
                                     `;
-                        fetch("/addAddress",{method:"PATCH",body:JSON.stringify({fname:fname.value.trim(),lname:lname.value.trim(),country:country.value.trim(),address:address.value.trim(),city:city.value.trim(),pincode:pincode.value.trim(),state:state.value.trim(),mobile:mobile.value.trim()}),headers:{"Content-Type":"application/json"}}).then((res)=>res.json())
-                        .then((res)=>{
+                    fetch("/addAddress", { method: "PATCH", body: JSON.stringify({ fname: fname.value.trim(), lname: lname.value.trim(), country: country.value.trim(), address: address.value.trim(), city: city.value.trim(), pincode: pincode.value.trim(), state: state.value.trim(), mobile: mobile.value.trim() }), headers: { "Content-Type": "application/json" } }).then((res) => res.json())
+                        .then((res) => {
                             button.disabled = false;
-                             button.innerText = `Save Address`
-                            if(res.success){
-                                fname.value  =""
-                                lname.value  =""
-                                country.value  =""
-                                address.value  =""
-                                city.value  =""
-                                pincode.value  =""
-                                state.value  =""
-                                mobile.value  =""
-                              Swal.fire({
-                                title:"Success!.",
-                                text:res.message,
-                                icon: "success",
-                              });
-                         
-                              document.getElementById("chooseAddress").innerHTML= res.addAddress.address.map((address)=>`<option value="${address._id}"> ${address.address}</option> `)
-                              
-                            }else{
-                               
-                              Swal.fire({
-                                title:"Warning!.",
-                                text:res.message,
-                                icon: "warning",
-                              });
+                            button.innerText = `Save Address`
+                            if (res.success) {
+                                fname.value = ""
+                                lname.value = ""
+                                country.value = ""
+                                address.value = ""
+                                city.value = ""
+                                pincode.value = ""
+                                state.value = ""
+                                mobile.value = ""
+                                Swal.fire({
+                                    title: "Success!.",
+                                    text: res.message,
+                                    icon: "success",
+                                });
+
+                                document.getElementById("chooseAddress").innerHTML = res.addresses.address.map((address) => `<option value="${address._id}"> ${address.address}</option> `)
+
+                            } else {
+
+                                Swal.fire({
+                                    title: "Warning!.",
+                                    text: res.message,
+                                    icon: "warning",
+                                });
                             }
                         })
-                    }
-                })
+                }
+            })
 
 
-            
+
         }
     </script>
     <script src="assets/js/jquery.min.js"></script>
@@ -1054,13 +1091,14 @@
     <!-- Main JS File -->
     <script src="assets/js/main.js"></script>
     <script src="assets/js/demos/demo-16.js"></script>
-   
+
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-</body>
+    </body>
 
 
-<!-- molla/index-16.html  22 Nov 2019 10:00:25 GMT -->
-</html>
+    <!-- molla/index-16.html  22 Nov 2019 10:00:25 GMT -->
+
+    </html>
 
 
-<% include("../layout/footer.ejs") %>
+    <% include("../layout/footer.ejs") %>

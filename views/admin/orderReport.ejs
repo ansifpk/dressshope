@@ -30,7 +30,7 @@
             </div>
             <nav>
                 <ul class="menu-aside">
-                    <li   class="menu-item active"   >
+                    <li   class="menu-item "   >
                         <a class="menu-link" href="/admin/dashboard">
                             <i class="icon material-icons md-home"></i>
                             <span class="text">Dashboard</span>
@@ -84,7 +84,7 @@
                     </li>
                     <li class="menu-item has-submenu">
                         <a class="menu-link" href="/admin/coupons">
-                            <i class="icon material-icons md-shopping_bag"></i>
+                            <i class="icon material-icons md-local_activity"></i>
                             <span class="text">Coupons</span>
                         </a>
                         <div class="submenu">
@@ -94,7 +94,7 @@
                     </li>
                     <li class="menu-item has-submenu">
                         <a class="menu-link" href="">
-                            <i class="icon material-icons md-shopping_bag"></i>
+                            <i class="icon material-icons md-local_offer"></i>
                             <span class="text">Offers</span>
                         </a>
                         <div class="submenu">
@@ -103,7 +103,7 @@
                            
                         </div>
                     </li>
-                   <li class="menu-item has-submenu">
+                   <li class="menu-item has-submenu active">
                         <a class="menu-link" href="/admin/orderReport">
                             <i class="icon material-icons md-post_add"></i>
                             <span class="text">Report</span>
@@ -115,8 +115,8 @@
                     </li>
                     <li class="menu-item">
                         <a class="menu-link" href="/admin/logout">
-                            <i class="icon material-icons md-comment"></i>
-                            <span class="text">Logout</span>
+                            <i class="icon material-icons md-login"></i>
+                           <span class="text">Logout</span>
                         </a>
                     </li>
                    
@@ -126,49 +126,7 @@
             </nav>
         </aside>
         <main class="main-wrap">
-            <header class="main-header navbar">
-                <div class="col-search">
-                    
-                </div>
-                <div class="col-nav">
-                    <button class="btn btn-icon btn-mobile me-auto" data-trigger="#offcanvas_aside"><i class="material-icons md-apps"></i></button>
-                    <ul class="nav">
-                        <li class="nav-item">
-                            <a class="nav-link btn-icon" href="#">
-                                <i class="material-icons md-notifications animation-shake"></i>
-                                <span class="badge rounded-pill">3</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link btn-icon darkmode" href="#"> <i class="material-icons md-nights_stay"></i> </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="requestfullscreen nav-link btn-icon"><i class="material-icons md-cast"></i></a>
-                        </li>
-                        <li class="dropdown nav-item">
-                            <a class="dropdown-toggle" data-bs-toggle="dropdown" href="#" id="dropdownLanguage" aria-expanded="false"><i class="material-icons md-public"></i></a>
-                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownLanguage">
-                                <a class="dropdown-item text-brand" href="#"><img src="assets/imgs/theme/flag-us.png" alt="English" />English</a>
-                                <a class="dropdown-item" href="#"><img src="assets/imgs/theme/flag-fr.png" alt="Français" />Français</a>
-                                <a class="dropdown-item" href="#"><img src="assets/imgs/theme/flag-jp.png" alt="Français" />日本語</a>
-                                <a class="dropdown-item" href="#"><img src="assets/imgs/theme/flag-cn.png" alt="Français" />中国人</a>
-                            </div>
-                        </li>
-                        <li class="dropdown nav-item">
-                            <a class="dropdown-toggle" data-bs-toggle="dropdown" href="#" id="dropdownAccount" aria-expanded="false"> <img class="img-xs rounded-circle" src="assets/imgs/people/avatar-2.png" alt="User" /></a>
-                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownAccount">
-                                <a class="dropdown-item" href="#"><i class="material-icons md-perm_identity"></i>Edit Profile</a>
-                                <a class="dropdown-item" href="#"><i class="material-icons md-settings"></i>Account Settings</a>
-                                <a class="dropdown-item" href="#"><i class="material-icons md-account_balance_wallet"></i>Wallet</a>
-                                <a class="dropdown-item" href="#"><i class="material-icons md-receipt"></i>Billing</a>
-                                <a class="dropdown-item" href="#"><i class="material-icons md-help_outline"></i>Help center</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item text-danger" href="#"><i class="material-icons md-exit_to_app"></i>Logout</a>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </header>
+            
             <section class="content-main">
                 <div class="content-header">
                     <div>
@@ -176,8 +134,8 @@
                         <p>Whole data about your business here</p>
                     </div>
                     <div id="reports">
-                        <a href="/admin/createReport?sDate=<%=today%>" class="btn btn-primary <%=orderData.length == 0?"disabled":""%>"><i class="text-muted material-icons md-post_add"></i>Create report</a>
-                        <a href="/admin/createReportPdf?eDate=<%=today%>" class="btn btn-primary <%=orderData.length == 0?"disabled":""%>"><i class="text-muted material-icons md-post_add"></i>Create report in pdf</a> 
+                        <a href="/admin/createReport?sDate=<%=sDate%>&&eDate=<%=eDate%>" class="btn btn-primary <%=orderData.length == 0?"disabled":""%>"><i class="text-muted material-icons md-post_add"></i>Create report</a>
+                        <a href="/admin/createReportPdf?sDate=<%=sDate%>&&eDate=<%=eDate%>"  class="btn btn-primary <%=orderData.length == 0?"disabled":""%>"><i class="text-muted material-icons md-post_add"></i>Create report in pdf</a> 
                     </div>
                 </div>
                
@@ -187,15 +145,14 @@
                             <div class="row">
                                 <div class="card mb-4">
                     <header class="card-header">
-                        <h4 class="card-title">Latest orders</h4>
                         <div class="row align-items-center">
                             <div class="col-md-4 col-6">
                                 <label>Choose Starting Date</label>
-                                <input id="sDate" type="date" name="eDate" value="<%=today.toISOString().split('T')[0]%>" class="form-control" />   
+                                <input id="sDate" type="date" name="eDate" value="<%=sDate.toLocaleDateString("en-CA")%>" class="form-control" />   
                             </div>
                             <div class="col-md-4 col-6">
                                 <label>Choose Ending Date</label>
-                                <input id="eDate" type="date" name="eDate" value="<%=today.toISOString().split('T')[0]%>" class="form-control" />   
+                                <input id="eDate" type="date" name="eDate" value="<%=eDate.toISOString().split('T')[0]%>" class="form-control" />   
                             </div>
                             <div class="col-md-4 mt-3 col-6">
                             <button class="btn btn-sm font-sm rounded btn-brand" onclick="dateChange()">  Save </button>
@@ -209,47 +166,99 @@
                                     <thead class="table-light">
                                         <tr>
                                              
+                                            <th class="align-middle" scope="col">Si.No</th>
                                             <th class="align-middle" scope="col">Order Id</th>
                                             <th class="align-middle" scope="col">Billing Name</th>
                                             <th class="align-middle" scope="col">Billing Address</th>
-                                            <th class="align-middle" scope="col">Total Products</th>
-                                            <th class="align-middle" scope="col">Product Total</th>
-                                            <th class="align-middle" scope="col">Discount Amount</th>
-                                            <th class="align-middle" scope="col">Payment Status</th>
+                                            <th class="align-middle" scope="col">Product Name</th>
                                             <th class="align-middle" scope="col">Product Status</th>
                                             <th class="align-middle" scope="col">Payment Method</th>
                                             <th class="align-middle" scope="col">Date</th>
+                                            <th class="align-middle" scope="col">Product Quandity</th>
+                                            <th class="align-middle" scope="col">Product Price</th>
+                                            <th class="align-middle" scope="col">Discount Amount</th>
+                                            <th class="align-middle" scope="col">Product Total</th>
                                         </tr>
                                     </thead>
                                     <tbody id="table">
+                                        <%
+                                        let total = 0;
+                                        let discount = 0;
+                                        let gTotal = 0;
+                                        %>
                                             <%
                                            if(orderData.length > 0){
-                                               orderData.forEach((order) => {
-                                                       const total = order.products.reduce((acc,cur)=>acc+=cur.productTotal,0)
+                                               
+                                               orderData.forEach((order,index) => {
+                                                 discount+=order.couponOfferPrice;
+                                                 total+=order.products.productTotal;
                                                %>
                                                 <tr>
-                                                 <td><%=order._id%></td>
-                                                 <td><%=order.userId.name%></td>
-                                                 <td><%=order.products[0].deliveryAddress.address%></td>
-                                                 <td><%=order.products.length%></td>
-                                                 <td><%=total%></td>
-                                                 <td><%=order.couponOfferPrice%></td>
-                                                 <td class="text-center <%=order.products[0].paymentStatus == "Not Paid"?"badge-soft-warning":order.products[0].paymentStatus == "Paid"?"badge-soft-success":"badge-soft-danger"%>"><%=order.products[0].paymentStatus%></td>
-                                                 
-                                                  <td class="text-center <%=order.products[0].productStatus == "pending" || order.products[0].productStatus == "Delivered" ?"badge-soft-success":"badge-soft-danger"%>"><%=order.products[0].productStatus%></td>
-                                                 <td><%=order.products[0].paymentMethod%></td>
-                                                 <td><%=order.createdAt%></td>
+                                                 <td class="text-center"><%=index+1%></td>
+                                                 <td class="text-center"><%=order._id%></td>
+                                                 <td class="text-center"><%=order.userId.name%></td>
+                                                 <td class="text-center"><%=order.products.deliveryAddress.address%></td>
+                                                 <td class="text-center"><%=order.products.productId.name %></td>
+                                                 <td class="text-center <%=order.products.productStatus == "pending" || order.products.productStatus == "Delivered" ?"badge-soft-success":"badge-soft-danger"%>"><%=order.products.productStatus%></td>
+                                                 <td class="text-center"><%=order.products.paymentMethod%></td>
+                                                 <td class="text-center"><%=order.createdAt.toLocaleDateString()%></td>
+                                                 <td class="text-center"><%=order.products.quandity %></td>
+                                                 <td class="text-center"><%=order.products.productId.Price %></td>
+                                                 <td class="text-center"><%=order.couponOfferPrice%></td>
+                                                 <td class="text-center"><%=order.products.productTotal - order.couponOfferPrice %></td>
                                                 </tr>
                                                <%
                                                });    
+                                                
                                            }else{%>
                                              <tr>
-                                                <td colspan="25">No Orders Are Made In Thid Time Period!.</td>
+                                                <td colspan="25">No Orders Are Made In This Time Period!.</td>
                                              </tr>
                                            
                                            <%}
                                            %>
-                                     
+                                        <tr>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td >Total Amount</td>
+                                            <td class="text-center"><%=total%></td>
+                                        <tr/>
+                                        <tr>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td >Discount Amount</td>
+                                            <td class="text-center"><%=discount%></td>
+                                        <tr/>
+                                        <tr>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td >Grand Total</td>
+                                            <td class="text-center"><%=total - discount%></td>
+                                        <tr/>
                                     </tbody>
                                 </table>
                             </div>
@@ -287,17 +296,18 @@
     function dateChange(){
       const sDate = document.getElementById("sDate").value
       const eDate = document.getElementById("eDate").value
+
       const reports = document.getElementById("reports")
       fetch(`/admin/dateChange?eDate=${eDate}&&sDate=${sDate}`).then((res)=>res.json())
       .then((res)=>{
            
         if (!res.success) {
              Swal.fire({
-                                title: "Warning!",
-                                text: res.message,
-                                icon: "warning"
-                            });
-                            return;
+                title: "Warning!",
+                text: res.message,
+                icon: "warning"
+             });
+            return;
         }else{
            reports.innerHTML = ` <a href="/admin/createReport${res.orderData.length > 0?`?sDate=${sDate}&&eDate=${eDate}`:''}" class="btn btn-primary ${res.orderData.length > 0?"":"disabled"} "><i class="text-muted material-icons md-post_add"></i>Create report</a>
                         <a href="/admin/createReportPdf${res.orderData.length > 0?`?sDate=${sDate}&&eDate=${eDate}`:""}" class="btn btn-primary  ${res.orderData.length > 0?"":"disabled"}"><i class="text-muted material-icons md-post_add"></i>Create report in pdf</a>
@@ -309,23 +319,86 @@
                 <td colspan="25">No Orders Are Made In Thid Time Period!.</td>
              </tr>`
         }else{
-          
+         let discount = 0;
+         let total = 0;
          document.getElementById("table").innerHTML = 
-            res.orderData.map((order) =>{
-                const total = order.products.reduce((acc,cur)=>acc+=cur.productTotal,0)
-              
+            res.orderData.map((order,index) =>{
+                discount+=order.couponOfferPrice;
+                total+=order.products.productTotal;
+                if (res.orderData.length-1 == index) {
+                    return `
+                   <tr>
+                    <td class="text-center">${index+1}</td>
+                    <td class="text-center" >${order._id}</td>
+                    <td class="text-center">${order.userId.name}</td>
+                    <td class="text-center">${order.products.deliveryAddress.address}</td>
+                    <td class="text-center">${order.products.productId.name}</td>
+                    <td class="text-center ${order.products.productStatus == "pending" || order.products.productStatus == "Delivered" ?"badge-soft-success":"badge-soft-danger"}">${order.products.productStatus}</td>
+                    <td class="text-center">${order.products.paymentMethod}</td>
+                    <td class="text-center">${new Date(order.createdAt).toLocaleDateString()}</td>
+                    <td class="text-center">${order.products.productId.Price}</td>
+                    <td class="text-center">${order.products.quandity}</td>
+                    <td class="text-center">${order.couponOfferPrice}</td>
+                    <td class="text-center">${order.products.productTotal - order.couponOfferPrice}</td>
+                  </tr>
+                   <tr>
+                     <td></td>
+                     <td></td>
+                     <td></td>
+                     <td></td>
+                     <td></td>
+                     <td></td>
+                     <td></td>
+                     <td></td>
+                     <td></td>
+                     <td></td>
+                     <td >Total Amount</td>
+                     <td class="text-center">${total}</td>
+                    <tr/>
+                    <tr>
+                     <td></td>
+                     <td></td>
+                     <td></td>
+                     <td></td>
+                     <td></td>
+                     <td></td>
+                     <td></td>
+                     <td></td>
+                     <td></td>
+                     <td></td>
+                     <td >Discount Amount</td>
+                     <td class="text-center">${discount}</td>
+                    <tr/>
+                    <tr>
+                     <td></td>
+                     <td></td>
+                     <td></td>
+                     <td></td>
+                     <td></td>
+                     <td></td>
+                     <td></td>
+                     <td></td>
+                     <td></td>
+                     <td></td>
+                     <td >Grand Total</td>
+                     <td class="text-center">${total - discount}</td>
+                    <tr/>
+                  `  
+                }
                 return `
                    <tr>
-                    <td>${order._id}</td>
-                    <td>${order.userId.name}</td>
-                    <td>${order.products[0].deliveryAddress.address}</td>
-                    <td>${order.products.length}</td>
-                    <td>${total}</td>
-                    <td>${order.couponOfferPrice}</td>
-                    <td class="text-center ${order.products[0].paymentStatus == "Not Paid"?"badge-soft-warning":order.products[0].paymentStatus == "Paid"?"badge-soft-success":"badge-soft-danger"}">${order.products[0].paymentStatus}</td>
-                    <td class="text-center ${order.products[0].productStatus == "pending" || order.products[0].productStatus == "Delivered" ?"badge-soft-success":"badge-soft-danger"}">${order.products[0].productStatus}</td>
-                    <td>${order.products[0].paymentMethod}</td>
-                    <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+                    <td class="text-center">${index+1}</td>
+                    <td class="text-center" >${order._id}</td>
+                    <td class="text-center">${order.userId.name}</td>
+                    <td class="text-center">${order.products.deliveryAddress.address}</td>
+                    <td class="text-center">${order.products.productId.name}</td>
+                    <td class="text-center ${order.products.productStatus == "pending" || order.products.productStatus == "Delivered" ?"badge-soft-success":"badge-soft-danger"}">${order.products.productStatus}</td>
+                    <td class="text-center">${order.products.paymentMethod}</td>
+                    <td class="text-center">${new Date(order.createdAt).toLocaleDateString()}</td>
+                    <td class="text-center">${order.products.productId.Price}</td>
+                    <td class="text-center">${order.products.quandity}</td>
+                    <td class="text-center">${order.couponOfferPrice}</td>
+                    <td class="text-center">${order.products.productTotal - order.couponOfferPrice}</td>
                   </tr>
                   `  
             }).join("")
@@ -333,46 +406,17 @@
         }
 
     }
-     
             return
          reports.innerHTML = ` <a href="/admin/createReport" class="btn btn-primary ${data.array.length > 0?"":"disabled"} "><i class="text-muted material-icons md-post_add"></i>Create report</a>
                         <a href="/admin/createReportPdf" class="btn btn-primary  ${data.array.length > 0?"":"disabled"}"><i class="text-muted material-icons md-post_add"></i>Create report in pdf</a>
                        `
-       
-        if(data.array.length == 0){
-                
-                document.getElementById("table").innerHTML = ` <tr>
-                                                <td>No Order Made In This Weak</td>
-                                              </tr>`
-                
-            }else{
-               
-                document.getElementById("table").innerHTML = 
-                data.array.map((product)=>{
-                   return  `
-                      <tr>
-                                                    
-                                                    <td class="text-center">${product.deliveryAddress.fname} ${product.deliveryAddress.lname}</td>
-                                                    <td class="text-center">${product.productId.name}</td>
-                                                    <td class="text-center">${new Date(product.orderDate).toLocaleDateString() }</td>
-                                                    <td class="text-center">Rs.${product.productId.Price}</td>
-                                                    <td class="text-center ${product.paymentStatus == "Not Paid"?"badge-soft-warning":product.paymentStatus == "Paid"?"badge-soft-success":"badge-soft-danger"}">${product.paymentStatus}</td>
-                                                    <td class="text-center ${product.productStatus == "pending" || product.productStatus == "Delivered" ?"badge-soft-success":"badge-soft-danger"}">${product.productStatus}</td>
-                                                    <td class="text-center">${product.paymentMethod}</td>
-                                                    
-                                                </tr>
-
-                     `
-
-    
-                }).join("")
-            }
       })
     }
         
    
             
        </script>
+      
         <script src="assets/js/vendors/jquery-3.6.0.min.js"></script>
         <script src="assets/js/vendors/bootstrap.bundle.min.js"></script>
         <script src="assets/js/vendors/select2.min.js"></script>

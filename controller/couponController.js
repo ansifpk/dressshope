@@ -33,10 +33,7 @@ const applyCoupon = async (req, res) => {
             return res.json({success:false,message:"Invalid Coupon Code!."});
         }
         const {cartTotal} = await getStoreDataForUser(req,res);
-        console.log(checkCoupon,"totle",)
-        // HKyYAfbE Xx2AFiXu eMMncJ00 
         const today = new Date();
-      
         if(new Date(checkCoupon.expiryDate).getFullYear()==today.getFullYear()&&new Date(checkCoupon.expiryDate).getMonth()==today.getMonth()&&new Date(checkCoupon.expiryDate).getDate()<today.getDate()){
             return res.json({success:false,message:"Coupon Expired!."})
         }
@@ -68,7 +65,7 @@ const addCuppen = async (req, res) => {
 
         const {title,coupenCode,date,min} = req.body;
         let offerPrice = req.body.offerPrice*1
-        const expiryDate = new Date(req.body.date);
+        const expiryDate = new Date(date);
         const today = new Date();
 
         if(offerPrice < 5 || offerPrice > 20){
@@ -77,6 +74,9 @@ const addCuppen = async (req, res) => {
 
         if(today>=expiryDate){
           return res.json({success:false,message: " Invalid Date "});
+        }
+        if(min < 50){
+          return res.json({success:false,message: "Minimum spent must be greater than 50"});
         }
         
          
@@ -134,6 +134,9 @@ const loadeditCuppen = async (req, res) => {
             if(today>=expiryDate){
               return res.json({success:false,message: " Invalid Date "});
             }
+            if(min< 50){
+               return res.json({success:false,message: "Minimum spent must be greater than 50"});
+            }
 
             if(req.file){
               const {secure_url,public_id} = await cloudineryHelper(req.file.path,"ecommerceCouponImages");
@@ -170,11 +173,11 @@ const deleteCoupen = async (req, res) => {
             res.json({success:false,message:"Coupon Not Found!."});
         }
 
-        const count = await CoupenDB.find()
+        const count = await CoupenDB.find().length;
         const totalPage = Math.ceil(count/limit)
         const coupons = await CoupenDB.find().sort({createdAt:-1}).limit(limit)
         
-        res.json({success:true,coupons,totalPage,message:"Coupon Deleted Successfully!."});
+        return res.json({success:true,coupons,totalPage,message:"Coupon Deleted Successfully!."});
 
         
 
@@ -265,14 +268,14 @@ const couponPagination = async (req, res) => {
                
                
                     if(filter == "Active"){
-                       coupons = await CoupenDB.find({$and:[{expiryDate:{$gte:date}},{ name: { $regex: ".*" + search + ".*", $options: "i" }}]}).sort(query).skip((page-1)*limit).limit(limit*page)
+                       coupons = await CoupenDB.find({$and:[{expiryDate:{$gte:date}},{ name: { $regex: ".*" + search + ".*", $options: "i" }}]}).sort(query).skip((page-1)*limit).limit(limit)
                     }else if(filter == 'Expired'){
-                       coupons = await CoupenDB.find({$and:[{expiryDate:{$lt:date}},{ name: { $regex: ".*" + search + ".*", $options: "i" }}]}).sort(query).skip((page-1)*limit).limit(limit*page)
+                       coupons = await CoupenDB.find({$and:[{expiryDate:{$lt:date}},{ name: { $regex: ".*" + search + ".*", $options: "i" }}]}).sort(query).skip((page-1)*limit).limit(limit)
                     }else{
-                       coupons = await CoupenDB.find({name: { $regex: ".*" + search + ".*", $options: "i" }}).sort(query).skip((page-1)*limit).limit(limit*page)
+                       coupons = await CoupenDB.find({name: { $regex: ".*" + search + ".*", $options: "i" }}).sort(query).skip((page-1)*limit).limit(limit)
                     }
     
-                    res.json({coupons})
+                    return res.json({coupons})
     } catch (error) {
         console.log(error.message);
     }
