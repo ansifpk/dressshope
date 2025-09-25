@@ -126,8 +126,8 @@ adminRouter.delete('/referalOffer',authadmin.loginAdmin,offerController.deleteRe
 
 // ###########  Report #################################
 
-adminRouter.get('/createReport',reportController.createReport)
+adminRouter.get('/createReport',authadmin.loginAdmin,reportController.createReport)
 adminRouter.get('/createReportPdf',authadmin.loginAdmin,reportController.createReportPdf)
 adminRouter.get('/orderReport',authadmin.loginAdmin,reportController.orderReport)
-adminRouter.get('/dateChange',reportController.dateChange)
+adminRouter.get('/dateChange',authadmin.loginAdmin,reportController.dateChange)
 module.exports=adminRouter;
