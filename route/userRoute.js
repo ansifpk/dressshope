@@ -138,5 +138,4 @@ user_route.post('/applyCoupon',auth.loginUser,authBlock.blockUser,couponControll
 user_route.get('/about',auth.loginUser,authBlock.blockUser,userControll.about);
 user_route.get('/contact',auth.loginUser,authBlock.blockUser,userControll.contact);
 user_route.get('/test',userControll.test);
-user_route.get('/test1',(req,res)=>res.render("invoice"));
 module.exports=user_route;

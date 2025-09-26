@@ -1590,7 +1590,9 @@ const test = async (req, res) => {
     const orderData = await OrderDB.findOne({ _id: productId})
       .populate("userId")
       .populate("products.productId");
-    const total = orderData.products.reduce((acc,cur)=>{
+    const total = orderData.products
+    .filter((order)=>order.productStatus == "pending" || order.productStatus == "Delivered" || order.productStatus == "returnPending")
+    .reduce((acc,cur)=>{
       return acc+=cur.productId.Price;
     },0);
     const data = {

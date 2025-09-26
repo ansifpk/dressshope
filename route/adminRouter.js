@@ -38,9 +38,7 @@ const imageFilter = (req, file, cb) => {
   }
 };
 
-
 const upload = multer({storage:storage,fileFilter:imageFilter});
-
 
 adminRouter.set('views','./views/admin')
 
@@ -53,7 +51,6 @@ adminRouter.get('/changeDateDashboard',authadmin.loginAdmin,adminController.chan
 adminRouter.get('/filterDashboard',adminController.filterDashboard);
 adminRouter.get('/changeChart',authadmin.loginAdmin,adminController.chart);
 adminRouter.get('/logout',authadmin.loginAdmin,adminController.adminLogout);
-
 
 //################### user ##########################
 
@@ -76,7 +73,6 @@ adminRouter.patch('/listProducts',authadmin.loginAdmin,productController.listPro
 adminRouter.get('/searchProduct',authadmin.loginAdmin,productController.searchProduct);
 adminRouter.get('/paginationProduct',authadmin.loginAdmin,productController.paginationProduct);
 adminRouter.get('/filterAndsortProduct',authadmin.loginAdmin,productController.filterAndsortProduct);
-
 
 //################### category ##########################
 

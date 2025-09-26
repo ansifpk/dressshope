@@ -61,13 +61,7 @@
                           orderData.products
                           .filter((order)=>order.productStatus == "pending" || order.productStatus == "Delivered" || order.productStatus == "returnPending")
                           .forEach((order)=>{
-                              offerCheck =  offer.find((value)=>value.iteam == order.productId.name)
-                              if (offerCheck) {
-                                console.log(total,"1");
-                                total = Math.floor( total - order.productId.Price*(offerCheck.offerRate/100))
-                                console.log(total,"2");
-                             }
-                             
+                           
                             %>
                               <tr>
                                     <td>
