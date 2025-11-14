@@ -30,7 +30,6 @@ const securePassword = async (password) => {
 
 const sendOTPverificationEmail = async (email, res) => {
   try {
-   console.log(process.env.BREVO_API_KEY);
     
    const client = new brevo.TransactionalEmailsApi();
     client.setApiKey(
@@ -40,13 +39,12 @@ const sendOTPverificationEmail = async (email, res) => {
     const sendSmtpEmail = new brevo.SendSmtpEmail();
     sendSmtpEmail.sender = {
       name: "molla",
-      email: process.env.MY_EMAIL, // MUST BE VERIFIED IN BREVO
+      email: process.env.MY_EMAIL,
     };
+    otp = `${Math.floor(1000 + Math.random() * 9000)}`;
     sendSmtpEmail.to = [{ email }];
     sendSmtpEmail.subject = "Your OTP Code";
     sendSmtpEmail.htmlContent = `<p>Your OTP is: <b>${otp}</b></p>`;
-
-otp = `${Math.floor(1000 + Math.random() * 9000)}`;
 
     // hash ottp
     const saltRounds = 10;
@@ -65,7 +63,7 @@ otp = `${Math.floor(1000 + Math.random() * 9000)}`;
    return res.json({ success: true, email });
 
   } catch (error) {
-    console.log(error);
+    console.log(error.message);
   }
 };
 //########### google ##############
