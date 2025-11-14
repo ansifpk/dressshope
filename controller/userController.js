@@ -57,7 +57,7 @@ const sendOTPverificationEmail = async (email, res) => {
 
     await newOtpVerifivation.save();
     console.log("checing");
-    await sgMail.send(msg);
+    await sgMail.send(mailOptions);
     console.log("finished");
 
    return res.json({ success: true, email });
