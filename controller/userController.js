@@ -31,7 +31,8 @@ const securePassword = async (password) => {
 
 const sendOTPverificationEmail = async (email, res) => {
   try {
-  
+   console.log(process.env.BREVO_API_KEY);
+   
     const client = new SibApiV3Sdk.TransactionalEmailsApi();
 client.setApiKey(
   SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey,
