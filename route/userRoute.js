@@ -44,10 +44,15 @@ user_route.get("/failed",auth.loginUser,authBlock.blockUser,userControll.failed)
 
 // ########################login&register##############################
 
-user_route.get("/register",auth.logoutUser,userControll.register);
-user_route.post("/register",userControll.insertUser);
-user_route.get('/otp',auth.logoutUser,userControll.loadOtp);
-user_route.post('/otp',userControll.verifyOtp);
+user_route.route("/register")
+.all(auth.logoutUser)
+.get(userControll.register)
+.post(userControll.insertUser)
+
+user_route.route("/otp")
+.all(auth.logoutUser)
+.get(userControll.loadOtp)
+.post(userControll.verifyOtp)
 user_route.post("/login",userControll.veryfyLogin);
 user_route.get('/resend',auth.logoutUser,userControll.resendOtp)
 user_route.get('/resendOTP',auth.loginUser,authBlock.blockUser,userControll.resendOtp)
@@ -66,12 +71,21 @@ user_route.get("/searchProduct",userControll.searchProduct);
 
 // ########################password##############################
 
-user_route.get("/changePassword",auth.loginUser,authBlock.blockUser,userControll.loadchangePassword);
-user_route.post("/changePassword",auth.loginUser,authBlock.blockUser,userControll.veryfyChangePassword);
-user_route.get("/forget",userControll.loadforgetPassword);
-user_route.post("/forget",userControll.veryfyForgetPassword);
-user_route.get("/forgetpassword",userControll.loadnewPassword);
-user_route.post("/forgetpassword",userControll.veryfynewPassword);
+user_route.route("/changePassword")
+.all(auth.loginUser,authBlock.blockUser)
+.get(userControll.loadchangePassword)
+.post(userControll.veryfyChangePassword)
+
+user_route.route("/forget")
+.all(auth.logoutUser)
+.get(userControll.loadforgetPassword)
+.post(userControll.veryfyForgetPassword)
+
+user_route.route("/forgetpassword")
+.all(auth.logoutUser)
+.get(userControll.loadnewPassword)
+.post(userControll.veryfynewPassword)
+
 user_route.get('/logout',auth.loginUser,authBlock.blockUser,userControll.userLogout);
 user_route.get('/error',auth.loginUser,authBlock.blockUser,userControll.errorpage);
 
@@ -86,31 +100,47 @@ user_route.get('/proceedCheckout',auth.loginUser,authBlock.blockUser,userControl
 
 // ########################checkout##############################
 
-user_route.get('/checkout',auth.loginUser,authBlock.blockUser,userControll.checkOut);
-user_route.post('/checkout',auth.loginUser,authBlock.blockUser,userControll.changeAddress);
+user_route.route("/checkout")
+.all(auth.loginUser,authBlock.blockUser)
+.get(userControll.checkOut)
+.post(userControll.changeAddress)
 
 // ########################address##############################
 
-user_route.get('/addAddress',auth.loginUser,authBlock.blockUser,userControll.addAddress);
-user_route.patch('/addAddress',auth.loginUser,authBlock.blockUser,userControll.saveAddress);
+user_route.route("/addAddress")
+.all(auth.loginUser,authBlock.blockUser)
+.get(userControll.addAddress)
+.patch(userControll.saveAddress)
+
+user_route.route("/editAddress")
+.all(auth.loginUser,authBlock.blockUser)
+.get(userControll.loadeditAddress)
+.patch(userControll.veryfyAddress)
+
 user_route.get('/Addresses',auth.loginUser,authBlock.blockUser,userControll.loadAddress);
-user_route.get('/editAddress',auth.loginUser,authBlock.blockUser,userControll.loadeditAddress);
-user_route.patch('/editAddress',auth.loginUser,authBlock.blockUser,userControll.veryfyAddress);
 user_route.get('/deleteAddress',auth.loginUser,authBlock.blockUser,userControll.removeAddress);
 user_route.get('/paginationAddress',auth.loginUser,authBlock.blockUser,userControll.paginationAddress);
 // ########################profile##############################
 
 user_route.get('/profile',auth.loginUser,authBlock.blockUser,userControll.profile);
-user_route.get('/edit',auth.loginUser,authBlock.blockUser,userControll.loadedit);
-user_route.patch('/edit',auth.loginUser,authBlock.blockUser,userControll.updateProfile);
-user_route.get('/changeEmail',auth.loginUser,authBlock.blockUser,userControll.changeEmail);
-user_route.patch('/changeEmail',auth.loginUser,authBlock.blockUser,userControll.verifychangeEmail);
+user_route.route("/edit")
+.all(auth.loginUser,authBlock.blockUser)
+.get(userControll.loadedit)
+.patch(userControll.updateProfile)
+user_route.route("/changeEmail")
+.all(auth.loginUser,authBlock.blockUser)
+.get(userControll.changeEmail)
+.patch(userControll.verifychangeEmail)
+
 user_route.delete('/verifychangeEmailOtp',auth.loginUser,authBlock.blockUser,userControll.verifychangeEmailOtp);
 
 // ########################order############################## 
 
-user_route.get('/orders',auth.loginUser,authBlock.blockUser,orderController.order);
-user_route.post('/orders',auth.loginUser,authBlock.blockUser,orderController.placeOrder);
+user_route.route("/orders")
+.all(auth.loginUser,authBlock.blockUser)
+.get(userControll.order)
+.post(userControll.placeOrder)
+
 user_route.get('/orderDetailes',auth.loginUser,authBlock.blockUser,orderController.orderUserDetailes);
 user_route.patch('/cancelOrder',auth.loginUser,authBlock.blockUser,orderController.cancelUserOrder);
 user_route.patch('/cancelAllOrder',auth.loginUser,authBlock.blockUser,orderController.cancelAllProductInOrder);
@@ -128,8 +158,11 @@ user_route.get('/paginationOrder',auth.loginUser,authBlock.blockUser,orderContro
 
 // ######################## wishlist ##############################
 
-user_route.get('/wishlist',auth.loginUser,authBlock.blockUser,wishlistController.wishlist);
-user_route.patch('/wishlist',auth.loginUser,authBlock.blockUser,wishlistController.handleWishlist);
+user_route.route("/wishlist")
+.all(auth.loginUser,authBlock.blockUser)
+.get(userControll.wishlist)
+.patch(userControll.handleWishlist)
+
 user_route.get('/coupens',auth.loginUser,authBlock.blockUser,userControll.coupens);
 user_route.get('/searchCoupon',auth.loginUser,authBlock.blockUser,userControll.searchCoupon);
 user_route.get('/filterCoupon',auth.loginUser,authBlock.blockUser,userControll.filterCoupon);

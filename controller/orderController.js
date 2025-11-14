@@ -39,7 +39,7 @@ const sendReturnProductEmail = async (product, user, status) => {
     // mail options
     const mailOptions = {
       from: process.env.MY_EMAIL,
-      to: process.env.MY_EMAIL,
+      to: user.email,
       subject: message,
     };
 
@@ -112,7 +112,7 @@ const adminReturnOrder = async (req, res) => {
     }
 
     await orderData.save();
-    await sendReturnProductEmail(product, orderData.userId, status);
+    await sendReturnProductEmail(product, orderData, status);
     const total = orderData.products.reduce((acc, cur) => {
       if (
         cur.productStatus == "pending" ||

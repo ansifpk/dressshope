@@ -43,7 +43,7 @@ const sendOTPverificationEmail = async (email, res) => {
     // mail options
     const mailOptions = {
       from: process.env.MY_EMAIL,
-      to: process.env.MY_EMAIL,
+      to: email,
       subject: "Verify Your email",
       html: `Your OTP is: ${otp}`,
     };
@@ -213,7 +213,7 @@ const sendResetPasswordMail = async (name, email, token) => {
     // mail options
     const mailOptions = {
       from: process.env.MY_EMAIL,
-      to: process.env.MY_EMAIL,
+      to: email,
       subject: "Reset Your Password",
       html: `
         <p>Hi ${name},</p>

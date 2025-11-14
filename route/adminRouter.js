@@ -44,8 +44,11 @@ adminRouter.set('views','./views/admin')
 
 //################### admin ##########################
 
-adminRouter.get('/',authadmin.logoutAdmin,adminController.adminLogin)
-adminRouter.post('/',authadmin.logoutAdmin,adminController.veryfyLogin)
+adminRouter.route("/")
+.all(authadmin.logoutAdmin)
+.get(adminController.adminLogin)
+.post(adminController.veryfyLogin)
+
 adminRouter.get('/dashboard',authadmin.loginAdmin,adminController.dashboard);
 adminRouter.get('/changeDateDashboard',authadmin.loginAdmin,adminController.changeDateDashboard);
 adminRouter.get('/filterDashboard',adminController.filterDashboard);
@@ -56,8 +59,11 @@ adminRouter.get('/logout',authadmin.loginAdmin,adminController.adminLogout);
 
 adminRouter.get('/viewUser',authadmin.loginAdmin,adminController.viewUser);
 adminRouter.patch('/blockUser',authadmin.loginAdmin,adminController.blockUser);
-adminRouter.get('/addUser',authadmin.loginAdmin,adminController.loadaddUser)
-adminRouter.post('/addUser',adminController.addUser);
+adminRouter.route("/addUser")
+.all(authadmin.logoutAdmin)
+.get(adminController.loadaddUser)
+.post(adminController.addUser)
+
 adminRouter.get('/sortUser',adminController.sortUser);
 adminRouter.get('/searchrUser',adminController.searchrUser);
 adminRouter.get('/userPagination',adminController.userPagination);
@@ -65,6 +71,8 @@ adminRouter.get('/userPagination',adminController.userPagination);
 //################### products ##########################
 
 adminRouter.get('/viewProducts',authadmin.loginAdmin,productController.viewProducts)
+
+
 adminRouter.get('/addProducts',authadmin.loginAdmin,productController.loadaddProducts)
 adminRouter.post('/addProducts',authadmin.loginAdmin,upload.fields([{name:"file-upload0",maxCount:1},{name:"file-upload1",maxCount:1},{name:"file-upload2",maxCount:1},{name:"file-upload3",maxCount:1}]),productController.addProducts)
 adminRouter.get('/editProducts',authadmin.loginAdmin,productController.editProducts)
