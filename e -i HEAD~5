@@ -1,0 +1,71 @@
+[33m03d8e9d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m addded new brevo api key
+[33m8cbb222[m fixed
+[33ma655b31[m try fixing errors
+[33m05b711e[m removed node mailer
+[33m8ef2165[m added brevo api key
+[33m868509f[m[33m ([m[1;31morigin/main[m[33m)[m fadded otp in email
+[33m3e83811[m changed ndemailer and added sendinblue
+[33mdf46e6c[m added debugs
+[33macd0d1d[m hello world
+[33m6249bd4[m fixed router issues
+[33m2a154a2[m set email in nodeailer
+[33mdae762f[m fixed invoice
+[33m2ad632d[m added midleware in routes
+[33m5299ff6[m fixed all pendings
+[33m1a42218[m fixed coupon validations
+[33m842d1e7[m fixed stock validations
+[33md02f351[m fixed chart in admin dashboard
+[33mde0728c[m removed order creating line from user controller
+[33m60b77c4[m fixed sales report
+[33mfc20aa8[m fixed edit category
+[33m7c79a5a[m added image fied in add products
+[33m0b4c0f4[m fixed order reports
+[33md0a3ede[m fixed edit coupon
+[33m7d47e13[m fixed change password error
+[33me53280d[m added referal offer
+[33m2aa0d66[m added await in to it
+[33m5685cc0[m fixed order cancell
+[33mc5fa8bd[m added change password
+[33ma0598ab[m find a bug in forget password
+[33m7ece6e5[m forget password fixed
+[33mb5bee5f[m changed the wishlist id
+[33m5c99b21[m re-deployed the project
+[33m914e917[m make every filter  with out loading
+[33mc94da8d[m add cridentials into env file
+[33m1bc198b[m descripton length
+[33m951b0df[m aside fixed
+[33m447ba4e[m fix styles
+[33mc1926b1[m fix pdf
+[33m17720fe[m fix error
+[33m973cca9[m all fixed?
+[33mcedca5b[m fix error
+[33m0d290e7[m finel commit
+[33m36993a9[m last commmite
+[33m9384f8c[m invalid coupenshow
+[33m0dd87a1[m checkoutfinish
+[33m141d80e[m checkout
+[33mb8ec4dc[m againchange
+[33m304d95a[m updatecheckout
+[33m40f2df8[m changes
+[33m9797ef6[m lastcommite
+[33m973c54b[m checking
+[33m98a993e[m change done
+[33m5ab1498[m checking
+[33mff9503b[m tespath
+[33m8584fff[m path change in image
+[33mddadc23[m remove
+[33md7ebd9d[m commite9
+[33m0902ef1[m last commit
+[33m855fa5e[m first commit
+[33m195cd10[m first commit
+[33md3660e8[m connect
+[33m04ae04d[m again connect
+[33m56196e8[m connect mongodb atlas
+[33m40e39a2[m commit8
+[33m9a358b0[m commit 7
+[33mab91d23[m commt 6
+[33mb27720f[m commit 5
+[33m3d74908[m commit4
+[33m54fb104[m commite 3
+[33m31bfef0[m divided admin controller into multiple controllers
+[33mf0daa47[m first commit

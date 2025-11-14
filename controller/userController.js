@@ -31,13 +31,7 @@ const securePassword = async (password) => {
 
 const sendOTPverificationEmail = async (email, res) => {
   try {
-    // let transporter = nodemailer.createTransport({
-    //   service: "gmail",
-    //   auth: {
-    //     user: process.env.MY_EMAIL,
-    //     pass: process.env.MY_PASSWORD,
-    //   },
-    // });
+  
     const client = new SibApiV3Sdk.TransactionalEmailsApi();
 client.setApiKey(
   SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey,
@@ -53,13 +47,7 @@ await client.sendTransacEmail({
   htmlContent: `<h3>Your OTP is ${otp}</h3>`,
 });
 
-    // mail options
-    // const mailOptions = {
-    //   from: process.env.MY_EMAIL,
-    //   to: email,
-    //   subject: "Verify Your email",
-    //   html: `Your OTP is: ${otp}`,
-    // };
+   
 
     // hash ottp
     const saltRounds = 10;
@@ -73,7 +61,6 @@ await client.sendTransacEmail({
 
     await newOtpVerifivation.save();
     console.log("checking...",process.env.MY_EMAIL,process.env.MY_PASSWORD,email)
-    // await transporter.sendMail(mailOptions);
      console.log(otp,email);
    return res.json({ success: true, email });
   } catch (error) {
