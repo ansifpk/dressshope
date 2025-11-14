@@ -13,7 +13,6 @@ const fs = require("fs");
 const path = require("path");
 const ejs = require("ejs");
 const pdf = require("html-pdf");
-const nodemailer = require("nodemailer");
 const walletModel = require("../model/walletModel");
 const ReferalDB = require("../model/referalOfferModel");
 const getStoreDataForUser  = require('../helperfunctions/helper') ;
@@ -33,15 +32,11 @@ const securePassword = async (password) => {
 const sendOTPverificationEmail = async (email, res) => {
   try {
     const otp = `${Math.floor(1000 + Math.random() * 9000)}`;
-    
-    console.log(process.env.MY_EMAIL);
-    console.log(process.env.MY_PASSWORD);
-    console.log(process.env.API_KEY);
 
     // mail options
-      const mailOptions = {
+    const mailOptions = {
       to: email,
-      from: process.env.MY_EMAIL, // Must be verified in SendGrid
+      from: process.env.MY_EMAIL, 
       subject: 'Verify Your Email',
       html: `<p>Your OTP is: <strong>${otp}</strong></p>`,
     };
@@ -56,9 +51,7 @@ const sendOTPverificationEmail = async (email, res) => {
     });
 
     await newOtpVerifivation.save();
-    console.log("checing");
     await sgMail.send(mailOptions);
-    console.log("finished");
 
    return res.json({ success: true, email });
 
@@ -199,13 +192,7 @@ const veryfyForgetPassword = async (req, res) => {
 
 const sendResetPasswordMail = async (name, email, token) => {
   try {
-    let transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.MY_EMAIL,
-        pass: process.env.MY_PASSWORD,
-      },
-    });
+ 
 
     // mail options
     const mailOptions = {
@@ -218,7 +205,8 @@ const sendResetPasswordMail = async (name, email, token) => {
         <a href="${process.env.BASE_URL}/forgetPassword?token=${token}">Reset Password</a>
       `,
     };
-    await transporter.sendMail(mailOptions);
+    await sgMail.send(mailOptions);
+    
   } catch (error) {
     console.log(error.message);
   }

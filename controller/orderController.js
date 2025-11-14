@@ -10,7 +10,8 @@ const CartDB = require("../model/cartModel");
 const AddressDB = require("../model/addressModel");
 const CoupenDB = require("../model/cuppenModel");
 const razorPay = require("razorpay");
-const nodemailer = require("nodemailer");
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.API_KEY);
 const getStoreDataForUser = require("../helperfunctions/helper");
 
 const instance = new razorPay({
@@ -20,13 +21,7 @@ const instance = new razorPay({
 
 const sendReturnProductEmail = async (product, user, status) => {
   try {
-    let transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.MY_EMAIL,
-        pass: process.env.MY_PASSWORD,
-      },
-    });
+
     let message = ``;
     if (status == "return") {
       message = `Hi ${user.name}
@@ -43,7 +38,7 @@ const sendReturnProductEmail = async (product, user, status) => {
       subject: message,
     };
 
-    await transporter.sendMail(mailOptions);
+    await sgMail.send(mailOptions);
   } catch (error) {
     console.log(error.message);
   }
