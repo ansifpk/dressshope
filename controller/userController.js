@@ -32,19 +32,21 @@ const sendOTPverificationEmail = async (email, res) => {
   try {
    console.log(process.env.BREVO_API_KEY);
     
-   const apiInstance = new brevo.TransactionalEmailsApi();
-
-
-otp = `${Math.floor(1000 + Math.random() * 9000)}`;
-apiInstance.apiClient.authentications['api-key'].apiKey = process.env.BREVO_API_KEY;
-const sendSmtpEmail = new brevo.SendSmtpEmail();
-
+   const client = new brevo.TransactionalEmailsApi();
+    client.setApiKey(
+      brevo.TransactionalEmailsApiApiKeys.apiKey,
+      process.env.BREVO_API_KEY
+    );
+    const sendSmtpEmail = new brevo.SendSmtpEmail();
+    sendSmtpEmail.sender = {
+      name: "molla",
+      email: process.env.MY_EMAIL, // MUST BE VERIFIED IN BREVO
+    };
+    sendSmtpEmail.to = [{ email }];
     sendSmtpEmail.subject = "Your OTP Code";
     sendSmtpEmail.htmlContent = `<p>Your OTP is: <b>${otp}</b></p>`;
-    sendSmtpEmail.sender = { name: "molla", email: process.env.MY_EMAIL };
-    sendSmtpEmail.to = [{ email }];
 
-    
+otp = `${Math.floor(1000 + Math.random() * 9000)}`;
 
     // hash ottp
     const saltRounds = 10;
@@ -58,7 +60,7 @@ const sendSmtpEmail = new brevo.SendSmtpEmail();
 
     await newOtpVerifivation.save();
     console.log("checing")
-    await apiInstance.sendTransacEmail(sendSmtpEmail);
+     await client.sendTransacEmail(sendSmtpEmail);
      console.log("finished")
    return res.json({ success: true, email });
 
