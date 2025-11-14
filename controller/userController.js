@@ -61,8 +61,7 @@ const sendOTPverificationEmail = async (email, res) => {
     await newOtpVerifivation.save();
 
     await transporter.sendMail(mailOptions);
-
-    res.json({ success: true, email });
+   return res.json({ success: true, email });
   } catch (error) {
     console.log(error.message);
   }
@@ -284,10 +283,8 @@ const register = async (req, res) => {
 
 const insertUser = async (req, res) => {
   try {
-
     const {refferalCode} = req.query;
     const {name,email,password,mobile} = req.body;
-    console.log(req.body);
     
     if(refferalCode){
        const refaralOffer = await ReferalDB.findOne();

@@ -400,6 +400,8 @@
                                     body:JSON.stringify({name,email,password,mobile})}
                                 ).then((res)=>res.json())
                                 .then((res)=>{
+                                    console.log("ivade idh res",res);
+                                    
                                        if(res.success){
                                            window.location.href=`/otp?email=${email}`;
                                        }else{
