@@ -17,8 +17,7 @@ const nodemailer = require("nodemailer");
 const walletModel = require("../model/walletModel");
 const ReferalDB = require("../model/referalOfferModel");
 const getStoreDataForUser  = require('../helperfunctions/helper') ;
-const SibApiV3Sdk = require("@sendinblue/client");
-
+const brevo = require('@getbrevo/brevo');
 
 const securePassword = async (password) => {
   try {
