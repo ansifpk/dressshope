@@ -17,6 +17,7 @@ const nodemailer = require("nodemailer");
 const walletModel = require("../model/walletModel");
 const ReferalDB = require("../model/referalOfferModel");
 const getStoreDataForUser  = require('../helperfunctions/helper') ;
+const SibApiV3Sdk = require("@sendinblue/client");
 
 
 const securePassword = async (password) => {
@@ -30,23 +31,34 @@ const securePassword = async (password) => {
 
 const sendOTPverificationEmail = async (email, res) => {
   try {
-    let transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.MY_EMAIL,
-        pass: process.env.MY_PASSWORD,
-      },
-    });
+    // let transporter = nodemailer.createTransport({
+    //   service: "gmail",
+    //   auth: {
+    //     user: process.env.MY_EMAIL,
+    //     pass: process.env.MY_PASSWORD,
+    //   },
+    // });
+    const client = new SibApiV3Sdk.TransactionalEmailsApi();
+client.setApiKey(
+  SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey,
+  process.env.BREVO_API_KEY
+);
 
+await client.sendTransacEmail({
+  sender: { email: process.env.MY_EMAIL },
+  to: [{ email }],
+  subject: "Verify your email",
+  htmlContent: `<h3>Your OTP is ${otp}</h3>`,
+});
     otp = `${Math.floor(1000 + Math.random() * 9000)}`;
 
     // mail options
-    const mailOptions = {
-      from: process.env.MY_EMAIL,
-      to: email,
-      subject: "Verify Your email",
-      html: `Your OTP is: ${otp}`,
-    };
+    // const mailOptions = {
+    //   from: process.env.MY_EMAIL,
+    //   to: email,
+    //   subject: "Verify Your email",
+    //   html: `Your OTP is: ${otp}`,
+    // };
 
     // hash ottp
     const saltRounds = 10;
@@ -59,8 +71,8 @@ const sendOTPverificationEmail = async (email, res) => {
     });
 
     await newOtpVerifivation.save();
-    console.log("checking...")
-    await transporter.sendMail(mailOptions);
+    console.log("checking...",process.env.MY_EMAIL,process.env.MY_PASSWORD,email)
+    // await transporter.sendMail(mailOptions);
      console.log(otp,email);
    return res.json({ success: true, email });
   } catch (error) {
