@@ -44,13 +44,14 @@ client.setApiKey(
   process.env.BREVO_API_KEY
 );
 
+otp = `${Math.floor(1000 + Math.random() * 9000)}`;
+
 await client.sendTransacEmail({
   sender: { email: process.env.MY_EMAIL },
   to: [{ email }],
   subject: "Verify your email",
   htmlContent: `<h3>Your OTP is ${otp}</h3>`,
 });
-    otp = `${Math.floor(1000 + Math.random() * 9000)}`;
 
     // mail options
     // const mailOptions = {
