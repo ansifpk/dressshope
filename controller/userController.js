@@ -50,7 +50,7 @@ const sendOTPverificationEmail = async (email, res) => {
 
     // hash ottp
     const saltRounds = 10;
-    console.log(otp,email);
+   
     const hashedOTP = await bcrypt.hash(otp, saltRounds);
 
     const newOtpVerifivation = new UserOtpVerification({
@@ -59,11 +59,12 @@ const sendOTPverificationEmail = async (email, res) => {
     });
 
     await newOtpVerifivation.save();
-
+    console.log("checking...")
     await transporter.sendMail(mailOptions);
+     console.log(otp,email);
    return res.json({ success: true, email });
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
   }
 };
 
