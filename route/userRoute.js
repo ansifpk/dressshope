@@ -138,8 +138,8 @@ user_route.delete('/verifychangeEmailOtp',auth.loginUser,authBlock.blockUser,use
 
 user_route.route("/orders")
 .all(auth.loginUser,authBlock.blockUser)
-.get(userControll.order)
-.post(userControll.placeOrder)
+.get(orderController.order)
+.post(orderController.placeOrder)
 
 user_route.get('/orderDetailes',auth.loginUser,authBlock.blockUser,orderController.orderUserDetailes);
 user_route.patch('/cancelOrder',auth.loginUser,authBlock.blockUser,orderController.cancelUserOrder);
@@ -160,8 +160,8 @@ user_route.get('/paginationOrder',auth.loginUser,authBlock.blockUser,orderContro
 
 user_route.route("/wishlist")
 .all(auth.loginUser,authBlock.blockUser)
-.get(userControll.wishlist)
-.patch(userControll.handleWishlist)
+.get(wishlistController.wishlist)
+.patch(wishlistController.handleWishlist)
 
 user_route.get('/coupens',auth.loginUser,authBlock.blockUser,userControll.coupens);
 user_route.get('/searchCoupon',auth.loginUser,authBlock.blockUser,userControll.searchCoupon);

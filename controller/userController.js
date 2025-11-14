@@ -287,7 +287,7 @@ const insertUser = async (req, res) => {
 
     const {refferalCode} = req.query;
     const {name,email,password,mobile} = req.body;
-    // console.log(req.body);
+    console.log(req.body);
     
     if(refferalCode){
        const refaralOffer = await ReferalDB.findOne();
