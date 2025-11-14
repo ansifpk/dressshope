@@ -30,25 +30,32 @@ const securePassword = async (password) => {
 
 const sendOTPverificationEmail = async (email, res) => {
   try {
+    const otp = `${Math.floor(1000 + Math.random() * 9000)}`;
     
-   const client = new brevo.TransactionalEmailsApi();
-    client.setApiKey(
-      brevo.TransactionalEmailsApiApiKeys.apiKey,
-      process.env.BREVO_API_KEY
-    );
-    const sendSmtpEmail = new brevo.SendSmtpEmail();
-    sendSmtpEmail.sender = {
-      name: "molla",
-      email: process.env.MY_EMAIL,
-    };
-    otp = `${Math.floor(1000 + Math.random() * 9000)}`;
-    sendSmtpEmail.to = [{ email }];
-    sendSmtpEmail.subject = "Your OTP Code";
-    sendSmtpEmail.htmlContent = `<p>Your OTP is: <b>${otp}</b></p>`;
+    console.log(process.env.MY_EMAIL);
+    console.log(process.env.MY_PASSWORD);
 
+     let transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.MY_EMAIL,
+        pass: process.env.MY_PASSWORD,
+      },
+    });
+
+
+    // mail options
+    const mailOptions = {
+      from: process.env.MY_EMAIL,
+      to: process.env.MY_EMAIL,
+      subject: "Verify Your email",
+      html: `Your OTP is: ${otp}`,
+    };
+   
+    
+   
     // hash ottp
     const saltRounds = 10;
-   
     const hashedOTP = await bcrypt.hash(otp, saltRounds);
 
     const newOtpVerifivation = new UserOtpVerification({
@@ -57,13 +64,14 @@ const sendOTPverificationEmail = async (email, res) => {
     });
 
     await newOtpVerifivation.save();
-    console.log("checing")
-     await client.sendTransacEmail(sendSmtpEmail);
-     console.log("finished")
+    console.log("checing");
+    await transporter.sendMail(mailOptions);
+    console.log("finished");
+
    return res.json({ success: true, email });
 
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
   }
 };
 //########### google ##############
@@ -201,7 +209,6 @@ const sendResetPasswordMail = async (name, email, token) => {
   try {
     let transporter = nodemailer.createTransport({
       service: "gmail",
-
       auth: {
         user: process.env.MY_EMAIL,
         pass: process.env.MY_PASSWORD,
