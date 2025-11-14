@@ -17,7 +17,9 @@ const nodemailer = require("nodemailer");
 const walletModel = require("../model/walletModel");
 const ReferalDB = require("../model/referalOfferModel");
 const getStoreDataForUser  = require('../helperfunctions/helper') ;
-const brevo = require('@getbrevo/brevo');
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.API_KEY);
+
 
 const securePassword = async (password) => {
   try {
@@ -34,26 +36,16 @@ const sendOTPverificationEmail = async (email, res) => {
     
     console.log(process.env.MY_EMAIL);
     console.log(process.env.MY_PASSWORD);
-
-     let transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.MY_EMAIL,
-        pass: process.env.MY_PASSWORD,
-      },
-    });
-
+    console.log(process.env.API_KEY);
 
     // mail options
-    const mailOptions = {
-      from: process.env.MY_EMAIL,
-      to: process.env.MY_EMAIL,
-      subject: "Verify Your email",
-      html: `Your OTP is: ${otp}`,
+      const mailOptions = {
+      to: email,
+      from: process.env.MY_EMAIL, // Must be verified in SendGrid
+      subject: 'Verify Your Email',
+      html: `<p>Your OTP is: <strong>${otp}</strong></p>`,
     };
-   
     
-   
     // hash ottp
     const saltRounds = 10;
     const hashedOTP = await bcrypt.hash(otp, saltRounds);
@@ -65,7 +57,7 @@ const sendOTPverificationEmail = async (email, res) => {
 
     await newOtpVerifivation.save();
     console.log("checing");
-    await transporter.sendMail(mailOptions);
+    await sgMail.send(msg);
     console.log("finished");
 
    return res.json({ success: true, email });

@@ -4,6 +4,7 @@
   "main": "app.js",
   "dependencies": {
     "@getbrevo/brevo": "^3.0.1",
+    "@sendgrid/mail": "^8.1.6",
     "@sendinblue/client": "^3.3.1",
     "abbrev": "^1.1.1",
     "accepts": "^1.3.8",
