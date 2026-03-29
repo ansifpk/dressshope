@@ -1586,7 +1586,7 @@ const downloadInvoice = async (req, res) => {
     const filepathname = path.resolve(__dirname,'../views/users/invoice.ejs');
     const htmlString = fs.readFileSync(filepathname).toString();
     let options = {
-      format: 'A4',
+      format: 'A3',
       orientation: "portrait",
       border: "10mm",
       base: path.resolve(__dirname,'../public/assets/css/invoice.css'),
