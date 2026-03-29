@@ -1583,6 +1583,7 @@ const downloadInvoice = async (req, res) => {
       total,
       offers
     };
+    
     const filepathname = path.resolve(__dirname,'../views/users/invoice.ejs');
     const htmlString = fs.readFileSync(filepathname).toString();
     let options = {

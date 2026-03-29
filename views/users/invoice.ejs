@@ -55,28 +55,28 @@
                     </thead>
                     <tbody>
                         <%
-                        let offerCheck ;
-                        console.log('offers',offers)
-                        orderData.products
-                          .filter((order)=>order.productStatus == "pending" || order.productStatus == "Delivered" || order.productStatus == "returnPending")
-                          .forEach((order)=>{
-                              const item =  offers.find((offer)=>offer.iteam == order.productId.name);
-                          })
+                        let offerCheck = false;
+                        let offerPrice ;
                          %>
                         <%
                           orderData.products
                           .filter((order)=>order.productStatus == "pending" || order.productStatus == "Delivered" || order.productStatus == "returnPending")
                           .forEach((order)=>{
+                            const item = offers.find((offer)=>offer.iteam == order.productId.name);
+                            if(item){
+                                offerCheck = item;
+                            }
+                            offerPrice = order.productId.Price * (offerCheck.offerRate/100);
                             %>
                               <tr>
                                     <td>
                                         <div class="media">
                                             <div class="media-body">
-                                                <p class="mt-0 title"><%=order.productId.name%></p>                                            
+                                                <p class="mt-0 title"><%=order.productId.name%></p>                                           
                                             </div>
                                         </div>
                                     </td>
-                                    <td>Rs. <%= offerCheck ? Math.floor( order.productId.Price - order.productId.Price*(offerCheck.offerRate/100)) :order.productId.Price %></td>
+                                    <td>Rs. <%= offerCheck ? Math.floor( order.productId.Price - order.productId.Price * (offerCheck.offerRate/100)) : order.productId.Price %></td>
                                     <td><%=order.quandity%></td>
                                     <td>Rs. <%=  offerCheck ? Math.floor( (order.productId.Price - order.productId.Price*(offerCheck.offerRate/100)))*order.quandity :order.productId.Price * order.quandity%></td>
                               </tr>
@@ -94,16 +94,16 @@
                         <table class="table border-1 table-hover">
                             <tr>
                                 <td>Total:</td>
-                                <td>Rs. <%=total%></td>
+                                <td>Rs. <%=total - offerPrice %></td>
                             </tr>
                             <tr>
                                 <td>Discount:</td>
-                                <td>Rs. <%=orderData.couponOfferPrice%></td>
+                                <td>Rs. <%=orderData.couponOfferPrice  %></td>
                             </tr>
                             <tfoot>
                                 <tr>
                                     <td>Grand Total:</td>
-                                    <td>Rs. <%=total - orderData.couponOfferPrice %></td>
+                                    <td>Rs. <%=total - orderData.couponOfferPrice - offerPrice  %></td>
                                 </tr>
                             </tfoot>
                         </table>
