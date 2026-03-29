@@ -221,7 +221,7 @@
                                                             <div class="text">
                                                                 <h6 class="mb-1">Action</h6>
                                                                
-                                                                 <%
+                                                                 <!-- <%
                                                                   
 
                                                                 if(orderData.products[0].paymentMethod !== "COD"){
@@ -235,7 +235,51 @@
                                                                      <a href="/test?productId=<%=orderData._id%>" id="invoiceButton" class="btn btn-primary mt-1 text-white <%=showDiscount?"":"disabled"%>"  onclick="DownloadInvoice(this,'<%=orderData._id%>')"><span>Download invoice</span></a>
                                                                     <%
                                                                 }
-                                                                 %> 
+                                                                 %>  -->
+
+                                                            <%
+                                                                if(orderData.products[0].paymentMethod !== "COD"){
+                                                                    let showDiscount = false;
+                                                                    orderData.products.forEach((cur)=>{
+                                                                        if(
+                                                                            cur.productStatus == "pending" || 
+                                                                            cur.productStatus == "Delivered" || 
+                                                                            cur.productStatus == "returnPending"
+                                                                        ){
+                                                                            showDiscount = true;
+                                                                        }
+                                                                    })
+                                                                %>
+
+                                                                <a href="/test?productId=<%=orderData._id%>" 
+                                                                id="invoiceButton" 
+                                                                class="btn btn-primary mt-1 text-white <%=showDiscount?"":"disabled"%>"  
+                                                                onclick="DownloadInvoice(this,'<%=orderData._id%>')">
+                                                                <span>Download invoice</span>
+                                                                </a>
+
+                                                                <%
+                                                                } else {
+                                                                  
+                                                                    let showDiscount = false;
+                                                                    orderData.products.forEach((cur)=>{
+                                                                        if(cur.productStatus == "Delivered"){
+                                                                            showDiscount = true;
+                                                                        }
+                                                                    })
+                                                                %>
+
+                                                                <a href="/test?productId=<%=orderData._id%>" 
+                                                                id="invoiceButton" 
+                                                                class="btn btn-primary mt-1 text-white <%=showDiscount?"":"disabled"%>"  
+                                                                onclick="<%=showDiscount ? `DownloadInvoice(this,'${orderData._id}')` : 'return false;' %>">
+                                                                <span>Download invoice</span>
+                                                                </a>
+
+                                                                <%
+                                                                }
+                                                                %>
+
                                                                  <%
                                                                  const diffTime = Math.abs(orderData.createdAt - date); 
                                                                  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
