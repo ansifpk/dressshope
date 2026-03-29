@@ -1586,10 +1586,10 @@ const downloadInvoice = async (req, res) => {
     const filepathname = path.resolve(__dirname,'../views/users/invoice.ejs');
     const htmlString = fs.readFileSync(filepathname).toString();
     let options = {
-      format: 'A3',
+      height: "594mm",
+      width: "420mm",
       orientation: "portrait",
-      border: "10mm",
-       base: `file://${path.resolve(__dirname,'../public/')}/`
+      border: "10mm"
     };
     const ejsData = ejs.render(htmlString, data);
     pdf.create(ejsData, options).toFile('invoice.pdf', (err, response) => {
