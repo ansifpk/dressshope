@@ -1583,27 +1583,27 @@ const downloadInvoice = async (req, res) => {
       total,
       offers
     };
-    const filepathname = path.resolve(__dirname, '../views/users/invoice.ejs');
+    const filepathname = path.resolve(__dirname,'../views/users/invoice.ejs');
     const htmlString = fs.readFileSync(filepathname).toString();
     let options = {
       format: 'A4',
       orientation: "portrait",
-      border: "10mm"
+      border: "10mm",
+      base: path.resolve(__dirname,'../public/assets/css/invoice.css'),
     };
     const ejsData = ejs.render(htmlString, data);
     pdf.create(ejsData, options).toFile('invoice.pdf', (err, response) => {
     if (err) console.log(err);
     
-    const filePath = path.resolve(__dirname, '../invoice.pdf');
+    const filePath = path.resolve(__dirname,'../invoice.pdf');
     fs.readFile(filePath, (err, file) => {
         if (err) {
           console.log(err);
-          return res.status(500).send('could not doenload the file')
+          return res.status(500).send('could not doenload the file');
         }
-        
-        res.setHeader('Content-type', 'application/pdf')
+        res.setHeader('Content-type', 'application/pdf');
         res.setHeader('Content-Disposition', 'attachment;filename="invoice.pdf"');
-        res.send(file)
+        res.send(file);
       })
     })
    
