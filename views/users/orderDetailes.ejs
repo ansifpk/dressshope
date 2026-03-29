@@ -232,7 +232,7 @@
                                                                         }
                                                                     })
                                                                     %>
-                                                                     <a href="/test?productId=<%=orderData._id%>" id="invoiceButton" class="btn btn-primary mt-1 text-white <%=showDiscount?"":"disabled"%>"  onclick="DownloadInvoice(this,'<%=orderData._id%>')"><span>Download invoice</span></a>
+                                                                     <a href="/downloadInvoice?productId=<%=orderData._id%>" id="invoiceButton" class="btn btn-primary mt-1 text-white <%=showDiscount?"":"disabled"%>"  onclick="DownloadInvoice(this,'<%=orderData._id%>')"><span>Download invoice</span></a>
                                                                     <%
                                                                 }
                                                                  %>  -->
@@ -251,7 +251,7 @@
                                                                     })
                                                                 %>
 
-                                                                <a href="/test?productId=<%=orderData._id%>" 
+                                                                <a href="/downloadInvoice?productId=<%=orderData._id%>" 
                                                                 id="invoiceButton" 
                                                                 class="btn btn-primary mt-1 text-white <%=showDiscount?"":"disabled"%>"  
                                                                 onclick="DownloadInvoice(this,'<%=orderData._id%>')">
@@ -269,7 +269,7 @@
                                                                     })
                                                                 %>
 
-                                                                <a href="/test?productId=<%=orderData._id%>" 
+                                                                <a href="/downloadInvoice?productId=<%=orderData._id%>" 
                                                                 id="invoiceButton" 
                                                                 class="btn btn-primary mt-1 text-white <%=showDiscount?"":"disabled"%>"  
                                                                 onclick="<%=showDiscount ? `DownloadInvoice(this,'${orderData._id}')` : 'return false;' %>">

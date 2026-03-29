@@ -170,5 +170,5 @@ user_route.get('/paginationCoupon',auth.loginUser,authBlock.blockUser,userContro
 user_route.post('/applyCoupon',auth.loginUser,authBlock.blockUser,couponController.applyCoupon);
 user_route.get('/about',auth.loginUser,authBlock.blockUser,userControll.about);
 user_route.get('/contact',auth.loginUser,authBlock.blockUser,userControll.contact);
-user_route.get('/test',userControll.test);
+user_route.get('/downloadInvoice',auth.loginUser,authBlock.blockUser,userControll.downloadInvoice);
 module.exports=user_route;

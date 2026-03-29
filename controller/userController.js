@@ -1565,11 +1565,11 @@ const changeAddress = async (req, res) => {
   }
 };
 
-const test = async (req, res) => {
+const downloadInvoice = async (req, res) => {
   try {
     const { productId } = req.query;
     const today = new Date()
-    const offer = await OfferDB.find({validity:{$gte:today}},{iteam:1,offerRate:1,_id:0});
+    const offers = await OfferDB.find({validity:{$gte:today}},{iteam:1,offerRate:1,_id:0});
     const orderData = await OrderDB.findOne({ _id: productId})
       .populate("userId")
       .populate("products.productId");
@@ -1581,7 +1581,7 @@ const test = async (req, res) => {
     const data = {
       orderData: orderData,
       total,
-      offer
+      offers
     };
     const filepathname = path.resolve(__dirname, '../views/users/invoice.ejs');
     const htmlString = fs.readFileSync(filepathname).toString();
@@ -1608,87 +1608,7 @@ const test = async (req, res) => {
     })
    
     return;
-    // const { productId } = req.query;
-    
-    // const orderData = await OrderDB.findOne({ _id: productId})
-    //   .populate("userId")
-    //   .populate("products.productId");
-    //   let products = [];
-    //   orderData.products.find((product) => {
-    //     products.push({
-    //       quantity: product.quandity,
-    //       description: product.productId.name,
-    //       price: product.productId.Price
-    //     })
-    //   });
-    //    const offer = orderData.products.reduce((acc,cur)=>{
-    //     return acc+ (cur.productId.Price*cur.quandity) - cur.productTotal
-    //    },0)
-    
-    //   products.push({
-    //   description: "Discount",
-    //   price: -offer
-    // })
-    
-    // const date = new Date().toISOString().slice(0, 10);
 
-    // const data = {
-    //   apiKey: "free", // Please register to receive a production apiKey: https://app.budgetinvoice.com/register
-    //   mode: "development", // Production or development, defaults to production
-    //   images: {
-    //     // The logo on top of your invoice
-    //     logo: "https://public.budgetinvoice.com/img/logo_en_original.png",
-    //     // The invoice background
-    //     // background: "https://public.budgetinvoice.com/img/watermark-draft.jpg"
-    //   },
-    //   // Your own data
-    //   sender: {
-    //     company: "Molla",
-    //     address: "MG Street",
-    //     zip: "560001",
-    //     city: "Bangaloru",
-    //     country: "INDIA",
-    //   },
-    //   // Your recipient
-    //   client: {
-    //     company: orderData.userId.name,
-    //     address: orderData.products[0].deliveryAddress.address,
-    //     zip: orderData.products[0].deliveryAddress.pincode,
-    //     city: orderData.products[0].deliveryAddress.city,
-    //     country: orderData.products[0].deliveryAddress.country,
-    //   },
-    //   information: {
-    //     // Invoice data
-    //     date: date,
-    //     // Invoice due date
-    //     // dueDate: "31-12-2021"
-    //   },
-    //   // The products you would like to see on your invoice
-    //   // Total values are being calculated automatically
-    //   products: products,
-    //   // Settings to customize your invoice
-    //   settings: {
-    //     currency: "INR", // See documentation 'Locales and Currency' for more info. Leave empty for no currency.
-    //     // locale: "nl-NL", // Defaults to en-US, used for number formatting (See documentation 'Locales and Currency')
-    //     // marginTop: 25, // Defaults to '25'
-    //     // marginRight: 25, // Defaults to '25'
-    //     // marginLeft: 25, // Defaults to '25'
-    //     // marginBottom: 25, // Defaults to '25'
-    //     // format: "A4", // Defaults to A4, options: A3, A4, A5, Legal, Letter, Tabloid
-    //     // height: "1000px", // allowed units: mm, cm, in, px
-    //     // width: "500px", // allowed units: mm, cm, in, px
-    //     // orientation: "landscape" // portrait or landscape, defaults to portrait
-    //   },
-    // };
-
-    // //Create your invoice! Easy!
-
-    // const results = easyinvoice.createInvoice(data, function (result) {
-    //   const pdfBuffer = Buffer.from(result.pdf, "base64");
-    //   res.setHeader("Content-Type", "application/pdf");
-    //   res.setHeader("Content-Disposition", "attachment; filename=invoice.pdf");
-    //   res.send(pdfBuffer);
-    // });
   } catch (error) {
     console.log(error.message);
   }
@@ -1869,9 +1789,8 @@ module.exports = {
 
   changeAddress,
   checkOut,
-  test,
   coupens,
-  test,
+  downloadInvoice,
   errorpage,
   success,
   failed,

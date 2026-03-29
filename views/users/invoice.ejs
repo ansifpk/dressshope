@@ -56,24 +56,31 @@
                     <tbody>
                         <%
                         let offerCheck ;
+                        console.log('offers',offers)
+                        orderData.products
+                          .filter((order)=>order.productStatus == "pending" || order.productStatus == "Delivered" || order.productStatus == "returnPending")
+                          .forEach((order)=>{
+                              const item =  offers.find((offer)=>offer.iteam == order.productId.name )
+                              console.log("item",item)
+                          })
                          %>
                         <%
                           orderData.products
                           .filter((order)=>order.productStatus == "pending" || order.productStatus == "Delivered" || order.productStatus == "returnPending")
                           .forEach((order)=>{
-                           
                             %>
                               <tr>
                                     <td>
                                         <div class="media">
                                             <div class="media-body">
-                                                <p class="mt-0 title"><%=order.productId.name%></p>                                            </div>
+                                                <p class="mt-0 title"><%=order.productId.name%></p>                                            
+                                            </div>
                                         </div>
                                     </td>
                                     <td>Rs. <%= offerCheck ? Math.floor( order.productId.Price - order.productId.Price*(offerCheck.offerRate/100)) :order.productId.Price %></td>
                                     <td><%=order.quandity%></td>
                                     <td>Rs. <%=  offerCheck ? Math.floor( (order.productId.Price - order.productId.Price*(offerCheck.offerRate/100)))*order.quandity :order.productId.Price * order.quandity%></td>
-                                </tr>
+                              </tr>
                           <%})
                         %>
                     </tbody>
