@@ -76,7 +76,6 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td>helo</td>
                                     <td>Rs. <%= offerCheck ? Math.floor( order.productId.Price - order.productId.Price*(offerCheck.offerRate/100)) :order.productId.Price %></td>
                                     <td><%=order.quandity%></td>
                                     <td>Rs. <%=  offerCheck ? Math.floor( (order.productId.Price - order.productId.Price*(offerCheck.offerRate/100)))*order.quandity :order.productId.Price * order.quandity%></td>
